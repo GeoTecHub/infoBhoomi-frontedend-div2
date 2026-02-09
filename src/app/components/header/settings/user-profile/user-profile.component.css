@@ -1,0 +1,142 @@
+.custom-title {
+  background-color: var(--color-blue-3);
+  color: white;
+}
+
+.profile-image-block {
+  text-align: center;
+  margin: 20px auto;
+}
+
+.profile-image-container-main {
+  justify-content: center;
+  gap: 24px;
+}
+
+.profile-image-container {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  /* margin: 0 auto 0 auto; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--color-blue-1);
+}
+
+.change-image-button {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background-color: #ffffff;
+  border: 1px solid var(--color-blue-2);
+  border-radius: 50%;
+  color: var(--color-blue-2);
+  transition: background-color 0.3s;
+}
+
+.change-image-button:hover {
+  background-color: var(--color-blue-2);
+  color: white;
+}
+
+.user-profile-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  margin-top: 15px;
+}
+
+.user-profile-form label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 5px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.user-profile-form label b {
+  flex: 1;
+  /* Takes available space on the left */
+  text-align: right;
+  padding-right: 10px;
+}
+
+.user-profile-form input {
+  flex: 2;
+  /* Takes more space on the right */
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.user-profile-form-bottom {
+  margin-top: 7px;
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px;
+  background-color: #e9f2f9;
+  border-top: 1px solid #ddd;
+}
+
+.user-profile-form-bottom button:hover {
+  opacity: 0.7;
+}
+
+.change-password-container {
+  margin-top: 4px;
+}
+
+.change-username-container {
+  margin-top: 4px;
+}
+
+.change-password-link,
+.change-username-link {
+  color: rgb(63, 63, 63) !important;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 0px 4px;
+  max-height: 20px;
+}
+
+.username-label {
+  font-size: 18px;
+  padding: 0px 4px;
+  font-weight: 500;
+}
+
+.div-sec-2 {
+  text-align: left;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--color-blue-3);
+  color: white;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  margin-right: 5%;
+  margin-top: 4%;
+}

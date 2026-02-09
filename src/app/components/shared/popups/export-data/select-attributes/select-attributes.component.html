@@ -1,0 +1,30 @@
+<h4 mat-dialog-title>Select Attributes</h4>
+
+<mat-dialog-content>
+  <div class="attribute-list-content">
+    <div *ngFor="let attribute of data.attributesList" style="margin-bottom: 10px">
+      <input
+        type="checkbox"
+        [value]="attribute"
+        (change)="onCheckboxChange($event)"
+        [checked]="isChecked(attribute)"
+      />
+      {{ attribute }}
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <app-custom-buttons
+    buttonText="Close"
+    buttonIcon="cancel"
+    buttonStyle="secondary"
+    mat-dialog-close
+  ></app-custom-buttons>
+  <app-custom-buttons
+    buttonText="Save"
+    buttonIcon=""
+    buttonStyle="primary"
+    (click)="onSave()"
+  ></app-custom-buttons>
+</mat-dialog-actions>

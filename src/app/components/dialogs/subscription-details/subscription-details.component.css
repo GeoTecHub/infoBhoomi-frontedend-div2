@@ -1,0 +1,10 @@
+.form-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.form-section label {
+  font-weight: 500;
+  width: 160px;
+}

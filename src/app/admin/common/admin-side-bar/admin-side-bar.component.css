@@ -1,0 +1,74 @@
+.side-panel-content {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
+/* *** TABS *** */
+.side-panel-tabs {
+  width: 30px;
+}
+
+.side-panel-tab {
+  /* background-color: var(--color-primary); */
+  background-color: #3c71a6;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  text-align: center;
+  width: 30px;
+  height: 100px;
+  border-radius: 10px 0 0 10px;
+  border: 2px solid var(--color-secondary-l2);
+  transition: background-color 0.3s ease;
+  color: var(--color-secondary-l1);
+}
+
+.side-panel-tab:hover {
+  background-color: var(--color-primary-l1);
+  cursor: pointer;
+}
+
+.side-panel-tab.active {
+  background-color: var(--color-secondary-l1) !important;
+  font-weight: bold;
+  color: var(--color-primary-d1);
+}
+
+.side-panel-tab-long {
+  height: 140px;
+}
+
+@media screen and (max-height: 650px) {
+  .side-panel-tab {
+    font-size: 12px;
+    height: 90px;
+  }
+
+  .side-panel-tab-long {
+    height: 100px;
+  }
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.95;
+  /* Makes it look disabled */
+  cursor: not-allowed;
+}
+
+.tabs-container {
+  background-color: #fff;
+  padding-left: 1px;
+  padding-right: 0px;
+  padding-top: 0px;
+  /* Optional: Adds space on the top of the tabs */
+  padding-bottom: 0px;
+  /* Optional: Adds space on the bottom of the tabs */
+  min-height: 100vh;
+}
+
+.tabs-area {
+  margin-top: -3px;
+  background: white;
+  min-height: 100vh;
+}

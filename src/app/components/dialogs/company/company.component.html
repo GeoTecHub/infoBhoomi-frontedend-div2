@@ -1,0 +1,217 @@
+<div class="material-header">
+  <div class="header-content">
+    <h2 class="header-title">Company</h2>
+  </div>
+</div>
+
+<mat-dialog-content>
+  <mat-card class="custom-card">
+    <mat-card-content>
+      <div class="keyValueList">
+        <div class="keyValueWrapper" *ngIf="data.path == 'full'">
+          <div class="keyValueWrapper__keyValue">
+            <div class="keyValue__key">Registration Number</div>
+            <input
+              type="text"
+              class="keyValue__value"
+              [(ngModel)]="company_info.registration_number"
+            />
+          </div>
+        </div>
+        <div class="container" *ngIf="data.path == 'full'">
+          <button
+            mat-icon-button
+            matSuffix
+            [disabled]="!company_info.registration_number"
+            (click)="getCompanyData()"
+            class="search-btn"
+          >
+            <mat-icon>search</mat-icon> Search
+          </button>
+        </div>
+        <hr class="hr-divider" *ngIf="data.path == 'full'" />
+        <div *ngIf="party_already_existing && data.path == 'full' && !edit_or_create_form">
+          <mat-card-title class="card-main-title"> Existing Party Information </mat-card-title>
+          <!-- <hr class="hr-divider"> -->
+          <br />
+          <div class="label-value-list">
+            <div class="label-value-item">
+              <span class="label">Party Identification Type:</span>
+              <span class="value">{{ party_identification.ext_pid_type }}</span>
+            </div>
+            <div class="label-value-item">
+              <span class="label">Party NIC:</span>
+              <span class="value">{{ party_identification.ext_pid }}</span>
+            </div>
+            <div class="label-value-item">
+              <span class="label">Party Name:</span>
+              <span class="value">{{ party_identification.party_name }}</span>
+            </div>
+            <div class="label-value-item">
+              <span class="label">Party Telephone:</span>
+              <span class="value">{{ party_identification.tp }}</span>
+            </div>
+            <div class="label-value-item">
+              <span class="label">Party Address:</span>
+              <span class="value">{{ party_identification.pmt_address }}</span>
+            </div>
+          </div>
+        </div>
+        <div
+          class="show_all_inputs"
+          *ngIf="
+            (edit_or_create_form && data.path == 'full') ||
+            data_not_found == true ||
+            data.path == 'create_form'
+          "
+        >
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Registration Number</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                readonly
+                [(ngModel)]="party_identification.ext_pid"
+              />
+            </div>
+          </div>
+
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Party Full Name <span class="text-danger">*</span></div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [(ngModel)]="party_identification.party_full_name"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Party Name <span class="text-danger">*</span></div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [(ngModel)]="party_identification.party_name"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Telephone</div>
+              <input
+                class="keyValue__value"
+                type="tel"
+                maxlength="10"
+                pattern="0\d{9}"
+                (keypress)="allowOnlyNumbers($event)"
+                (input)="limitInputLength($event)"
+                (change)="validationsCheck($event, 'mobile_number')"
+                [(ngModel)]="party_identification.tp"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Specific Telephone <span class="text-danger">*</span></div>
+              <input
+                class="keyValue__value"
+                type="tel"
+                maxlength="10"
+                pattern="0\d{9}"
+                (keypress)="allowOnlyNumbers($event)"
+                (input)="limitInputLength($event)"
+                (change)="validationsCheck($event, 'mobile_number')"
+                [(ngModel)]="party_identification.specific_tp"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Party Address <span class="text-danger">*</span></div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [(ngModel)]="party_identification.pmt_address"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Company Registration Date</div>
+              <input
+                type="date"
+                class="keyValue__value"
+                [(ngModel)]="party_identification.date_of_birth"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Email</div>
+              <input type="text" class="keyValue__value" [(ngModel)]="party_identification.email" />
+            </div>
+          </div>
+
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Remarks</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [(ngModel)]="party_identification.remark"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="container"
+        *ngIf="party_already_existing && data.path == 'full' && !edit_or_create_form"
+      >
+        <button mat-icon-button matSuffix (click)="showPartyAllInputs()" class="search-btn">
+          <mat-icon>edit</mat-icon> Edit
+        </button>
+      </div>
+      <div
+        class="container"
+        *ngIf="
+          (data_not_found == true && this.data.path == 'full') || this.data.path == 'create_form'
+        "
+      >
+        <button mat-icon-button matSuffix (click)="SubmitAll()" class="search-btn">
+          <mat-icon>save</mat-icon> Save
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <!-- *ngIf="civilian_data__array.length != 0" -->
+  <div class="container">
+    &nbsp;
+    <button mat-icon-button matSuffix (click)="closeDialog()" class="search-btn">
+      <mat-icon>close</mat-icon> Close</button
+    >&nbsp;&nbsp;&nbsp;
+    <button
+      mat-icon-button
+      matSuffix
+      *ngIf="data.path == 'full'"
+      (click)="addCompany()"
+      class="search-btn"
+    >
+      Add &nbsp;<i class="fa fa-plus plus-btn"></i>
+    </button>
+    &nbsp;&nbsp;&nbsp;
+    <button
+      mat-icon-button
+      matSuffix
+      *ngIf="data.path == 'create_form'"
+      (click)="addData()"
+      class="search-btn"
+    >
+      Add &nbsp;<i class="fa fa-plus plus-btn"></i>
+    </button>
+  </div>
+</mat-dialog-actions>

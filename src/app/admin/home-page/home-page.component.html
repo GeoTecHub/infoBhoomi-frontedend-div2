@@ -1,0 +1,228 @@
+<!-- Verifying authentication and get user details -->
+<app-user-authenticator></app-user-authenticator>
+
+<link
+  rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css"
+/>
+
+<div class="header-container">
+  <app-admin-header></app-admin-header>
+</div>
+
+<div class="admin-main-body">
+  <!-- Sidebar -->
+  <div class="side-panel-container">
+    <app-admin-side-bar></app-admin-side-bar>
+  </div>
+
+  <!-- Main content: matches the Layers UI -->
+  <div class="tab-container mt-3 mx-3">
+    <div class="card_">
+      <div class="card-body">
+        <div class="row g-3 mb-2">
+          <app-loader [isLoading]="loading" class="m-0"></app-loader>
+          <!-- Organization Details -->
+          <div class="col-md-6 mt-0">
+            <div class="card h-100 shadow-sm py-3">
+              <div class="card-body">
+                <h5 class="fw-bold mb-3" style="color: #3c71a6">Organization Details</h5>
+                <div class="d-flex align-items-center mb-3">
+                  <div class="d-flex align-items-center image-section p-4">
+                    <img
+                      src="logos/logo-small.png"
+                      alt="Logo"
+                      class="me-3 rounded img-fluid bg-white"
+                    />
+                  </div>
+                  <div class="ms-4" style="font-size: 15px">
+                    <div class="mb-2">
+                      <i class="bi bi-buildings-fill me-2 bold-grey"></i>
+                      <b class="bold-grey w-500-custom">Organization:</b> {{ orgName }}
+                    </div>
+
+                    <div class="mb-2">
+                      <i class="bi bi-person-fill me-2 bold-grey"></i>
+                      <b class="bold-grey w-500-custom">Managing Director / CEO:</b> {{ owner }}
+                    </div>
+                    <div class="mb-2">
+                      <i class="bi bi-telephone-fill me-2 bold-grey"></i>
+                      <b class="bold-grey w-500-custom">Inquiries:</b> {{ phone }}
+                    </div>
+                    <div class="mb-2">
+                      <i class="bi bi-envelope-fill me-2 bold-grey"></i>
+                      <b class="bold-grey w-500-custom">Email:</b>
+                      <a [href]="`mailto:${email}`" style="color: #1976d2"> {{ email }}</a>
+                    </div>
+                    <div>
+                      <i class="bi bi-geo-alt-fill me-2 bold-grey"></i>
+                      <b class="bold-grey w-500-custom">Address:</b> {{ address }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Subscription Details -->
+          <div class="col-md-6 mt-0">
+            <div class="card h-100 shadow-sm py-3">
+              <div class="card-body">
+                <h5 class="fw-bold mb-3" style="color: #3c71a6">Subscription Details</h5>
+                <div class="ms-1" style="font-size: 15px">
+                  <div class="d-flex justify-content-between mb-2">
+                    <div>Current Plan:</div>
+                    <div class="fw-semibold">{{ current_name }}</div>
+                  </div>
+                  <div class="d-flex justify-content-between mb-2">
+                    <div>Subscription Ends On:</div>
+                    <div class="fw-semibold">
+                      {{ permit_end_date ? formatDateOnly(permit_end_date) : 'Not Set' }}
+                    </div>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>Status:</div>
+                    <span
+                      [class]="`badge ${status ? 'bg-success' : 'bg-danger'}`"
+                      style="font-size: 13px"
+                      >{{ status ? 'Active' : 'Expired' }}</span
+                    >
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>Users Limit:</div>
+                    <span class="fw-semibold">{{ users_limit }}</span>
+                  </div>
+                  <button
+                    type="button"
+                    class="btn btn-primary w-100 d-flex align-items-center justify-content-center mt-3"
+                    style="background: #3c71a6"
+                    (click)="openBilling()"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="17"
+                      height="17"
+                      fill="currentColor"
+                      class="bi bi-credit-card me-2"
+                      viewBox="0 0 16 16"
+                    >
+                      <path
+                        d="M0 4a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V4zm2-1a1 1 0 0 0-1 1v1h14V4a1 1 0 0 0-1-1H2zm13 3H1v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V6z"
+                      />
+                      <path d="M2 9a1 1 0 1 0 0 2h1a1 1 0 0 0 0-2H2z" />
+                    </svg>
+                    Manage Subscription
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Second Row -->
+        <div class="row g-3">
+          <!-- User Overview -->
+          <div class="col-md-3">
+            <div class="card h-100 shadow-sm py-3">
+              <div class="card-body">
+                <h5 class="fw-bold mb-3" style="color: #3c71a6">User Overview</h5>
+                <div class="d-flex align-items-center mb-3">
+                  <span
+                    class="bg-opacity-10 rounded-circle p-2 me-2 d-flex align-items-center justify-content-center"
+                    style="width: 30px; height: 30px; background-color: #007cff"
+                  >
+                    <i class="bi bi-person-check-fill text-white fs-6"></i>
+                  </span>
+                  <span class="flex-grow-1">Active</span>
+                  <span class="fw-bold fs-4">{{ activeUsers }}</span>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                  <span
+                    class="bg-opacity-10 rounded-circle p-2 me-2 d-flex align-items-center justify-content-center"
+                    style="width: 30px; height: 30px; background-color: #0fb531"
+                  >
+                    <i class="bi bi-person-heart text-white fs-6"></i>
+                  </span>
+                  <span class="flex-grow-1">
+                    Online
+                    <i
+                      class="fa-solid fa-circle-info cursor-pointer info-icon-btn"
+                      (click)="openOnlineUsers()"
+                    ></i>
+                  </span>
+                  <span class="fw-bold fs-4">{{ onlineUsers }}</span>
+                </div>
+                <div class="d-flex align-items-center mb-3">
+                  <span
+                    class="bg-opacity-10 rounded-circle p-2 me-2 d-flex align-items-center justify-content-center"
+                    style="width: 30px; height: 30px; background-color: #f2312b"
+                  >
+                    <i class="bi bi-slash-circle-fill text-white fs-6"></i>
+                  </span>
+                  <span class="flex-grow-1">Suspended</span>
+                  <span class="fw-bold fs-4">{{ suspendedUsers }}</span>
+                </div>
+                <div class="d-flex align-items-center">
+                  <span
+                    class="bg-opacity-10 rounded-circle p-2 me-2 d-flex align-items-center justify-content-center"
+                    style="width: 30px; height: 30px; background-color: #a813a8"
+                  >
+                    <i class="bi bi-person-plus-fill text-white fs-6"></i>
+                  </span>
+                  <span class="flex-grow-1">Registered</span>
+                  <span class="fw-bold fs-4">{{ registeredUsers }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Recent Activities -->
+          <div class="col-md-9">
+            <div class="card h-100 shadow-sm py-3">
+              <div class="card-body">
+                <h5 class="fw-bold mb-3" style="color: #3c71a6">Recent Logins</h5>
+                <table class="table table-sm mb-0 table-striped">
+                  <thead>
+                    <tr>
+                      <th class="f-14" scope="col">Username</th>
+                      <th class="f-14" scope="col">Email</th>
+                      <th class="f-14" scope="col">Name</th>
+                      <th class="f-14" scope="col">Department</th>
+                      <th class="f-14 text-center" scope="col">Type</th>
+                      <th class="f-14" scope="col">Time</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let login of logins">
+                      <td class="f-12">{{ login.username }}</td>
+                      <td class="f-12">{{ login.email }}</td>
+                      <td class="f-12">{{ login.first_name + ' ' + login.last_name }}</td>
+                      <td class="f-12">{{ login.department }}</td>
+                      <td class="f-12">
+                        <div
+                          [ngClass]="
+                            login.user_type === 'admin'
+                              ? 'admin-pill'
+                              : login.user_type === 'user'
+                                ? 'user-pill'
+                                : !login.is_active
+                                  ? 'disabled-pill'
+                                  : ''
+                          "
+                        >
+                          {{ login.user_type }}
+                        </div>
+                      </td>
+                      <td class="text-muted small f-12">
+                        {{
+                          login.last_login ? (login.last_login | date: 'dd/MM/yyyy h:mm:ss a') : ''
+                        }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

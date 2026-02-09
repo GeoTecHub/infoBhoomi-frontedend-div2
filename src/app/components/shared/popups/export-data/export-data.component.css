@@ -1,0 +1,82 @@
+/*
+ * === Main Container and Layout ===
+ * Provides overall spacing and structure for the dialog content.
+*/
+.export-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Adds space between the main sections */
+}
+
+.export-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Adds space between form fields and sections */
+}
+
+/* A helper class to make Material Form Fields take up the full width. */
+.w-100 {
+  width: 100%;
+}
+
+/* 
+ * === Selection Mode UI ===
+ * Styles for the buttons and info banners related to object selection.
+*/
+
+/* Container for the selection-related buttons and text */
+.selection-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px; /* Space between the button and the text below it */
+  padding: 16px;
+  border: 1px dashed var(--color-primary, #ccc); /* Use a fallback color */
+  border-radius: 8px;
+  background-color: var(--color-secondary-l3, #f9f9f9); /* Use a fallback color */
+  text-align: center;
+}
+
+/* Styling for the banner that appears when selection is active */
+.selection-banner {
+  color: var(--color-primary-d1, #3f51b5);
+  font-weight: 500;
+  padding: 8px;
+}
+
+/* Styling for the summary text shown after selection is complete */
+.selection-count p {
+  margin: 8px 0 0 0; /* Add some top margin */
+  font-style: italic;
+  color: #555;
+}
+
+/*
+ * === Export Section ===
+ * Styles for the common section containing format and filename inputs.
+*/
+.export-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Space between the format and filename fields */
+  padding-top: 10px;
+  border-top: 1px solid #e0e0e0; /* A light separator line */
+}
+
+/*
+ * === Dialog Actions (Footer Buttons) ===
+ * Ensures proper alignment and spacing for the Cancel/Export buttons.
+*/
+mat-dialog-actions {
+  padding: 8px 24px !important; /* Override default padding if needed */
+}
+
+.export-button {
+  min-width: 120px; /* Give the button a minimum width to prevent size changes */
+}
+
+/* Vertically center the spinner inside the button */
+.export-button mat-spinner {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 8px;
+}

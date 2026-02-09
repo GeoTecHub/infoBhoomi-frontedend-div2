@@ -1,0 +1,39 @@
+<h4 mat-dialog-title>Subscription Details</h4>
+<mat-dialog-content class="mat-typography">
+  <app-loader [isLoading]="loading"></app-loader>
+  <div class="about-main-content">
+    <div class="form-section mb-2">
+      <label for="fileInput" class="section-label">Current Plan :</label>
+      <div class="data">
+        {{ currentPlan }}
+      </div>
+    </div>
+
+    <div class="form-section mb-2">
+      <label for="fileInput" class="section-label">Subscription Ends On :</label>
+      <div class="data">
+        {{ endsOn | date: 'dd/MM/yyyy' }}
+      </div>
+    </div>
+
+    <div class="form-section mb-2">
+      <label for="fileInput" class="section-label">Status:</label>
+      <div class="data">
+        <span [class]="`badge ${status ? 'bg-success' : 'bg-danger'}`" style="font-size: 13px">{{
+          status ? 'Active' : 'Expired'
+        }}</span>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <label for="fileInput" class="section-label">Users Limit:</label>
+      <div class="data">
+        {{ userLimit }}
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close style="color: #d32f2f">Close</button>
+</mat-dialog-actions>

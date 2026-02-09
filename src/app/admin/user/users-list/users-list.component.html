@@ -1,0 +1,180 @@
+<!-- Verifying authentication and get user details -->
+<app-user-authenticator></app-user-authenticator>
+
+<div class="header-container">
+  <app-admin-header></app-admin-header>
+</div>
+
+<div class="admin-main-body">
+  <!-- Sidebar -->
+  <div class="side-panel-container">
+    <app-admin-side-bar></app-admin-side-bar>
+  </div>
+
+  <!-- Wrapped content inside a Bootstrap Card with margin -->
+  <div class="tab-container mt-3 mx-3">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between w-100 mb-3 flex-wrap">
+          <!-- Search Input -->
+          <div class="d-flex align-items-center" style="">
+            <span class="input-group-text p-0" style="height: 31px">
+              <mat-icon style="font-size: 16px; margin-top: 7px">search</mat-icon>
+            </span>
+            <form autocomplete="off">
+              <input
+                type="text"
+                [(ngModel)]="searchQuery"
+                class="form-control form-control-sm"
+                (input)="getUsersList()"
+                placeholder="Search..."
+                style="
+                  height: 28px;
+                  font-size: 14px;
+                  padding: 2px 6px;
+                  width: 320px;
+                  max-width: 320px;
+                "
+                name="search-input-5"
+                autocomplete="off"
+              />
+            </form>
+            <select
+              class="form-control form-control-sm select-op-first"
+              style="width: 240px; max-width: 240px"
+              type="text"
+              id="department"
+              [(ngModel)]="departments_id"
+              (input)="getUsersList()"
+            >
+              <option value="">Filter by Department</option>
+              <option *ngFor="let department of departments_list" [value]="department.dep_id">
+                {{ department.dep_name }}
+              </option>
+            </select>
+          </div>
+          <!-- <div class="form-group"  style="max-width: 400px; flex-grow: 1;">
+              <select class="form-control form-control-sm" type="text" id="department" >
+                <option value="" disabled selected>Select department and filter</option>
+                <option *ngFor="let department of departments_list" [value]="department.dep_id">
+                  {{ department.dep_name }}
+                </option>
+              </select>
+            </div> -->
+          <div style="display: flex; gap: 11px">
+            <button
+              mat-icon-button
+              matSuffix
+              (click)="manageAssWards()"
+              class="admin-primary-bg-btn"
+            >
+              <mat-icon class="me-1">business</mat-icon> Manage Assessment Wards
+            </button>
+
+            <button
+              mat-icon-button
+              matSuffix
+              (click)="manageDepartments()"
+              class="admin-primary-bg-btn"
+            >
+              <mat-icon class="me-1">business</mat-icon> Manage Departments
+            </button>
+            <button
+              mat-icon-button
+              matSuffix
+              [routerLink]="['/admin-user-create']"
+              class="admin-primary-bg-btn"
+              *ngIf="canCreateUser() && getCreatePermission(251)"
+            >
+              <mat-icon class="me-1">add</mat-icon> Create
+              <ng-container *ngIf="userType === 'admin'"> User </ng-container>
+
+              <ng-container *ngIf="userType === 'super_admin'"> Admin </ng-container>
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="alert d-flex align-items-center mb-3"
+          role="alert"
+          style="font-size: 15px; gap: 8px"
+          *ngIf="canShowUserLimitInfo"
+          [ngClass]="hasReachedLimit ? 'alert-danger' : 'alert-info'"
+        >
+          <mat-icon style="font-size: 21px" [style.color]="hasReachedLimit ? '#a94442' : '#31708f'">
+            {{ hasReachedLimit ? 'error' : 'info' }}
+          </mat-icon>
+
+          <span *ngIf="!hasReachedLimit">
+            <b>{{ getUsersLimit() }}</b> Maximum user accounts allowed. You can create
+            <b>{{ remainingUsersAllowed }}</b> more account{{
+              remainingUsersAllowed === 1 ? '' : 's'
+            }}.
+          </span>
+
+          <span *ngIf="hasReachedLimit" style="font-weight: 600">
+            You have reached the maximum number of user accounts.
+          </span>
+        </div>
+
+        <!-- Table inside card -->
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th scope="col">Username</th>
+              <th scope="col">Email</th>
+              <th scope="col">Name</th>
+              <th scope="col">Department</th>
+              <th scope="col">Position</th>
+              <th scope="col" class="text-center">Type</th>
+              <th scope="col">Last Active</th>
+              <th scope="col" class="styled-checkbox">Active</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users_list">
+              <td>{{ user.username }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.first_name }} {{ user.last_name }}</td>
+              <td>{{ user.department }}</td>
+              <td>{{ user.post }}</td>
+              <td>
+                <div
+                  [ngClass]="
+                    user.user_type === 'admin' && user.is_active
+                      ? 'admin-pill'
+                      : user.user_type === 'user' && user.is_active
+                        ? 'user-pill'
+                        : !user.is_active
+                          ? 'disabled-pill'
+                          : ''
+                  "
+                >
+                  {{ user.user_type }}
+                </div>
+              </td>
+              <td>{{ user.last_active | date: 'dd/MM/yyyy h:mm:ss a' }}</td>
+              <td class="checkbox-cell">
+                <input
+                  type="checkbox"
+                  [checked]="user.is_active"
+                  (change)="toggleStatus(user)"
+                  class="styled-checkbox"
+                  [ngClass]="{
+                    'green-checkbox': user.is_active,
+                    'red-checkbox': !user.is_active,
+                  }"
+                />
+              </td>
+
+              <td style="text-align: center">
+                <a (click)="showUser(user)" class="link-text">More Info</a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

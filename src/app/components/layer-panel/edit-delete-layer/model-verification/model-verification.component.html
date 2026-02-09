@@ -1,0 +1,35 @@
+<h2 mat-dialog-title>Verify Identity</h2>
+<form action="" class="form-content">
+  <p>Please enter your password to verify your identity and confirm this action.</p>
+  <div class="row">
+    <div class="inputfield_1 position-relative">
+      <label for="password" class="form_txt">Password:</label>
+      <input
+        [type]="passwordVisible ? 'text' : 'password'"
+        [(ngModel)]="password"
+        name="password"
+        placeholder="password"
+        required
+        class="password"
+      />
+      <span
+        class="toggle-password"
+        (click)="togglePasswordVisibility()"
+        [title]="passwordVisible ? 'Hide password' : 'Show password'"
+      >
+        <mat-icon *ngIf="passwordVisible">visibility_off</mat-icon>
+        <mat-icon *ngIf="!passwordVisible">visibility</mat-icon>
+      </span>
+    </div>
+  </div>
+  <div *ngIf="passwordRequired" style="color: red; font-size: 12px">*** Password is required</div>
+</form>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()" mat-dialog-close style="color: var(--color-neutral-d2)">
+    Cancel
+  </button>
+  <button mat-button color="primary" (click)="onConfirm()" style="color: red" mat-dialog-close>
+    Confirm
+  </button>
+</mat-dialog-actions>

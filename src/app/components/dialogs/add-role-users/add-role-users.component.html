@@ -1,0 +1,102 @@
+<div class="material-header">
+  <div class="header-content">
+    <h2 class="header-title">Add Users To Role</h2>
+  </div>
+</div>
+
+<mat-dialog-content>
+  <mat-card class="custom-card">
+    <mat-card-content>
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between w-100 mb-3">
+            <!-- Search Input -->
+            <div class="input-group" style="max-width: 400px; flex-grow: 1">
+              <span class="input-group-text p-0" style="height: 31px">
+                <mat-icon style="font-size: 16px; margin-top: 7px">search</mat-icon>
+              </span>
+              <form autocomplete="off">
+                <input
+                  type="text"
+                  [(ngModel)]="searchQuery"
+                  class="form-control form-control-sm"
+                  (input)="addUserToRole()"
+                  placeholder="Search..."
+                  style="height: 28px; font-size: 14px; padding: 2px 6px"
+                  name="search-input-6"
+                  autocomplete="off"
+                />
+              </form>
+            </div>
+          </div>
+
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Username</th>
+                <th scope="col">Email</th>
+                <th scope="col">First Name</th>
+                <th scope="col" class="text-center">Type</th>
+                <th scope="col">Department</th>
+                <th scope="col" class="text-end">Select</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of role_user">
+                <td>{{ user.username }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.first_name }}</td>
+                <td>
+                  <div
+                    [ngClass]="
+                      user.user_type === 'admin'
+                        ? 'admin-pill'
+                        : user.user_type === 'user'
+                          ? 'user-pill'
+                          : ''
+                    "
+                  >
+                    {{ user.user_type }}
+                  </div>
+                </td>
+                <td>{{ user.department }}</td>
+                <td class="checkbox-cell text-end">
+                  <input
+                    type="checkbox"
+                    class="styled-checkbox"
+                    [checked]="isSelected(user)"
+                    (change)="onToggleUser(user, $any($event.target).checked)"
+                    [disabled]="user.user_type !== adminService.getSelectedRoleType()"
+                    [ngClass]="{
+                      'green-checkbox': isSelected(user),
+                      'red-checkbox': !isSelected(user),
+                    }"
+                  />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <div class="container">
+    <button
+      mat-icon-button
+      matSuffix
+      class="primary-custom-sm-btn-2"
+      (click)="SubmitAll()"
+      [disabled]="!selected_role_users || selected_role_users.size === 0 || loading"
+      title="Add selected users to this role"
+    >
+      <i class="fa fa-plus plus-btn"></i> Add
+    </button>
+    &nbsp;&nbsp;&nbsp;
+    <button mat-icon-button matSuffix (click)="closeDialog()" class="primary-custom-sm-btn-2">
+      <mat-icon>close</mat-icon> Close
+    </button>
+  </div>
+</mat-dialog-actions>

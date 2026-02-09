@@ -1,0 +1,111 @@
+.side-panel-content {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* *** TABS *** */
+.side-panel-tabs {
+  width: 30px;
+  margin-top: 2px;
+  overflow-y: auto;
+}
+
+.side-panel-tab {
+  /* background-color: var(--color-primary); */
+  background-color: #3c71a6;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  text-align: center;
+  width: 30px;
+  border-radius: 10px 0 0 10px;
+  border: 2px solid var(--color-secondary-l2);
+  transition: background-color 0.3s ease;
+  color: var(--color-secondary-l1);
+  /* padding: 24px 0px; */
+  height: 100px;
+}
+
+.side-panel-tab.max {
+  height: 120px;
+}
+
+.side-panel-tab:hover {
+  background-color: var(--color-primary-l1);
+  cursor: pointer;
+}
+
+.side-panel-tab.active {
+  background-color: var(--color-secondary-l1);
+  font-weight: bold;
+  color: var(--color-primary-d1);
+}
+
+/* *** CONTENT *** */
+.side-panel-tab-content {
+  width: calc(100% - 30px);
+  height: calc(100vh - 85px);
+  border: 2px solid var(--color-secondary-l2);
+  color: var(--color-secondary-d2);
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
+
+@media screen and (max-height: 850px) {
+  .side-panel-tab-content {
+    font-size: 14px;
+  }
+
+  .side-panel-tab {
+    font-size: 14px;
+    height: 96px;
+  }
+}
+
+@media screen and (max-height: 650px) {
+  .side-panel-tab-content {
+    font-size: 14px;
+  }
+
+  .side-panel-tab {
+    font-size: 14px;
+    height: 90px;
+  }
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.95;
+  /* Makes it look disabled */
+  cursor: not-allowed;
+}
+
+.side-panel-content {
+  transition: width 0.2s ease;
+  width: 240px;
+  position: relative;
+}
+
+.side-panel-content.collapsed {
+  width: 30px;
+  transition: width 0.2s ease;
+}
+
+.side-panel-content.extended {
+  width: 450px;
+  transition: width 0.15s ease;
+}
+
+.toggle-button {
+  background: white;
+  cursor: pointer;
+  border-radius: 7px 0 0 7px;
+  border: 2px solid var(--color-secondary-l2);
+  width: 30px;
+  height: 40px;
+  transform: rotate(180deg);
+  display: flex;
+  align-items: center;
+  margin-bottom: 2px;
+}

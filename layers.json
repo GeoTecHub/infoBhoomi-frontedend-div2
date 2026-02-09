@@ -1,0 +1,90 @@
+[
+   {
+      "layer_id":8,
+      "layer_name":"Forest"
+   },
+   {
+      "layer_id":62,
+      "layer_name":"Admin Layer 05"
+   },
+   {
+      "layer_id":5,
+      "layer_name":"Water Feature"
+   },
+   {
+      "layer_id":11,
+      "layer_name":"Wetland"
+   },
+   {
+      "layer_id":3,
+      "layer_name":"Building"
+   },
+   {
+      "layer_id":39,
+      "layer_name":"User 4 L1"
+   },
+   {
+      "layer_id":37,
+      "layer_name":"User Layer 3"
+   },
+   {
+      "layer_id":2,
+      "layer_name":"Road"
+   },
+   {
+      "layer_id":29,
+      "layer_name":"User Layer 1"
+   },
+   {
+      "layer_id":63,
+      "layer_name":"Org L3"
+   },
+   {
+      "layer_id":64,
+      "layer_name":"Org L5"
+   },
+   {
+      "layer_id":4,
+      "layer_name":"Drainage"
+   },
+   {
+      "layer_id":6,
+      "layer_name":"Parcel"
+   },
+   {
+      "layer_id":7,
+      "layer_name":"Legal Space"
+   },
+   {
+      "layer_id":9,      
+      "layer_name":"Railway"
+   },
+   {
+      "layer_id":10,
+      "layer_name":"Street Line"
+   },
+   {
+      "layer_id":13,
+      "layer_name":"- VerText - GNSS -"
+   },
+   {
+      "layer_id":25,
+      "layer_name":"My Layer 555"
+   },
+   {
+      "layer_id":33,
+      "layer_name":"User Layer 2"
+   },
+   {
+      "layer_id":1,
+      "layer_name":"Land"
+   },
+   {
+      "layer_id":38,
+      "layer_name":"Admin Layer 23"
+   },
+   {
+      "layer_id":66,
+      "layer_name":"My Land"
+   }
+]

@@ -1,0 +1,81 @@
+<!-- Verifying authentication and get user details -->
+<app-user-authenticator></app-user-authenticator>
+
+<div class="main-content">
+  <div class="header-container">
+    <app-header></app-header>
+  </div>
+
+  <div class="main-body">
+    <div
+      class="side-panel-container"
+      [class.collapsed]="isSidebarClosed"
+      [class.extended]="extendWidth"
+    >
+      <app-side-panel (emitExtend)="onExtendChanged($event)"></app-side-panel>
+    </div>
+
+    <!-- Map rendering target - MUST have position: relative -->
+    <div #mapContainer class="map-container">
+      <!-- Add to the map container -->
+
+      <!-- OpenLayers renders its canvas etc. directly inside here -->
+
+      <!-- === Tools Container (Top Right) === -->
+      <div class="map-tools-container">
+        <app-tools></app-tools>
+      </div>
+
+      <!-- === Bottom Controls Container (Bottom Right) === -->
+      <div class="map-bottom-controls">
+        <!-- Projection Selector -->
+        <select
+          class="projection-select"
+          title="Select Coordinate Display Projection"
+          [(ngModel)]="selectedDisplayProjection"
+          (change)="onDisplayProjectionChange()"
+        >
+          <option *ngFor="let proj of availableProjections" [value]="proj">
+            {{ proj }}
+          </option>
+        </select>
+        <!-- Mouse Position -->
+        <div #mousePositionElement class="mouse-position"></div>
+      </div>
+
+      <!-- === Loading Indicator (Center) === -->
+      <div class="map-loading-indicator" *ngIf="layerService.isLoading$ | async">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+    </div>
+
+    <small class="copyright-text w-100"> &copy; 2025 Infobhoomi. All Rights Reserved. </small>
+
+    <!-- context menu -->
+    <div
+      class="map-context-menu"
+      *ngIf="contextMenuVisible"
+      [ngStyle]="{
+        top: contextMenuPosition.y + 'px',
+        left: contextMenuPosition.x + 'px',
+      }"
+    >
+      <ul class="context-menu-list" (click)="$event.stopPropagation()">
+        <li *ngIf="selectedFeatureInfo?.layerId !== 3" (click)="onAddBuilding()">Add Building</li>
+        <li *ngIf="selectedFeatureInfo?.layerId !== 3" (click)="onConvertToBuilding()">
+          Convert to building
+        </li>
+        <li (click)="onAddLegalForms()">Add Legal Forms</li>
+        <li
+          *ngIf="user?.user_type === 'admin' || user?.user_type === 'super_admin'"
+          (click)="onClickInfo()"
+        >
+          Feature Info
+        </li>
+        <!-- <li (click)="onConvertToInfobhoomi()" [class.disabled]="!canConvertToInfobhoomi">
+          Convert to Infobhoomi
+        </li> -->
+      </ul>
+    </div>
+  </div>
+</div>

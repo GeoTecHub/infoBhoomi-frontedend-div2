@@ -1,0 +1,606 @@
+.mat-dialog-container {
+  border-radius: 15px !important;
+}
+
+.material-header {
+  background-color: #779ab8;
+  /* Material primary color */
+  color: white;
+  padding: 5px 15px;
+  border-radius: 5px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Align title left and button right */
+}
+
+.header-title {
+  margin: 0;
+  font-size: 20px;
+}
+
+/* ********************************** */
+.divider {
+  width: 100%;
+}
+
+label {
+  font-size: 12px;
+  font-weight: bold;
+  opacity: 0.7;
+  margin-top: -10px;
+}
+
+.sub-field {
+  padding-left: 10px;
+}
+
+/* ********************footer-section******************************** */
+
+.loading-toast {
+  position: absolute;
+  height: calc(100% - 90px);
+  width: 300px;
+}
+
+app-collapsible .collapsible-content {
+  pointer-events: none;
+}
+
+.label-and-value {
+  margin: 5px;
+  font-weight: bold;
+  color: var(--color-secondary-d2);
+  flex: 1;
+  font-size: 12px;
+  line-height: 14px;
+}
+
+.label-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.label-and-value {
+  flex: 1 1 100%;
+  /* Makes each row take full width */
+  display: flex;
+  justify-content: space-between;
+  padding: 8px;
+  border-bottom: 1px solid #ddd;
+}
+
+.rotated {
+  transform: rotate(180deg);
+}
+
+.toggle-button:hover {
+  background: var(--color-primary-dark, #0056b3);
+}
+
+.keyValueList {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.keyValueWrapper {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  padding: 5px 11px;
+  border-radius: 5px;
+}
+
+.keyValueWrapper__keyValue {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.keyValueWrapper__keyValue select {
+  width: 100%;
+}
+
+.keyValue__key {
+  font-weight: bold;
+  color: var(--color-secondary-d2, #555);
+  flex: 1;
+  font-size: 12px;
+  line-height: 14px;
+}
+
+.keyValue__value {
+  color: var(--color-secondary-d1, #333);
+  margin-left: 15px;
+  flex: 2;
+  font-size: 12px;
+  line-height: 14px;
+}
+
+select {
+  border-color: var(--color-secondary-l2, #ccc);
+  border-radius: 5px;
+  border: 1px solid var(--color-secondary-l2, #ccc);
+  background-color: var(--color-white, #fff);
+  transition: border-color 0.2s ease-in-out;
+  padding: 5px;
+  min-width: 100px;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--color-primary, #007bff);
+}
+
+select::placeholder {
+  color: var(--color-secondary-l2, #ccc);
+  opacity: 0.7;
+}
+
+.keyValue__value {
+  border: 1px solid var(--color-secondary-l2);
+  border-radius: 5px;
+  padding: 5px;
+  min-width: 100px;
+  width: 100%;
+}
+
+.keyValue__value:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.keyValueWrapper {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  padding: 5px 11px;
+}
+
+body {
+  font-family: 'Calibri', sans-serif;
+}
+
+.card-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  /* Ensures spacing between cards */
+  gap: 15px;
+  /* Adds spacing between cards */
+}
+
+.custom-card {
+  margin: 1%;
+  width: 98%;
+  flex: 1;
+  max-width: 100%;
+  margin-bottom: 10px;
+}
+
+.card-main-title {
+  font-weight: 600;
+  font-size: 15px;
+  padding: 3px 5px 15px 5px;
+}
+
+.card-main-title-sp {
+  padding: 15px 5px 15px 5px;
+}
+
+.card-sub-title {
+  font-size: 12px;
+  padding: 10px;
+  text-align: center;
+}
+
+.rrr-button {
+  background-color: #779ab8;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+  border-radius: 5px;
+  width: 100%;
+  display: block;
+  margin-left: auto;
+  /* Pushes button to the right */
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* 2 equal columns */
+  gap: 16px;
+  /* Space between columns */
+}
+
+mat-form-field {
+  width: 100%;
+  /* Ensure the form field takes up full width of its grid cell */
+}
+
+.label {
+  margin-right: 8px;
+  /* Space between the label and the value */
+}
+
+.row-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Pushes delete button to the right */
+  gap: 10px;
+}
+
+.spacer {
+  flex-grow: 1;
+  /* Pushes the delete button to the row end */
+}
+
+button.mat-dialog-close {
+  background-color: transparent;
+  /* Transparent background */
+  color: #dc3545;
+  /* Red color for close */
+}
+
+.plus-btn {
+  background-color: cadetblue;
+  color: white;
+  border-radius: 3px;
+  padding: 3px;
+  cursor: pointer;
+}
+
+.container {
+  display: flex;
+  justify-content: flex-end;
+  /* Align button to the right */
+}
+
+.footer-btn {
+  border-radius: 20px;
+  border: none;
+  width: 100px;
+  background-color: #779ab8;
+  color: white;
+  display: flex;
+  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+  /* border-radius: 4px; */
+  padding: 5px;
+}
+
+.footer-btn mat-icon {
+  margin-right: 5px;
+  /* Space between the icon and the text */
+}
+
+.footer-btn:hover {
+  background-color: #779ab8;
+}
+
+.card-btn {
+  border-radius: 20px;
+  border: none;
+  width: 100px;
+  background-color: #779ab8;
+  color: white;
+  display: flex;
+  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+}
+
+.card-btn mat-icon {
+  margin-right: 5px;
+  /* Space between the icon and the text */
+}
+
+.card-btn:hover {
+  background-color: #779ab8;
+}
+
+.action-icons {
+  background-color: #779ab8;
+  /* Orange background */
+  color: white;
+  /* White icon */
+  border-radius: 15%;
+  /* Circular button */
+  transition: background 0.3s ease-in-out;
+  border: #779ab8;
+}
+
+.action-icons:hover {
+  background-color: #7aa5ca;
+  /* Darker shade on hover */
+}
+
+.action-icons .mat-icon {
+  -webkit-user-select: none;
+  user-select: none;
+  background-repeat: no-repeat;
+  display: inline-block;
+  fill: currentColor;
+  height: 17px;
+  width: 19px;
+  font-size: 17px;
+  overflow: hidden;
+  padding: 1px;
+}
+
+/* Select only a specific tab with the unique class */
+.mat-tab.has-data .mat-tab-label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #4caf50;
+  /* Green dot */
+}
+
+.mat-tab.no-data .mat-tab-label::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #f44336;
+  /* Red dot */
+}
+
+.keyValue_check {
+  margin-left: 0px;
+}
+
+.header-content-rrr .header-content-rrr-sub {
+  margin: -1px;
+  text-align: center;
+}
+
+.header-content-rrr .header-content-id {
+  font-size: 13px;
+  margin: 0px;
+  text-align: end;
+  position: absolute;
+  bottom: 11px;
+  right: 11px;
+}
+
+.custom-style-card {
+  background-color: white;
+}
+
+.primary-sm-btn-select-custom {
+  background-color: #779ab8;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 5px;
+  width: 92%;
+  display: block;
+  margin-left: auto;
+}
+
+.keyValue_value_checkbox {
+  border: 1px solid var(--color-secondary-l2);
+  border-radius: 5px;
+  padding: 5px;
+  min-width: 100px;
+  width: 100%;
+}
+
+.keyValue__value_top {
+  width: 65%;
+  /* Make it take full width */
+  text-align: center;
+  /* Center the text inside the dropdown */
+  text-align-last: center;
+  /* Ensures the selected option is centered */
+  display: block;
+  padding: 5px;
+}
+
+.keyValueWrapper__keyValue_top {
+  display: flex;
+  justify-content: center;
+  /* Centers horizontally */
+  align-items: center;
+  /* Centers vertically */
+}
+
+.keyValue__value_top {
+  width: 65%;
+}
+
+.life-time-check {
+  border: 1px solid var(--color-secondary-l2);
+  border-radius: 5px;
+  padding: 0px;
+  min-width: 14px;
+  margin-left: 0px;
+}
+
+.life-time-label {
+  margin-left: 5px;
+  font-weight: bold;
+  color: var(--color-secondary-d2, #555);
+  flex: 1;
+  font-size: 12px;
+  line-height: 14px;
+}
+
+.preview-btn {
+  height: 32px;
+  width: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-top: 0px;
+}
+
+.preview-btn .mat-icon {
+  font-size: 20px;
+  height: 20px;
+  width: 20px;
+}
+
+.current-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22f26f;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* DELETE MODAL */
+#confirmDeleteModal .modal-header {
+  background-color: #fff;
+  border-bottom: 1px solid #bbd2db;
+}
+
+#confirmDeleteModal .modal-title {
+  color: #721c24;
+  /* Dark red text */
+  font-size: 1rem;
+  /* Adjust font size */
+  font-weight: bold;
+}
+
+/* Close Button */
+#confirmDeleteModal .btn-close {
+  background-color: #df1627;
+  border: none;
+}
+
+/* Modal Body */
+#confirmDeleteModal .modal-body {
+  background-color: #fff;
+  /* Dark yellow text */
+}
+
+#confirmDeleteModal .modal-body p {
+  font-size: 0.9rem;
+  /* Slightly smaller font */
+  margin: 0;
+}
+
+/* Modal Footer */
+#confirmDeleteModal .modal-footer {
+  background-color: #fff;
+  /* Light red footer */
+}
+
+/* Button Styles */
+#confirmDeleteModal .btn-sm {
+  font-size: 0.85rem;
+  /* Smaller font size */
+  padding: 0.5rem 1rem;
+}
+
+#confirmDeleteModal .btn-danger {
+  background-color: #dc3545;
+  /* Red color for the danger button */
+  border: none;
+}
+
+#confirmDeleteModal .btn-secondary {
+  background-color: #6c757d;
+  /* Gray background for the 'No' button */
+  border: none;
+}
+
+/* Button Hover Effects */
+#confirmDeleteModal .btn-danger:hover {
+  background-color: #c82333;
+  /* Darker red on hover */
+}
+
+#confirmDeleteModal .btn-secondary:hover {
+  background-color: #5a6268;
+  /* Darker gray on hover */
+}
+
+/* Icon Size */
+#confirmDeleteModal .fa-trash {
+  margin-right: 5px;
+  font-size: 1rem;
+}
+
+.modal-sm {
+  max-width: 360px !important;
+}
+
+/* Make Bootstrap modal appear above Angular Material dialog */
+.modal-backdrop.show {
+  z-index: 2000 !important;
+}
+
+.modal {
+  z-index: 2050 !important;
+}
+
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: calc(24px);
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  bottom: 0;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.toggle-password:hover {
+  color: #000;
+}
+
+.action-tb-btn {
+  background-color: #779ab8;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 20px;
+  width: 100%;
+  display: block;
+  margin-top: 0px;
+  margin-left: auto;
+}
+
+.action-tb-btn-link {
+  border: none;
+  background-color: transparent;
+  margin-top: 0;
+}
+
+.rrr-table {
+  margin-bottom: 7px;
+}

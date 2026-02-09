@@ -1,0 +1,53 @@
+<!-- If it's a link, render an anchor tag -->
+<!-- Styling for disabled links is applied via [class.disabled-link] -->
+<!-- Click handler prevents navigation if the link is marked as deactivated -->
+
+<a
+  *ngIf="link"
+  [href]="link"
+  [target]="target"
+  [attr.rel]="target === '_blank' ? 'noopener noreferrer' : null"
+  class="custom-button"
+  [ngClass]="{
+    'button-primary': buttonStyle === 'primary',
+    'button-secondary': buttonStyle === 'secondary',
+    'button-long': buttonStyle === 'long',
+    'button-small': isSmall,
+    deactivated: isDeactivated,
+  }"
+  [class.disabled-link]="isDeactivated"
+  (click)="isDeactivated ? $event.preventDefault() : null"
+>
+  <mat-icon *ngIf="buttonIcon">{{ buttonIcon }}</mat-icon>
+  <span>{{ buttonText }}</span>
+</a>
+
+<button
+  matRipple
+  [ngClass]="['button', buttonStyle, isDeactivated ? 'deactivated' : '', isSmall ? 'small' : '']"
+  [type]="buttonType"
+  [disabled]="disabled"
+  (click)="onClick()"
+>
+  <mat-icon *ngIf="buttonIcon" class="button-icon">{{ buttonIcon }}</mat-icon>
+  {{ buttonText }}
+</button>
+
+<!-- If it's a link, render an anchor tag -->
+
+<!-- Otherwise, render a button -->
+<!-- <button *ngIf="!link"
+        type="button"
+        class="custom-button"
+        [ngClass]="{
+          'button-primary': buttonStyle === 'primary',
+          'button-secondary': buttonStyle === 'secondary',
+          'button-long': buttonStyle === 'long',
+          'button-small': isSmall,
+          'deactivated': isDeactivated
+        }"
+        [disabled]="isDeactivated"
+        (click)="onClick()">
+  <mat-icon *ngIf="buttonIcon">{{ buttonIcon }}</mat-icon>
+  <span>{{ buttonText }}</span>
+</button> -->

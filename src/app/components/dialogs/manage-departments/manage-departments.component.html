@@ -1,0 +1,156 @@
+<div class="material-header">
+  <div class="header-content">
+    <h2 class="header-title">Manage Department</h2>
+    <!-- <button class="close-btn">
+        <mat-icon>close</mat-icon> 
+      </button> -->
+  </div>
+</div>
+
+<mat-dialog-content>
+  <mat-card class="custom-card">
+    <mat-card-content>
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between w-100 mb-3">
+            <!-- Search Input -->
+            <div class="input-group" style="max-width: 280px; flex-grow: 1">
+              <span class="input-group-text p-0" style="height: 31px">
+                <mat-icon style="font-size: 16px; margin-top: 7px">search</mat-icon>
+              </span>
+              <form autocomplete="off">
+                <input
+                  type="text"
+                  [(ngModel)]="searchQuery"
+                  class="form-control form-control-sm"
+                  (input)="getDepartmentList()"
+                  placeholder="Search..."
+                  style="height: 28px; font-size: 14px; padding: 2px 6px"
+                  name="search-input-8"
+                  autocomplete="off"
+                />
+              </form>
+            </div>
+          </div>
+          <div class="table-responsive-scroll">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th [width]="80">Name</th>
+                  <th [width]="20" class="text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let department of departments_list">
+                  <td *ngIf="department.edit">
+                    <input
+                      type="text"
+                      [(ngModel)]="department.dep_name"
+                      class="form-control form-control-sm small-input"
+                      placeholder="Enter text"
+                    />
+                  </td>
+                  <td *ngIf="!department.edit">{{ department.dep_name }}</td>
+
+                  <td class="text-center">
+                    <mat-icon
+                      class="text-gray material-icons-edit"
+                      *ngIf="!department.edit"
+                      (click)="editDepartment(department)"
+                      >edit</mat-icon
+                    >
+                    &nbsp;
+                    <mat-icon
+                      class="text-gray material-icons-edit"
+                      *ngIf="department.edit"
+                      (click)="updateDepartment(department)"
+                      >save</mat-icon
+                    >
+                    &nbsp;
+                    <mat-icon
+                      class="text-danger material-icons-custom"
+                      (click)="openDeleteModal(department)"
+                      >delete</mat-icon
+                    >
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="keyValueList" style="margin-top: 10px">
+        <div class="keyValueWrapper">
+          <div class="keyValueWrapper__keyValue">
+            <div class="keyValue__key">Department Name</div>
+            <form autocomplete="off">
+              <input
+                type="text"
+                class="keyValue__value"
+                [(ngModel)]="department_name"
+                autocomplete="off"
+              />
+            </form>
+            <button mat-icon-button matSuffix class="primary-custom-sm-btn-2" (click)="SubmitAll()">
+              <i class="fa fa-plus plus-btn"></i> Add
+            </button>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <!-- *ngIf="civilian_data__array.length != 0" -->
+  <div class="container">
+    <button mat-icon-button matSuffix (click)="closeDialog()" class="primary-custom-sm-btn-2">
+      <mat-icon>close</mat-icon> Close
+    </button>
+  </div>
+</mat-dialog-actions>
+<!-- Move the modal outside mat-dialog -->
+<div
+  class="modal fade"
+  id="confirmDeleteModal"
+  tabindex="-1"
+  aria-labelledby="confirmDeleteLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h6 class="modal-title" id="confirmDeleteLabel">Confirm Delete</h6>
+      </div>
+      <div class="modal-body p-2">
+        <div class="form-group mb-2 position-relative">
+          <label> Please confirm your admin password</label>
+          <input
+            [type]="passwordVisible ? 'text' : 'password'"
+            class="form-control form-control-sm"
+            [(ngModel)]="admin_password"
+            required
+          />
+          <span
+            class="toggle-password"
+            (click)="togglePasswordVisibility()"
+            [title]="passwordVisible ? 'Hide password' : 'Show password'"
+          >
+            <mat-icon *ngIf="passwordVisible">visibility_off</mat-icon>
+            <mat-icon *ngIf="!passwordVisible">visibility</mat-icon>
+          </span>
+        </div>
+      </div>
+      <div class="modal-footer py-2 d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">No</button>
+        <button
+          type="button"
+          class="btn btn-danger btn-sm"
+          (click)="confirmDelete()"
+          *ngIf="admin_password"
+        >
+          <i class="fa fa-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

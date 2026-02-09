@@ -1,0 +1,20 @@
+<div class="image-container">
+  <!-- Loader -->
+  <div *ngIf="loading" class="loading-spinner">Loading...</div>
+
+  <!-- Image Display -->
+  <img
+    *ngIf="!loading"
+    [src]="imageUrl || 'assets/img/placeholders/' + placeholder"
+    alt="Parcel Image"
+    class="parcel-image"
+  />
+
+  <!-- Upload Button -->
+  <button mat-icon-button class="upload-button" (click)="fileInput.click()">
+    <mat-icon>photo_camera</mat-icon>
+  </button>
+
+  <!-- Hidden File Input -->
+  <input type="file" accept="image/*" #fileInput (change)="onFileSelected($event)" hidden />
+</div>

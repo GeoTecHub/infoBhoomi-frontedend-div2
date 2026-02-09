@@ -1,0 +1,257 @@
+<div class="material-header">
+  <div class="header-content">
+    <h2 class="header-title">Group</h2>
+  </div>
+</div>
+
+<mat-dialog-content>
+  <mat-card class="custom-card">
+    <mat-card-content>
+      <div class="keyValueList">
+        <ng-select
+          [(ngModel)]="selectedGroup"
+          [items]="group_names_array"
+          bindLabel="party_full_name"
+          bindValue="id"
+          placeholder="Select Group Name"
+          (change)="onGroupChange($event)"
+          [searchable]="true"
+        >
+        </ng-select>
+        <p *ngIf="selectedGroup" style="margin-bottom: -15px">
+          {{ selectedGroup.party_full_name }}
+        </p>
+
+        <div class="container">
+          <button mat-icon-button matSuffix (click)="getGroupData()" class="search-btn">
+            <mat-icon>search</mat-icon> Search
+          </button>
+        </div>
+        <hr class="hr-divider" />
+        <div *ngIf="party_already_existing && this.edit_or_create_form == false">
+          <mat-card-title class="card-main-title"> Existing Party Information </mat-card-title>
+          <br />
+          <div class="label-value-list">
+            <div class="label-value-item">
+              <span class="label">Registration Number:</span>
+              <span class="value">{{ party_identification.ext_pid }}</span>
+            </div>
+            <div class="label-value-item">
+              <span class="label">Group Name:</span>
+              <span class="value">{{ selectedGroup.party_full_name }}</span>
+            </div>
+            <div class="label-value-item">
+              <span class="label">Party Telephone:</span>
+              <span class="value">{{ party_identification.tp }}</span>
+            </div>
+            <div class="label-value-item">
+              <span class="label">Party Address:</span>
+              <span class="value">{{ party_identification.pmt_address }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="container" *ngIf="party_already_existing == true && !edit_or_create_form">
+          <button mat-icon-button matSuffix (click)="showPartyAllInputs()" class="search-btn">
+            <mat-icon>edit</mat-icon> Update
+          </button>
+        </div>
+
+        <!-- CREATE OR EDIT FORM -->
+        <div class="show_all_inputs" *ngIf="edit_or_create_form || data_not_found == true">
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Group Type<span class="text-danger">*</span></div>
+              <select
+                class="keyValue__value"
+                [(ngModel)]="party_identification.sl_group_party_type"
+                (change)="onGroupChange($event)"
+              >
+                <option value="" disabled selected>Select Group Name</option>
+                <option *ngFor="let option of group_types_array" [value]="option.id">
+                  {{ option.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">
+                Registration Number <span class="text-danger">*</span>
+              </div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [(ngModel)]="party_identification.ext_pid"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Group Name</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                readonly
+                [(ngModel)]="selectedGroup.party_full_name"
+              />
+            </div>
+          </div>
+
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Specific Telephone <span class="text-danger">*</span></div>
+              <input
+                class="keyValue__value"
+                type="tel"
+                maxlength="10"
+                pattern="0\d{9}"
+                (keypress)="allowOnlyNumbers($event)"
+                (input)="limitInputLength($event)"
+                (change)="validationsCheck($event, 'mobile_number')"
+                [(ngModel)]="party_identification.specific_tp"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Other Telephone</div>
+              <input
+                class="keyValue__value"
+                type="tel"
+                maxlength="10"
+                pattern="0\d{9}"
+                (keypress)="allowOnlyNumbers($event)"
+                (input)="limitInputLength($event)"
+                (change)="validationsCheck($event, 'mobile_number')"
+                [(ngModel)]="party_identification.tp"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Holding Address <span class="text-danger">*</span></div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [(ngModel)]="party_identification.pmt_address"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Group Registration Date</div>
+              <input
+                type="date"
+                class="keyValue__value"
+                [(ngModel)]="party_identification.date_of_birth"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Email</div>
+              <input type="text" class="keyValue__value" [(ngModel)]="party_identification.email" />
+            </div>
+          </div>
+
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Remarks</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [(ngModel)]="party_identification.remark"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="container" *ngIf="edit_or_create_form || data_not_found == true">
+        <button mat-icon-button matSuffix (click)="SubmitAll()" class="search-btn">
+          <mat-icon>save</mat-icon> Save
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="custom-card" *ngIf="party_already_existing == true || data_not_found == true">
+    <mat-card-content>
+      <div class="col-md-12">
+        <mat-card-title class="card-sub-title">
+          Infobhoomi ID : {{ data.feature_id }}
+        </mat-card-title>
+        <div class="keyValueWrapper">
+          <div class="keyValueWrapper__keyValue align-items-center">
+            <div class="keyValue__key">Party Type</div>
+            <select
+              class="keyValue__value"
+              [(ngModel)]="group_card.party_sub_type"
+              (ngModelChange)="onPartySubTypeChange($event)"
+            >
+              <option value="" disabled selected>Select Party Sub Type</option>
+              <option value="br">Business Registration</option>
+              <option value="nic">National Identity Card</option>
+              <option value="ps">Passport</option>
+              <option value="dl">Driving License</option>
+            </select>
+          </div>
+        </div>
+        <!-- Share Percentage Input -->
+        <div class="keyValueWrapper">
+          <div class="keyValueWrapper__keyValue align-items-center">
+            <div class="keyValue__key">Registration Number</div>
+            <input
+              type="text"
+              class="keyValue__value"
+              [(ngModel)]="group_card.registration_number"
+            />
+          </div>
+        </div>
+        <div class="container" *ngIf="group_card">
+          <button mat-icon-button matSuffix (click)="addNewParty()" class="sm-add-btn">
+            <mat-icon>visibility</mat-icon>Show
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+  <mat-card class="main-card" *ngIf="party_already_existing == true || data_not_found == true">
+    <mat-card-title class="card-sub-title">Added Parties</mat-card-title>
+    <mat-card-content>
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>REG Number</th>
+              <th>Full Name</th>
+              <th class="text-end">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let card of party_cards; let i = index">
+              <td>{{ card.registration_number }}</td>
+              <td>{{ card.party_name }}</td>
+              <td class="text-end">
+                <button mat-icon-button class="delete-button" (click)="removeCard(i)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <!-- *ngIf="civilian_data__array.length != 0" -->
+  <div class="container">
+    &nbsp;
+    <button mat-icon-button matSuffix (click)="closeDialog()" class="search-btn">
+      <mat-icon>close</mat-icon> Close</button
+    >&nbsp;&nbsp;&nbsp;
+    <button mat-icon-button matSuffix (click)="SubmitAll()" class="search-btn">
+      <mat-icon>save</mat-icon> Submit
+    </button>
+  </div>
+</mat-dialog-actions>

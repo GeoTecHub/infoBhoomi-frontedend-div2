@@ -1,0 +1,67 @@
+.main-body {
+  display: flex;
+  flex-direction: row;
+}
+
+.side-panel-container {
+  background: #fff;
+}
+
+.tab-container {
+  flex-grow: 1;
+  padding: 10px;
+}
+
+.create-btn {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 0px;
+}
+
+.background-primary {
+  background-color: #779ab8;
+}
+
+.main-title {
+  font-size: 17px;
+}
+
+.incorrect-pw {
+  margin-bottom: 0px;
+  font-size: 13px;
+}
+
+.default-pw-text {
+  font-weight: 300;
+  color: #779ab8;
+  font-size: 11px;
+}
+.primary-custom-sm-pw-btn {
+  border-radius: 20px;
+  border: none;
+  width: auto;
+  background-color: #779ab8;
+  color: white;
+  display: flex;
+  margin-top: 3px;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 8px 5px 15px;
+  font-size: 13px;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: calc(24px);
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  bottom: 0;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+.toggle-password:hover {
+  color: #000;
+}

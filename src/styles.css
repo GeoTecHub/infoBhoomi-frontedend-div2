@@ -1,0 +1,479 @@
+@import '@ng-select/ng-select/themes/default.theme.css';
+
+:root {
+  /* Primary Colors */
+  --color-primary-l1: #9dc2e3;
+  --color-primary-l2: #c8dcee;
+  /* --color-primary-l3: #5dade2; */
+  --color-primary: #779ab8;
+  /* Main Primary Color */
+  --color-primary-d1: #31485c;
+  /* --color-primary-d2: #206394; */
+  /* --color-primary-d3: #154877; */
+
+  /* Secondary Colors */
+  --color-secondary-l1: #ffffff;
+  --color-secondary-l2: #e7e7e7;
+  --color-secondary-l3: #cfcfcf;
+  --color-secondary: #a4a6b1;
+  /* Main Secondary Color */
+  --color-secondary-d1: #5e5e5e;
+  --color-secondary-d2: #363636;
+  --color-secondary-d3: #000000;
+
+  /* Accent Colors */
+  --color-accent-light: #fad7a0;
+  --color-accent: #f39c12;
+  --color-accent-dark: #e67e22;
+
+  /* Neutral Colors (Greys) */
+  --color-neutral-l1: #f4f4f4;
+  --color-neutral-l2: #e0e0e0;
+  --color-neutral-l3: #bdc3c7;
+  --color-neutral: #95a5a6;
+  --color-neutral-d1: #7f8c8d;
+  --color-neutral-d2: #5a6b6b;
+  --color-neutral-d3: #2c3e50;
+
+  /* Status Colors */
+  --color-success: #28a745;
+  --color-warning: #ffc107;
+  --color-error: #dc3545;
+  --color-info: #17a2b8;
+
+  /* Background Colors */
+  --color-background-l1: #ffffff;
+  --color-background-d1: #2c3e50;
+
+  /* Text Colors */
+  --color-text-primary: #2c3e50;
+  --color-text-secondary: #7f8c8d;
+  --color-text-inverse: #ffffff;
+
+  /* Border Colors */
+  --color-border-l1: #dcdcdc;
+  --color-border-d1: #7f8c8d;
+
+  /* Blue Variations */
+  --color-blue-1: #1e4e7d;
+  --color-blue-2: #0065b8;
+  --color-blue-3: #26619c;
+  --color-blue-d1-4: #3c71a6;
+}
+
+.ex {
+  color: var(--color-accent);
+}
+
+html,
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
+
+html,
+body {
+  height: 90%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, 'Helvetica Neue', sans-serif;
+}
+
+::ng-deep .cdk-overlay-pane.mat-mdc-dialog-panel {
+  width: 600px !important;
+  max-width: 80vw !important;
+  min-width: 300px !important;
+  border-radius: 12px !important;
+}
+
+.text-danger {
+  color: red;
+}
+
+.text-success {
+  color: #28a745;
+}
+
+.hr-divider {
+  border: none;
+  /* Removes default border */
+  height: 1px;
+  /* Height f the divider */
+  background-color: #1a1b1f;
+  /* Light grey color */
+  margin: 10px 0;
+  /* Add spacing above and below the divider */
+}
+
+.primary-bg-btn {
+  border-radius: 20px;
+  border: none;
+  width: 100px;
+  background-color: #779ab8;
+  color: white;
+  display: flex;
+  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  font-size: 13px;
+}
+
+.primary-bg-btn mat-icon {
+  margin-right: 0px;
+  font-size: 22px;
+}
+
+.primary-sm-btn {
+  border-radius: 20px;
+  border: none;
+  width: 100px;
+  background-color: #779ab8;
+  color: white;
+  display: flex;
+  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  font-size: 11px;
+}
+
+.primary-sm-btn mat-icon {
+  margin-right: 0px;
+  font-size: 25px;
+}
+
+.primary-sm-btn-2 {
+  background-color: #779ab8;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  /* margin-top: 10px; */
+  border-radius: 5px;
+  width: 100%;
+  display: block;
+  margin-left: auto;
+}
+
+.primary-bg-lg-btn {
+  border-radius: 20px;
+  border: none;
+  width: 125px;
+  background-color: #779ab8;
+  color: white;
+  display: flex;
+  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  font-size: 13px;
+}
+
+.primary-bg-lg-btn mat-icon {
+  margin-right: 0px;
+  font-size: 22px;
+}
+
+.is-invalid {
+  border: 1px solid red;
+}
+
+.admin-primary-bg-btn {
+  border-radius: 20px;
+  border: none;
+  width: auto;
+  background-color: #779ab8;
+  color: white;
+  display: flex;
+  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 10px 2px 5px;
+  font-size: 13px;
+}
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Hide the number input arrows in Firefox */
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+.link-text {
+  margin-top: 10px;
+  color: #2e2ee3;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.primary-custom-sm-btn {
+  border-radius: 20px;
+  border: none;
+  width: auto;
+  background-color: #779ab8;
+  color: white;
+  display: flex;
+  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 25px 5px 15px;
+  font-size: 13px;
+}
+
+/* BOOSTRAP MODAL CSS */
+/* Custom styling for the modal title */
+.modal-title {
+  font-size: 19px;
+  font-weight: bold;
+  color: #779ab8;
+  /* Blue color for the title */
+}
+
+/* Custom styling for the close button with a red box */
+.close {
+  font-size: 1.5rem;
+  color: #fff;
+  /* White text color */
+  background-color: #dc3545;
+  /* Red background color */
+  border: 2px solid #dc3545;
+  /* Red border */
+  padding: 2px 7px;
+  border-radius: 25%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+/* Hover effect for the close button */
+.close:hover {
+  background-color: #fff;
+  /* White background when hovered */
+  color: #dc3545;
+  /* Red color for the icon on hover */
+  border-color: #dc3545;
+  /* Keep the red border on hover */
+}
+
+/* Optional: Styling for the close button's span to make it larger */
+.close span {
+  font-size: 1.5rem;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+}
+
+.custom-back-button {
+  background-color: white !important;
+  border: 2px solid white;
+  border-radius: 30%;
+  width: 41px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-back-button mat-icon {
+  color: #779ab8;
+  /* Blue arrow */
+  font-size: 20px;
+  /* Adjust icon size */
+}
+
+.table-striped > tbody > tr:nth-of-type(odd) {
+  color: rgb(67, 67, 67) !important;
+  --bs-table-accent-bg: #ffffff !important;
+}
+
+.primary-custom-sm-btn-2 {
+  border-radius: 20px;
+  border: none;
+  width: 100px;
+  background-color: #779ab8;
+  color: white;
+  display: flex;
+  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 20px 2px 15px;
+  font-size: 13px;
+}
+
+th,
+td {
+  font-size: 12px !important;
+  padding: 0.3rem 0.5rem !important;
+  vertical-align: middle !important;
+}
+
+th {
+  font-weight: bold;
+  padding: 0.3rem 0.5rem !important;
+  vertical-align: middle !important;
+}
+
+td {
+  font-size: 12px !important;
+  padding: 0.3rem 0.5rem !important;
+}
+
+.admin-pages-title {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.admin-main-body {
+  display: flex;
+  flex-direction: row;
+  margin: 0px 0px 0px 0px;
+  max-height: calc(100vh - 85px);
+  overflow-y: hidden;
+}
+
+.tab-container {
+  overflow: auto;
+  max-height: calc(100vh - 85px);
+}
+
+.btn {
+  cursor: pointer;
+}
+
+.fa {
+  cursor: pointer;
+}
+
+.mat-icon {
+  cursor: pointer;
+}
+
+.dropdown-dialog-panel {
+  position: absolute !important;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: white;
+  z-index: 9999;
+  width: 420px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* When dialog-move-bottom-left is active, move the modal to the top left */
+.cdk-overlay-pane.dialog-move-bottom-left {
+  position: fixed !important;
+  bottom: 24px !important;
+  /* or 0px for flush to edge */
+  left: 4px !important;
+  margin: 0 !important;
+  transform: none !important;
+  width: 420px !important;
+  /* Or whatever looks good for your UI */
+  max-width: 90vw !important;
+  z-index: 1050;
+  /* Make sure it's above map controls */
+  /* Optional: add box-shadow or styling for a "mini" look */
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* transition: top 0.3s cubic-bezier(.4, 0, .2, 1), left 0.3s cubic-bezier(.4, 0, .2, 1), width 0.2s; */
+}
+
+/* Add to styles.css or the component's global style file */
+.cdk-overlay-backdrop.hide-backdrop {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  background: transparent !important;
+  transition: opacity 0.3s;
+}
+
+.local-dev-logo {
+  width: 100px;
+}
+
+.ol-zoom {
+  bottom: 278px !important;
+  right: 18px !important;
+  top: auto !important;
+  left: auto !important;
+}
+
+.ol-zoomslider {
+  bottom: 64px !important;
+  right: 18px !important;
+  top: auto !important;
+  left: auto !important;
+  background: #66666691 !important;
+}
+
+@media (max-height: 750px) {
+  .ol-zoomslider {
+    height: 140px !important;
+  }
+
+  .ol-zoom {
+    bottom: 218px !important;
+  }
+}
+
+.border-b-black {
+  border-bottom: 1px solid #000;
+  padding-bottom: 0.3rem;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* For Chrome, Edge, Safari, Opera */
+.side-panel-tab-content::-webkit-scrollbar {
+  width: 6px;
+  /* vertical scrollbar */
+  height: 6px;
+  /* horizontal scrollbar */
+}
+
+.side-panel-tab-content::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 6px;
+}
+
+.side-panel-tab-content::-webkit-scrollbar-track {
+  background: #fff;
+}
+
+.side-panel-tabs::-webkit-scrollbar {
+  width: 2px;
+  /* vertical scrollbar */
+  height: 2px;
+  /* horizontal scrollbar */
+}
+
+.side-panel-tabs::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 6px;
+}
+
+.side-panel-tabs::-webkit-scrollbar-track {
+  background: #fff;
+}
+
+.inner-align .mat-mdc-menu-item-text {
+  display: flex;
+  align-items: center;
+}
+
+.dropdown-dialog-panel .mat-mdc-dialog-surface {
+  border-radius: 0 !important;
+}

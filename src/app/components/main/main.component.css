@@ -1,0 +1,282 @@
+/* main.component.css */
+@import 'ol/ol.css';
+
+/* =================================================
+   1. Layout for Component Host and Main Structure
+   ================================================= */
+
+/* Style the host element (<app-main>) */
+:host {
+  display: block;
+  /* Important for custom elements */
+  height: 100vh;
+  /* Make the component fill the available vertical space */
+  display: flex;
+  /* Use flexbox to manage children */
+  flex-direction: column;
+  /* Stack children vertically (header, body) */
+  overflow: hidden;
+  /* Prevent the host itself from scrolling */
+}
+
+/* Overall content wrapper inside the component */
+.main-content {
+  display: flex;
+  flex-direction: column;
+  /* Stack header and body vertically */
+  flex-grow: 1;
+  /* Allow this to fill the available height of :host */
+  overflow: hidden;
+  /* Prevent this div from showing scrollbars */
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Fixed height header container */
+.header-container {
+  height: 60px;
+  /* Adjust as needed */
+  flex-shrink: 0;
+  /* Prevent header from shrinking */
+  /* Optional styling */
+  /* background-color: #f0f0f0; */
+  /* border-bottom: 1px solid #ccc; */
+}
+
+/* Container for the main body (side panel + map area) */
+.main-body {
+  display: flex;
+  /* Use flexbox for side-by-side layout (panel, map) */
+  flex-grow: 1;
+  /* Allow this row to fill the remaining vertical space in .main-content */
+  overflow: hidden;
+  /* Prevent this row itself from scrolling */
+}
+
+/* Container for the side panel */
+.side-panel-container {
+  width: 250px;
+  /* Fixed width, adjust as needed */
+  flex-shrink: 0;
+  /* Prevent panel from shrinking */
+  overflow-y: auto;
+  /* Allow ONLY the panel content to scroll vertically if needed */
+  /* Optional styling */
+  border-right: 1px solid #ccc;
+  /* background-color: #f8f8f8; */
+}
+
+/* =================================================
+     2. Map Container and Overlay Controls
+     ================================================= */
+
+/* The div that holds the OpenLayers map */
+.map-container {
+  flex-grow: 1;
+  /* Allow map container to take remaining horizontal space in .main-body */
+  position: relative;
+  /* Establishes positioning context for overlay controls */
+  overflow: hidden;
+  /* Hide anything that might spill out (like OL controls during resize) */
+  min-width: 0;
+  /* Helps flexbox calculations */
+  min-height: 0;
+  /* Helps flexbox calculations */
+  border-top: 1px solid #ccc;
+}
+
+/* Container for all overlay controls positioned inside the map area */
+.map-tools-container {
+  position: absolute;
+  /* Position relative to .map-container */
+  top: 4px;
+  /* Adjust spacing from top edge */
+  right: 10px;
+  /* Adjust spacing from right edge */
+  z-index: 10;
+  /* Ensure controls are visually above the map canvas */
+
+  /* Layout for items inside the overlay box */
+  display: flex;
+  flex-direction: column;
+  /* Stack controls vertically */
+  align-items: flex-end;
+  /* Align items to the right edge */
+  gap: 8px;
+  /* Space between control groups (tools, select, mouse-pos) */
+
+  /* Styling for the overlay box itself */
+  /* background-color: rgba(255, 255, 255, 0.8);  */
+  padding: 8px;
+  border-radius: 4px;
+  /* box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); */
+  max-height: calc(100% - 20px);
+  /* Prevent box exceeding map height */
+  overflow-y: auto;
+  /* Allow controls box to scroll vertically if content overflows */
+  overflow-x: hidden;
+  /* Prevent horizontal scroll */
+  box-sizing: border-box;
+}
+
+/* Style for specific controls within the overlay box */
+.map-tools-container app-tools {
+  /* Adjust width based on tools */
+  width: auto;
+  /* Allows tools component to size based on its content */
+  /* You can set a fixed width if buttons wrap undesirably */
+}
+
+.map-bottom-controls {
+  position: absolute;
+  bottom: 18px;
+  right: 18px;
+  z-index: 10;
+  display: flex;
+  /* flex-direction: column; */
+  align-items: flex-end;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 8px;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.map-current-layer {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 8px;
+  border-radius: 4px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  min-height: 1.5em;
+  box-sizing: border-box;
+  text-align: right;
+}
+
+.projection-select {
+  padding: 4px 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  background-color: white;
+  max-width: 150px;
+  box-sizing: border-box;
+}
+
+.mouse-position {
+  background-color: rgba(0, 0, 0, 0.6);
+  /* Dark background for contrast */
+  color: white;
+  padding: 4px 6px;
+  border-radius: 3px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  /* Keep coordinates on one line */
+  min-height: 1.5em;
+  /* Prevent layout jumping when mouse leaves map */
+  box-sizing: border-box;
+  text-align: right;
+}
+
+.map-loading-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 20;
+  /* Ensure it overlays the map */
+}
+
+.map-container .ol-viewport {
+  z-index: 0 !important;
+  /* Force it below the z-index of controls */
+}
+
+.header-container {
+  height: 80px;
+  /* adjust as needed */
+  flex-shrink: 0;
+}
+
+.main-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.side-panel-container {
+  /* background-color: var(--color-neutral-d1); */
+  overflow-x: hidden;
+  padding-bottom: 0;
+  width: 240px;
+  z-index: 2;
+  flex-shrink: 0;
+  transition: width 0.15s ease;
+}
+
+.side-panel-container.extended {
+  width: 450px;
+  transition: width 0.15s ease;
+}
+
+.side-panel-container.collapsed {
+  width: 30px;
+  transition: width 0.15s ease;
+}
+
+.map-context-menu {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  z-index: 1000;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  min-width: 150px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.context-menu-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.context-menu-list li {
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.context-menu-list li:hover {
+  background-color: #f0f0f0;
+}
+
+.copyright-text {
+  position: absolute;
+  bottom: 0px;
+  right: 0px;
+  background: white;
+  max-width: 200px;
+  font-size: 11px;
+  z-index: 9;
+  text-align: center;
+}

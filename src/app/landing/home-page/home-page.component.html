@@ -1,0 +1,331 @@
+<div class="min-vh-100 bg-body">
+  <!-- Hero Section -->
+  <section
+    class="position-relative min-vh-100 d-flex align-items-center justify-content-center overflow-hidden"
+  >
+    <div class="position-absolute top-0 start-0 end-0 bottom-0 z-0 hero-gradient">
+      <div
+        class="position-absolute top-0 start-0 end-0 bottom-0 hero-map-overlay"
+        [ngStyle]="{ 'background-image': 'url(' + heroMap + ')' }"
+      ></div>
+    </div>
+
+    <div class="position-relative z-1 container py-7 text-center">
+      <div class="mx-auto" style="max-width: 64rem">
+        <div class="d-inline-block px-3 py-2 bg-badge rounded-pill border badge-border mb-3">
+          <span class="small fw-medium text-badge">{{ hero.badge }}</span>
+        </div>
+
+        <h1 class="display-4 fw-bold text-hero mb-3">
+          {{ hero.title }}
+        </h1>
+
+        <p class="lead text-hero-90 mx-auto" style="max-width: 48rem">
+          {{ hero.subtitle }}
+        </p>
+
+        <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center pt-4">
+          <a href="/login">
+            <button class="btn btn-accent btn-lg px-4 py-3 d-flex align-items-center">
+              Try InfoBhoomi
+              <mat-icon class="ms-2">arrow_forward</mat-icon>
+            </button>
+          </a>
+
+          <button class="btn btn-outline-light btn-lg px-4 py-3 bg-blur border-hero">
+            View Technical Blueprint
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="position-absolute bottom-0 start-0 end-0 hero-bottom-fade z-1"></div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="logo-hldr text-center">
+        <img class="img-fluid" src="logos/LOGO.svg" alt="" />
+      </div>
+    </div>
+  </section>
+
+  <!-- Challenge & Solution -->
+  <section class="py-7 bg-body">
+    <div class="container">
+      <div class="mx-auto text-center mb-16" style="max-width: 56rem">
+        <h2 class="display-6 fw-bold text-body mb-2">From Fragmentation to Integration</h2>
+        <p class="fs-5 text-muted">
+          Transforming disconnected data silos into a unified spatial intelligence platform
+        </p>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="card h-100 border-danger-subtle bg-danger-soft p-5">
+            <div class="d-flex align-items-center gap-3 mb-4">
+              <div class="p-3 bg-danger-subtle bg-destruct-low rounded d-flex">
+                <mat-icon class="text-danger fs-5 mt-1">storage</mat-icon>
+              </div>
+              <h3 class="h4 fw-bold mb-0">The Challenge</h3>
+            </div>
+            <ul class="list-unstyled m-0">
+              <li *ngFor="let item of challengeList" class="d-flex gap-3 mb-2">
+                <span class="dot-danger mt-2"></span>
+                <span class="text-muted">{{ item }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card h-100 border-accent-subtle bg-accent-soft p-5">
+            <div class="d-flex align-items-center gap-3 mb-4">
+              <div class="p-3 bg-accent-subtle rounded bg-success-low d-flex">
+                <mat-icon class="text-accent fs-5 mt-1">share</mat-icon>
+              </div>
+              <h3 class="h4 fw-bold mb-0">The InfoBhoomi Solution</h3>
+            </div>
+            <ul class="list-unstyled m-0">
+              <li *ngFor="let item of solutionList" class="d-flex gap-3 mb-2">
+                <mat-icon class="text-accent mt-1">check_circle</mat-icon>
+                <span class="text-muted">{{ item }}</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Functions -->
+  <section class="py-7 bg-muted-30">
+    <div class="container">
+      <div class="mx-auto text-center mb-16" style="max-width: 56rem">
+        <h2 class="display-6 fw-bold text-body mb-2">Core Functions and Data Integration</h2>
+        <p class="fs-5 text-muted">
+          InfoBhoomi functions as a Local Authority-level land information management system built
+          upon six key components
+        </p>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-4" *ngFor="let c of coreFunctions">
+          <div class="card h-100 border p-4 hover-shadow">
+            <div class="p-3 bg-primary-soft rounded mb-3 d-inline-flex w-56px">
+              <mat-icon class="fs-4 text-primary i-dark">{{ c.icon }}</mat-icon>
+            </div>
+            <h3 class="h5 fw-bold">{{ c.title }}</h3>
+            <p class="text-muted mb-3">{{ c.description }}</p>
+            <div class="pt-3 border-top">
+              <p class="small text-muted fw-semibold m-0">{{ c.source }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Expected Impact -->
+  <section class="py-7 bg-body">
+    <div class="container">
+      <div class="mx-auto text-center mb-16" style="max-width: 56rem">
+        <h2 class="display-6 fw-bold text-body mb-2">Transformative Impacts of InfoBhoomi</h2>
+        <p class="fs-5 text-muted">
+          Building a foundation for transparent, efficient, and equitable land governance
+        </p>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-md-6 col-lg-4 col-xl-2-5" *ngFor="let i of impacts">
+          <div class="card h-100 text-center p-4 hover-shadow">
+            <div class="d-flex justify-content-center">
+              <div class="p-3 bg-accent-soft rounded-circle mb-3 h-56 w-56px">
+                <mat-icon class="fs-4 text-accent">{{ i.icon }}</mat-icon>
+              </div>
+            </div>
+            <h3 class="h6 fw-bold">{{ i.title }}</h3>
+            <p class="small text-muted">{{ i.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Project Context -->
+  <section class="py-7 text-primary-contrast bg-primary-theme">
+    <div class="container">
+      <div class="mx-auto text-center mb-16" style="max-width: 56rem">
+        <h2 class="display-6 fw-bold mb-2">Project Context and Partners</h2>
+        <p class="fs-5 text-primary-contrast-80">
+          A collaborative initiative for Sri Lanka's digital transformation
+        </p>
+      </div>
+
+      <div class="row g-4 align-items-stretch px-5">
+        <div class="col-md-6">
+          <div class="d-flex flex-column gap-4 h-100">
+            <div>
+              <h3 class="h4 fw-bold mb-2">Development Lead</h3>
+              <p class="fs-6 m-0">
+                <strong>GeoTech-HUB</strong>, Faculty of Geomatics<br />
+                Sabaragamuwa University of Sri Lanka
+              </p>
+            </div>
+
+            <div>
+              <h3 class="h4 fw-bold mb-2">Pilot Implementation Site</h3>
+              <p class="fs-6 m-0">
+                <strong>Bandarawela Municipal Council</strong><br />
+                Serving as the prototype for national rollout
+              </p>
+            </div>
+
+            <div>
+              <h3 class="h4 fw-bold mb-3">Sustainability Framework</h3>
+              <ul class="list-unstyled m-0">
+                <li *ngFor="let s of sustainability" class="d-flex gap-2 mb-2 fs-6">
+                  <mat-icon class="me-1">check_circle</mat-icon>
+                  <span>{{ s }}</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6 d-flex">
+          <div class="card py-4 px-5 bg-primary-card border-primary-soft text-center flex-fill">
+            <mat-icon
+              class="text-accent d-flex align-items-center justify-content-center mb-2 location-green w-h-100 fs-1 mx-auto bg-success-low br-100"
+              >location_on</mat-icon
+            >
+            <h4 class="h4 fw-bold mb-2 mt-4">Bandarawela Municipal Council</h4>
+            <p class="mb-3 px-2">
+              Strategic pilot site in the Uva Province, demonstrating InfoBhoomi's capabilities at
+              the local authority level
+            </p>
+            <div>
+              <span class="badge rounded-pill bg-accent-soft text-primary-contrast px-3 py-2">
+                Uva Province, Sri Lanka
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Analogy -->
+  <section
+    class="py-7 bg-secondary-theme text-secondary-contrast position-relative overflow-hidden"
+  >
+    <div
+      class="position-absolute top-0 start-0 end-0 bottom-0 opacity-25"
+      [ngStyle]="{ 'background-image': 'url(' + circuitBoard + ')' }"
+      style="background-size: cover; background-position: center"
+    ></div>
+
+    <div class="overlay-analogy position-absolute top-0 start-0 end-0 bottom-0"></div>
+
+    <div class="container position-relative z-10">
+      <div class="mx-auto text-center mb-4" style="max-width: 48rem">
+        <div
+          class="d-flex align-items-center justify-content-center bg-success-low rounded-circle mb-3 w-h-100 mx-auto"
+        >
+          <mat-icon
+            class="text-accent w-72px h-72 fs-1 d-flex align-items-center justify-content-center"
+            >share</mat-icon
+          >
+        </div>
+        <h2 class="display-6 fw-bold">Understanding InfoBhoomi's Role</h2>
+      </div>
+
+      <div class="card p-4 p-md-5 bg-white-95 backdrop-blur mx-auto" style="max-width: 60rem">
+        <p class="fs-4 text-body mb-4 text-center">
+          InfoBhoomi acts like a <strong class="text-accent">prototype circuit board</strong> for
+          Sri Lanka's digital economy— connecting essential data nodes across Land, Utilities,
+          Planning, Valuation, and the National Spatial Data Infrastructure (NSDI).
+        </p>
+
+        <div class="d-flex justify-around align-items-center g-3 pt-2 mob-block">
+          <div class="" *ngFor="let n of nodes">
+            <div class="d-flex flex-column align-items-center">
+              <div class="node-circle mb-2 shadow-icon-round" [ngClass]="'bg-' + n.color">
+                <div class="inner-dot"></div>
+              </div>
+              <span class="small text-muted">{{ n.label }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="py-7 position-relative overflow-hidden">
+    <div
+      class="position-absolute top-0 start-0 end-0 bottom-0 opacity-10"
+      style="background-size: cover; background-position: center"
+    ></div>
+
+    <div class="container position-relative">
+      <div class="mx-auto text-center" style="max-width: 48rem">
+        <div
+          class="d-inline-block px-3 py-2 border border-accent-subtle rounded-pill bg-accent-10 mb-3"
+        >
+          <span class="small fw-medium text-accent">Get Involved</span>
+        </div>
+
+        <h2 class="display-6 fw-bold text-body mb-2">
+          Join the Future of Spatial Data Collaboration
+        </h2>
+        <p class="fs-5 text-muted mb-4">
+          Be part of Sri Lanka's transition to transparent, interoperable, and digital land
+          governance
+        </p>
+
+        <div class="d-flex flex-column flex-sm-row gap-3 justify-content-center">
+          <button class="btn btn-primary-theme btn-lg px-4 py-3">Request a Demo</button>
+          <button class="btn btn-outline-primary-theme btn-lg px-4 py-3">
+            Download Whitepaper
+          </button>
+          <button class="btn btn-outline-secondary btn-lg px-4 py-3">
+            <i class="bi bi-handshake me-2"></i> Partner with Us
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-secondary-theme text-secondary-contrast py-5">
+    <div class="container">
+      <div class="row g-4 mb-3">
+        <div class="col-md-4">
+          <img class="img-fluid" src="logos/LOGO.svg" alt="" />
+          <h3 class="h5 fw-bold mt-3">InfoBhoomi</h3>
+          <p class="opacity-75 mb-0">Building Sri Lanka's digital land governance infrastructure</p>
+        </div>
+        <div class="col-md-4">
+          <h3 class="h5 fw-bold">Contact</h3>
+          <ul class="list-unstyled opacity-75 mb-0">
+            <li>+94 71 442 0514</li>
+            <li><a href="#" class="link-accent text-decoration-none">Support Portal</a></li>
+          </ul>
+        </div>
+        <div class="col-md-4">
+          <h3 class="h5 fw-bold">Legal</h3>
+          <ul class="list-unstyled opacity-75 mb-0">
+            <li><a href="#" class="link-accent text-decoration-none">Privacy Policy</a></li>
+            <li><a href="#" class="link-accent text-decoration-none">Terms of Service</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="pt-3 border-top border-contrast-20 text-center opacity-75">
+        <p class="mb-0">
+          © 2025 GeoTech-HUB, Faculty of Geomatics, Sabaragamuwa University of Sri Lanka
+        </p>
+      </div>
+    </div>
+  </footer>
+</div>

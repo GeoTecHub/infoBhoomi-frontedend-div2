@@ -1,0 +1,42 @@
+This guide is **only for Angular front end developers** working on repositories that are part of the **infobhoomi-dev organization** and have this configuration applied.
+
+# Code Formatting Guide
+
+To ensure consistency in our codebase and avoid merge conflicts, please follow these steps for setting up and using Prettier in VS Code.
+
+## 1. Install the Prettier Extension
+
+- In VS Code, go to the Extensions view (`Ctrl+Shift+X`).
+- Search for: "Prettier - Code formatter" by Esben Petersen
+- Click "Install".
+
+---
+
+## 2. Update VS Code Settings
+
+1. Go to: **File → Preferences → Settings**
+2. In the Settings search bar, type `format on save`.
+   - Under **Text Editor > Formatting**, check the box for **Format On Save**.
+3. In the search bar, type `default formatter`.
+   - Under **Text Editor > Formatting: Default Formatter**, select `Prettier - Code formatter esbenp.prettier-vscode` from the dropdown.
+
+This will ensure VS Code automatically formats your files using Prettier every time you save.
+
+---
+
+## 3. Before Every Commit
+
+**Before committing your changes, please follow these steps to ensure your code is properly formatted:**
+
+1. Open the VS Code "Terminal".
+2. Run the following command to automatically format your code:
+
+    npm run format
+    
+3. After formatting, run the following command to check for any remaining formatting issues:
+
+    npm run format:check
+
+If `npm run format:check` reports no issues, you can safely commit your changes.
+
+---

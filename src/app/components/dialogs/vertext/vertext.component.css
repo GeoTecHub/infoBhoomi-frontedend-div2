@@ -1,0 +1,168 @@
+/*----------------------- styles for loging panel------------------------------- */
+
+.login-title {
+  display: flex;
+  color: white;
+  padding-top: 15px;
+  justify-content: space-between;
+  margin-bottom: 0;
+  background-color: #5f7b93;
+}
+
+.panel-title {
+  display: flex;
+  color: white;
+  padding-top: 15px;
+  margin-bottom: 0;
+  background-color: #5f7b93;
+}
+
+/* Container styles */
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.row {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  border-radius: 10px;
+}
+
+/* Column styles */
+.col {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.image-col {
+  justify-content: center;
+  background-color: #003040;
+  color: #ccc;
+}
+
+.form-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-logo-size {
+  max-width: 450px;
+  width: 100%;
+  height: auto;
+}
+
+.login-body {
+  padding: 2rem;
+  max-width: 400px;
+  width: 100%;
+  border: 2px solid #ccc;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+/* Form styles */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.form-control {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+/* Button styles */
+.custom-login-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  width: 100%;
+  font-size: 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.custom-login-btn:hover {
+  background-color: var(--color-primary-d1);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .row {
+    flex-direction: column;
+  }
+
+  .custom-login-btn {
+    width: 100%;
+  }
+}
+
+/*----------------------- styles for project list panel------------------------------- */
+
+.project-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+.project-table tbody tr {
+  border: 1px solid #ccc;
+  margin-bottom: 10px;
+  background-color: white;
+  transition: background-color 0.3s;
+}
+
+.project-table tbody tr td {
+  padding: 10px;
+}
+
+.project-table tbody tr.selected-row {
+  background-color: var(--color-primary-l1);
+  border-color: var(--color-primary-l1);
+}
+
+.project-table tbody tr:hover {
+  background-color: #cccccc;
+}
+
+.project-table th {
+  background-color: #f4f4f4;
+  font-weight: bold;
+  text-align: left; /* Align headers for readability */
+  padding: 10px; /* Add spacing inside header cells */
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: calc(24px);
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  bottom: 0;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+.toggle-password:hover {
+  color: #000;
+}

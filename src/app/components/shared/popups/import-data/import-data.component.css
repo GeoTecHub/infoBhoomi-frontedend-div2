@@ -1,0 +1,108 @@
+/* file upload button */
+.input-fields {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.file-input::file-selector-button {
+  border-radius: 10px;
+  padding: 0 16px;
+  height: 40px;
+  cursor: pointer;
+  background-color: var(--color-primary);
+  color: var(--color-secondary-l1);
+  border: 1px solid rgba(0, 0, 0, 0.16);
+  box-shadow: 0px 1px 0px rgba(0, 0, 0, 0.05);
+  margin-right: 16px;
+  transition: background-color 200ms;
+}
+
+/* file upload button hover state */
+.file-input::file-selector-button:hover {
+  background-color: var(--color-primary-d1);
+}
+
+/* file upload button active state */
+.file-input::file-selector-button:active {
+  background-color: #e5e7eb;
+}
+
+.file-input {
+  background-color: var(--color-secondary-l2);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  width: 400px;
+}
+
+.file-input:disabled {
+  opacity: 0.5;
+}
+
+/* ************************************* */
+
+.text-input-field {
+  display: flex;
+  flex-direction: row;
+  background-color: var(--color-secondary-l2);
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.text-input-label {
+  padding: 10px;
+  background-color: var(--color-primary);
+  color: var(--color-secondary-l1);
+  border-radius: 10px 0 0 10px;
+}
+
+.text-input {
+  border-radius: 0 10px 10px 0;
+  border-color: transparent;
+  background-color: transparent;
+  width: 65%;
+}
+
+.text-input:focus {
+  outline: transparent;
+}
+
+.action-button-1 {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  background-color: var(--color-secondary-l2);
+  color: var(--color-secondary-d2);
+  border: transparent;
+  font-size: 16px;
+  border-radius: 20px;
+  padding: 7px 20px;
+}
+
+.action-button-1:hover {
+  opacity: 0.6;
+}
+
+.container {
+  display: contents;
+}
+
+.dropdown-select {
+  border-color: transparent;
+  width: 100%;
+  background-color: var(--color-secondary-l2);
+  border-radius: 10px;
+  height: 40px;
+  color: #44474e;
+}
+
+.form-input {
+  border: 1px solid var(--color-secondary-l2);
+  width: 100%;
+  background-color: white;
+  border-radius: 10px;
+  height: 40px;
+  color: #44474e;
+  padding-left: 7px;
+  padding-right: 7px;
+}

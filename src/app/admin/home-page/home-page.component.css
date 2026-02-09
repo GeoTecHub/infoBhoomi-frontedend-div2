@@ -1,0 +1,385 @@
+.main-body {
+  display: flex;
+  flex-direction: row;
+  margin: 84px 0px;
+}
+
+.side-panel-container {
+  background: #fff;
+}
+
+.tab-container {
+  flex-grow: 1;
+  padding: 10px;
+}
+
+.select-op-first {
+  color: #777878;
+}
+
+.selected {
+  background-color: #779ab8 !important;
+  color: white;
+  /* White text */
+  cursor: pointer;
+}
+
+/* Make role table scrollable */
+.role-table-container {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.h-100 {
+  height: 100%;
+}
+
+.card-body {
+  padding: 0.5rem 1rem !important;
+}
+
+/* DELETE MODAL */
+#confirmDeleteModal .modal-header {
+  background-color: #fff;
+  border-bottom: 1px solid #bbd2db;
+}
+
+#confirmDeleteModal .modal-title {
+  color: #721c24;
+  /* Dark red text */
+  font-size: 1rem;
+  /* Adjust font size */
+  font-weight: bold;
+}
+
+/* Close Button */
+#confirmDeleteModal .btn-close {
+  background-color: #df1627;
+  border: none;
+}
+
+/* Modal Body */
+#confirmDeleteModal .modal-body {
+  background-color: #fff;
+  /* Light yellow background */
+  color: #856404;
+  /* Dark yellow text */
+}
+
+#confirmDeleteModal .modal-body p {
+  font-size: 0.9rem;
+  /* Slightly smaller font */
+  margin: 0;
+}
+
+/* Modal Footer */
+#confirmDeleteModal .modal-footer {
+  background-color: #fff;
+  /* Light red footer */
+}
+
+/* Button Styles */
+#confirmDeleteModal .btn-sm {
+  font-size: 0.85rem;
+  /* Smaller font size */
+  padding: 0.5rem 1rem;
+}
+
+#confirmDeleteModal .btn-danger {
+  background-color: #dc3545;
+  /* Red color for the danger button */
+  border: none;
+}
+
+#confirmDeleteModal .btn-secondary {
+  background-color: #6c757d;
+  /* Gray background for the 'No' button */
+  border: none;
+}
+
+/* Button Hover Effects */
+#confirmDeleteModal .btn-danger:hover {
+  background-color: #c82333;
+  /* Darker red on hover */
+}
+
+#confirmDeleteModal .btn-secondary:hover {
+  background-color: #5a6268;
+  /* Darker gray on hover */
+}
+
+/* Icon Size */
+#confirmDeleteModal .fa-trash {
+  margin-right: 5px;
+  font-size: 1rem;
+}
+
+.custom-modal-width {
+  max-width: 80%;
+}
+
+.custom-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: green;
+  /* Green color for the checkbox */
+  margin-top: 2px;
+}
+
+.material-icons-custom {
+  vertical-align: middle;
+  /* Align icons vertically */
+  line-height: 1;
+  /* Ensures consistent line spacing */
+  font-size: 20px;
+  /* Adjust icon size if necessary */
+  margin: 2px 5px;
+  /* Ensure even top and bottom margins */
+  display: inline-flex;
+  /* Centers the icons properly */
+  align-items: center;
+  /* Ensures proper alignment */
+  color: #f15562;
+}
+
+.material-icons-edit {
+  font-family: 'Material Icons';
+  vertical-align: middle;
+  /* Align icons vertically */
+  line-height: 1;
+  /* Ensures consistent line spacing */
+  font-size: 20px;
+  /* Adjust icon size if necessary */
+  margin: 2px 5px;
+  /* Ensure even top and bottom margins */
+  display: inline-flex;
+  /* Centers the icons properly */
+  align-items: center;
+  /* Ensures proper alignment */
+  color: #3b3636;
+}
+
+.modal-sm {
+  max-width: 360px !important;
+}
+
+.btn i {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0;
+  padding-bottom: 2px;
+}
+
+.btn {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.color-box {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+.owner-row {
+  background-color: #c5daeb !important;
+  color: #0c0c0c;
+}
+
+.org-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 7px;
+  background: #f2f2f2;
+  border: 1px solid #e4e4e4;
+  margin-right: 7px;
+}
+
+.admin-pages-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #26334a;
+  letter-spacing: 0.01em;
+  margin-bottom: 0;
+}
+
+.role-table-container {
+  max-height: 400px;
+  overflow-y: auto;
+  /* padding: 0 !important; */
+}
+
+.badge-success {
+  background: #e6f5ea;
+  color: #30863d;
+  font-size: 13px;
+}
+
+.border-right {
+  border-right: 1px solid #eee;
+}
+
+.subscription-card {
+  /* Subtle blue accent gradient */
+  background: linear-gradient(90deg, #e7f3fb 0%, #f2faff 100%);
+  border-radius: 18px !important;
+  box-shadow: 0 6px 20px 0 rgba(58, 135, 220, 0.1);
+  border: 1.5px solid #bddbfa;
+  /* Add more padding if you want it more prominent */
+}
+
+.subscription-card .admin-pages-title {
+  color: #1b5dbf;
+  /* Make the section title more prominent */
+}
+
+.badge-success {
+  background: #e6f5ea;
+  color: #30863d;
+  border-radius: 8px;
+  padding: 2px 10px;
+  font-size: 13px;
+  letter-spacing: 0.03em;
+}
+
+.badge {
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.table,
+.table-sm {
+  background: transparent !important;
+  border-radius: 8px;
+  margin-bottom: 0;
+}
+
+tr,
+td {
+  border-radius: 8px !important;
+}
+
+.org-logo {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 11px;
+  background: #f2f2f2;
+  border: 1.5px solid #d5e8fa;
+  margin-right: 12px;
+}
+
+.admin-pages-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #26334a;
+  letter-spacing: 0.01em;
+  margin-bottom: 0;
+}
+
+.role-table-container {
+  max-height: 400px;
+  overflow-y: auto;
+  border-radius: 8px;
+  /* background: #fcfcfc; */
+}
+
+.table-sm th,
+.table-sm td {
+  border: none !important;
+  background: transparent !important;
+}
+
+.btn-outline-primary,
+.admin-primary-bg-btn {
+  background: #eaf3fd !important;
+  color: #1565c0 !important;
+  border-radius: 8px !important;
+  border: 1.2px solid #bddbfa !important;
+  font-weight: 600;
+  box-shadow: none !important;
+  transition: background 0.2s;
+}
+
+.btn-outline-primary:hover,
+.admin-primary-bg-btn:hover {
+  background: #1565c0 !important;
+  color: #fff !important;
+  border: 1.2px solid #1565c0 !important;
+}
+
+/* Recent Activities: colors for rows */
+.text-success {
+  color: #30863d !important;
+}
+
+.text-danger {
+  color: #d13434 !important;
+}
+
+.text-muted {
+  color: #888 !important;
+}
+
+/* Add border radius and subtle background for the main body */
+.admin-main-body {
+  /* background: #f3f6fb; */
+  border-radius: 16px;
+  padding: 0px 0;
+}
+
+/* Add shadow to the sidebar for separation */
+.side-panel-container {
+  background: #fff;
+  border-radius: 15px;
+  box-shadow: 0 4px 24px 0 rgba(28, 42, 67, 0.05);
+}
+
+.bold-grey {
+  color: #232323;
+}
+
+.image-section {
+  width: 150px;
+  height: 150px;
+  border: 1px solid #8888883d;
+  background-color: #ffffff;
+  border-radius: 12px;
+}
+
+.f-14 {
+  font-size: 14px !important;
+}
+
+.w-500-custom {
+  font-weight: 500 !important;
+}
+
+.info-icon-btn {
+  color: #779ab8;
+}
+
+.admin-pill {
+  background: #e3b729;
+  border-radius: 12px;
+  color: white;
+  font-weight: 400;
+  text-align: center;
+  text-transform: capitalize;
+  width: 60px;
+  margin: auto;
+}
+
+.user-pill {
+  background: #2fa642;
+  border-radius: 12px;
+  color: white;
+  font-weight: 400;
+  text-align: center;
+  text-transform: capitalize;
+  width: 60px;
+  margin: auto;
+}

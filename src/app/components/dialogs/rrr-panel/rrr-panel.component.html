@@ -1,0 +1,597 @@
+<div class="material-header">
+  <div class="header-content-rrr">
+    <div class="d-flex align-items-center position-relative">
+      <p class="header-content-rrr-sub mx-auto">
+        Rights, Restrictions and Responsibilities
+        <br />
+        (RRR Panel)
+      </p>
+      <p class="header-content-id">Infobhoomi ID : {{ data.feature_id }}</p>
+    </div>
+    <!-- <button class="close-btn">
+      <mat-icon>close</mat-icon> 
+    </button> -->
+  </div>
+</div>
+<!-- <mat-card-title class="card-sub-title">
+  Infobhoomi ID : {{data.feature_id}}
+</mat-card-title> -->
+<mat-dialog-content>
+  <mat-tab-group (selectedTabChange)="onTabChange($event)">
+    <mat-tab label="View" *ngIf="canViewRRR(38)">
+      <table class="table rrr-table">
+        <thead>
+          <tr>
+            <th>Party</th>
+            <th>Party Role</th>
+            <th>BA Unit Name</th>
+            <th>BA Unit Type</th>
+            <th>Share Type</th>
+            <th>Share(%)</th>
+            <th>Source</th>
+            <th>Source Type</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <ng-container *ngFor="let grp of rrrGroups; let gidx = index">
+            <!-- Show group 0 always (current owners), other groups only when showPrevOwners = true -->
+            <ng-container *ngIf="gidx === 0 || showPrevOwners">
+              <tr
+                *ngFor="let row of grp.rows"
+                class="rrr-row"
+                [ngStyle]="{ 'background-color': getRowColor(gidx, grp.isCurrent) }"
+              >
+                <td class="party-cell">
+                  {{ row.party_name }}
+
+                  <ng-container *ngIf="grp.isCurrent">
+                    <span
+                      class="current-dot"
+                      matTooltip="Current owner"
+                      matTooltipPosition="above"
+                      aria-label="Current owner"
+                    ></span>
+                  </ng-container>
+                </td>
+                <td>{{ row.party_role_type }}</td>
+                <td>{{ row.sl_ba_unit_name }}</td>
+                <td>{{ row.sl_ba_unit_type }}</td>
+                <td>{{ row.share_type }}</td>
+                <td class="text-right">{{ row.share | number: '1.2-2' }}</td>
+                <td>
+                  <button
+                    mat-icon-button
+                    matSuffix
+                    (click)="openPdfFromRow(row)"
+                    class="btn admin-primary-bg-btn preview-btn"
+                  >
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                </td>
+                <td>{{ row.source_type }}</td>
+                <td>
+                  <mat-icon
+                    class="text-danger material-icons-custom"
+                    (click)="openDeleteModal(row.ba_unit_id)"
+                    *ngIf="canDeleteRRR(38)"
+                    >delete</mat-icon
+                  >
+                </td>
+              </tr>
+            </ng-container>
+          </ng-container>
+        </tbody>
+      </table>
+
+      <div class="text-start mt-0" *ngIf="rrrGroups.length > 1 && !showPrevOwners">
+        <button
+          mat-button
+          color="primary"
+          (click)="showPrevOwners = true"
+          class="action-tb-btn-link border-none bg-none link-text"
+        >
+          View previous owners
+        </button>
+      </div>
+
+      <!-- View history button for older su_ids -->
+      <div class="text-center mt-2" *ngIf="historySuId">
+        <button mat-button color="primary" (click)="loadMoreHistory()" class="action-tb-btn">
+          View history
+        </button>
+      </div>
+
+      <!-- HISTORY TABLES -->
+      <div *ngFor="let history of historyTables; let hIdx = index" class="mt-4">
+        <h6 class="mb-2">History - Infobhoomi ID : {{ history.suId }}</h6>
+
+        <table class="table rrr-table">
+          <thead>
+            <tr>
+              <th>Party</th>
+              <th>Party Role</th>
+              <th>BA Unit Name</th>
+              <th>BA Unit Type</th>
+              <th>Share Type</th>
+              <th>Share(%)</th>
+              <th>Source</th>
+              <th>Source Type</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <ng-container *ngFor="let grp of history.rrrGroups; let gidx = index">
+              <tr
+                *ngFor="let row of grp.rows"
+                class="rrr-row"
+                [ngStyle]="{ 'background-color': getHistoryRowColor(hIdx, gidx) }"
+              >
+                <td class="party-cell">
+                  {{ row.party_name }}
+                  <!-- No current-dot here because isCurrent is always false for history -->
+                </td>
+                <td>{{ row.party_role_type }}</td>
+                <td>{{ row.sl_ba_unit_name }}</td>
+                <td>{{ row.sl_ba_unit_type }}</td>
+                <td>{{ row.share_type }}</td>
+                <td class="text-right">{{ row.share | number: '1.2-2' }}</td>
+                <td>
+                  <button
+                    mat-icon-button
+                    matSuffix
+                    (click)="openPdfFromRow(row)"
+                    class="btn admin-primary-bg-btn preview-btn"
+                  >
+                    <mat-icon>visibility</mat-icon>
+                  </button>
+                </td>
+                <td>{{ row.source_type }}</td>
+                <td>
+                  <!-- Up to you: usually you DON'T delete history, so often hide this -->
+                  <mat-icon
+                    class="text-danger material-icons-custom"
+                    (click)="openDeleteModal(row.ba_unit_id)"
+                    *ngIf="canDeleteRRR(38)"
+                    >delete</mat-icon
+                  >
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+      </div>
+    </mat-tab>
+
+    <mat-tab label="Add New" *ngIf="canAddRRR(38)">
+      <mat-card class="custom-card custom-style-card">
+        <mat-card-content *ngIf="canAddRRR(38)">
+          <div class="row justify-content-md-center">
+            <div class="col col-lg-3"></div>
+            <div class="col col-lg-6">
+              <div class="keyValueList">
+                <div class="keyValueWrapper">
+                  <div class="keyValueWrapper__keyValue keyValueWrapper__keyValue_top">
+                    <select
+                      class="keyValue__value keyValue__value_top"
+                      [(ngModel)]="right_edit_view.right_type"
+                    >
+                      <option value="" disabled selected>Select Type</option>
+                      <option *ngFor="let option of right_types_array" [value]="option">
+                        {{ option }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col col-lg-3"></div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+      <!-- <mat-card class="custom-card" *ngIf="right_edit_view.right_type">
+        <mat-card-content>
+          <mat-card-title class="card-main-title"> Add New Right </mat-card-title>
+          <div class="keyValueList">
+            <div class="keyValueWrapper" *ngIf="right_edit_view.right_type == 'Ownership'">
+              <div class="keyValueWrapper__keyValue align-items-center">
+                <div class="keyValue__key">Right Type <span class="text-danger">*</span></div>
+                <select class="keyValue__value" [(ngModel)]="ownership.ownership_type">
+                  <option value="" disabled selected>Select Right Type</option>
+                  <option *ngFor="let option of ownership_types_array" [value]="option.name">
+                    {{ option.name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="keyValueWrapper" *ngIf="right_edit_view.right_type">
+              <div class="keyValueWrapper__keyValue">
+                <div class="keyValue__key mt-1">Description</div>
+                <textarea
+                  name=""
+                  class="keyValue__value"
+                  rows="4"
+                  [(ngModel)]="right_edit_view.description"
+                  placeholder="Enter description"
+                ></textarea>
+              </div>
+            </div>
+            <div class="keyValueWrapper" *ngIf="right_edit_view.right_type">
+              <div class="keyValueWrapper__keyValue align-items-center">
+                <div class="keyValue__key">From <span class="text-danger">*</span></div>
+                <input type="date" class="keyValue__value" [(ngModel)]="right_edit_view.from" />
+              </div>
+            </div>
+
+            <div class="keyValueWrapper">
+              <div class="keyValueWrapper__keyValue align-items-center py-1">
+                <div class="keyValue__key">Life Time</div>
+                <div class="keyValue__value border-0">
+                  <input
+                    type="checkbox"
+                    class="life-time-check"
+                    (change)="toggleLifeTimeSelection()"
+                    [(ngModel)]="right_edit_view.life_time"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="keyValueWrapper" *ngIf="!right_edit_view.life_time">
+              <div class="keyValueWrapper__keyValue align-items-center">
+                <div class="keyValue__key">To <span class="text-danger">*</span></div>
+                <input type="date" class="keyValue__value" [(ngModel)]="right_edit_view.to" />
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="custom-card" *ngIf="right_edit_view.right_type == 'Mortgage'">
+        <mat-card-content>
+          <div class="keyValueList">
+            <div class="keyValueWrapper">
+              <div class="keyValueWrapper__keyValue align-items-center">
+                <div class="keyValue__key">Amount</div>
+                <input type="number" class="keyValue__value" [(ngModel)]="mortgage.amount" />
+              </div>
+            </div>
+            <div class="keyValueWrapper">
+              <div class="keyValueWrapper__keyValue align-items-center">
+                <div class="keyValue__key">Interest</div>
+                <input type="number" class="keyValue__value" [(ngModel)]="mortgage.interest" />
+              </div>
+            </div>
+            <div class="keyValueWrapper">
+              <div class="keyValueWrapper__keyValue align-items-center">
+                <div class="keyValue__key">Ranking</div>
+                <input type="number" class="keyValue__value" [(ngModel)]="mortgage.ranking" />
+              </div>
+            </div>
+            <div class="keyValueWrapper">
+              <div class="keyValueWrapper__keyValue align-items-center">
+                <div class="keyValue__key">Mortgage Type</div>
+                <select class="keyValue__value" [(ngModel)]="mortgage.mortgage_type">
+                  <option value="" disabled selected>Mortgage Type</option>
+                  <option *ngFor="let option of mortgage_types_array" [value]="option.name">
+                    {{ option.name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+            <div class="keyValueWrapper">
+              <div class="keyValueWrapper__keyValue align-items-center">
+                <div class="keyValue__key">Mortgage ID</div>
+                <input type="text" class="keyValue__value" [(ngModel)]="mortgage.Mortgage_ID" />
+              </div>
+            </div>
+            <div class="keyValueWrapper">
+              <div class="keyValueWrapper__keyValue align-items-center">
+                <div class="keyValue__key">Mortgagee</div>
+                <input type="text" class="keyValue__value" [(ngModel)]="mortgage.Mortgagee" />
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card> -->
+
+      <!-- ADD PARTY -->
+      <mat-card class="custom-card custom-style-card" *ngIf="right_edit_view.right_type">
+        <mat-card-title
+          class="card-main-title ps-2 cursor-pointer card-main-title-sp"
+          (click)="addNewPartyOneCard()"
+        >
+          <span class="ms-3"> Add Party &nbsp;<i class="fa fa-plus plus-btn"></i> </span>
+        </mat-card-title>
+
+        <mat-card-content *ngIf="show_party_add">
+          <div class="custom-card">
+            <div class="row">
+              <div class="col-9">
+                <div class="keyValueWrapper">
+                  <div class="keyValueWrapper__keyValue align-items-center">
+                    <div class="keyValue__key">Party Type</div>
+                    <select
+                      class="keyValue__value"
+                      [(ngModel)]="add_party.party_sub_type"
+                      style="margin-left: 45px; margin-top: -4px"
+                      (ngModelChange)="onPartySubTypeChange($event)"
+                    >
+                      <option value="" disabled selected>Select Party Type</option>
+                      <option *ngFor="let option of party_sub_types_array" [value]="option.name">
+                        {{ option.name }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-3">
+                <button
+                  class="primary-sm-btn-select-custom"
+                  (click)="openPartyTypeDialog(card.party_sub_type)"
+                >
+                  Select
+                </button>
+              </div>
+            </div>
+            <hr *ngIf="data_of_aded_party.party_name" class="divider" />
+            <div class="row align-items-center" *ngIf="data_of_aded_party.party_name">
+              <div class="col-3">
+                <!-- Share Type Dropdown -->
+                <div class="keyValueWrapper">
+                  <div class="keyValueWrapper__keyValue">
+                    <div class="keyValue__key" style="color: #47a70d">
+                      {{ data_of_aded_party.party_name }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-3">
+                <!-- Role Type Dropdown -->
+                <div class="keyValueWrapper px-0">
+                  <div class="keyValueWrapper__keyValue">
+                    <select class="keyValue__value ms-0" [(ngModel)]="add_party.party_role_type">
+                      <option value="" disabled selected>Select Party Role</option>
+                      <option
+                        *ngFor="let option of right_party_role_types_array"
+                        [value]="option.name"
+                      >
+                        {{ option.name }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-3">
+                <!-- Share Type Dropdown -->
+                <div class="keyValueWrapper px-0">
+                  <div class="keyValueWrapper__keyValue">
+                    <select class="keyValue__value ms-0" [(ngModel)]="add_party.share_type">
+                      <option value="" disabled selected>Select Share Type</option>
+                      <option *ngFor="let option of right_share_types_array" [value]="option.name">
+                        {{ option.name }}
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-3">
+                <!-- Share Type Dropdown -->
+                <div class="keyValueWrapper" style="margin-left: -10px">
+                  <div class="keyValueWrapper__keyValue">
+                    <input
+                      type="number"
+                      class="keyValue__value"
+                      placeholder="Share (%)"
+                      [(ngModel)]="add_party.share_percentage"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row" *ngIf="data_of_aded_party.party_name">
+              <div class="col-9"></div>
+              <div class="col-3">
+                <button
+                  class="primary-sm-btn-select-custom"
+                  (click)="civilianShowButton(add_party.share_percentage)"
+                >
+                  + Add
+                </button>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+
+        <mat-card class="custom-card" *ngIf="adeded_party_cards.length > 0">
+          <mat-card-content>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th width="25%" style="font-size: 12px">Name</th>
+                  <th width="20%" style="font-size: 12px">Party Role</th>
+                  <th width="20%" style="font-size: 12px">Share Type</th>
+                  <th width="10%" style="text-align: center; font-size: 12px">Share (%)</th>
+                  <th width="20%" style="text-align: center; font-size: 12px">DOC Owner</th>
+                  <th width="5%" style="text-align: center"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let card of adeded_party_cards; let i = index">
+                  <td style="font-size: 12px">{{ card.party_name }}</td>
+                  <td style="font-size: 12px">{{ card.party_role_type }}</td>
+                  <td style="font-size: 12px">{{ card.share_type }}</td>
+                  <td style="text-align: center; font-size: 12px">{{ card.share }}</td>
+                  <td style="text-align: center; font-size: 12px">
+                    <input
+                      type="checkbox"
+                      class="keyValue_value_checkbox"
+                      [checked]="doc_owner_pid === card.party"
+                      (change)="toggleSelection(card)"
+                    />
+                  </td>
+                  <td style="text-align: center">
+                    <i class="fa fa-trash text-danger" (click)="removeCard(i)"></i>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </mat-card-content>
+        </mat-card>
+      </mat-card>
+
+      <mat-card
+        class="custom-card"
+        *ngIf="right_edit_view.right_type && adeded_party_cards.length > 0"
+      >
+        <mat-card-content>
+          <mat-card-title class="card-main-title"> Add New Administrative Document </mat-card-title>
+
+          <!-- Document Type -->
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Document Type <span class="text-danger">*</span></div>
+              <select
+                class="keyValue__value"
+                [(ngModel)]="administrative_source.admin_source_type"
+                (ngModelChange)="onPartySubTypeChange($event)"
+              >
+                <option [ngValue]="null" disabled>Select Document Type</option>
+                <option *ngFor="let option of source_types_array" [ngValue]="option.name">
+                  {{ option.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- File -->
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">File <span class="text-danger">*</span></div>
+              <input
+                type="file"
+                class="keyValue__value"
+                (change)="onFileSelected($event)"
+                [(ngModel)]="administrative_source.file_path"
+                accept="application/pdf"
+              />
+            </div>
+          </div>
+
+          <!-- NEW: Unit Name -->
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Unit Name <span class="text-danger">*</span></div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [(ngModel)]="administrative_source.sl_ba_unit_name"
+                placeholder="Enter Unit Name"
+              />
+            </div>
+          </div>
+
+          <!-- NEW: Unit Type -->
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Unit Type <span class="text-danger">*</span></div>
+              <select class="keyValue__value" [(ngModel)]="administrative_source.sl_ba_unit_type">
+                <option value="" disabled selected>Select Unit Type</option>
+                <option *ngFor="let option of unit_type_options" [value]="option.name">
+                  {{ option.name }}
+                </option>
+              </select>
+
+              <!-- <select
+                      class="keyValue__value"
+                      [(ngModel)]="add_party.party_sub_type"
+                      (ngModelChange)="onPartySubTypeChange($event)"
+                    >
+                      <option value="" disabled selected>Select Party Type</option>
+                      <option *ngFor="let option of party_sub_types_array" [value]="option.name">
+                        {{ option.name }}
+                      </option>
+                    </select> -->
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- **************************Administrative Source************************************* -->
+      <mat-tab-group>
+        <!-- <mat-tab [label]="getTabLabel()" 
+       [ngClass]="existing_admin_source.length > 0 ? 'has-data' : 'no-data'">
+  
+        </mat-tab> -->
+        <mat-tab label=""> </mat-tab>
+      </mat-tab-group>
+    </mat-tab>
+  </mat-tab-group>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <!-- *ngIf="civilian_data__array.length != 0" -->
+  <div class="container">
+    &nbsp;
+
+    <button mat-icon-button matSuffix (click)="closeDialog()" class="footer-btn">
+      <mat-icon>close</mat-icon> Close</button
+    >&nbsp;&nbsp;&nbsp;
+    <button mat-icon-button matSuffix (click)="SubmitAll()" class="footer-btn" *ngIf="showSaveBtn">
+      <mat-icon>save</mat-icon> Save
+    </button>
+  </div>
+</mat-dialog-actions>
+
+<div
+  class="modal fade"
+  id="confirmDeleteModal"
+  tabindex="-1"
+  aria-labelledby="confirmDeleteLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-sm">
+    <!-- Small modal -->
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h6 class="modal-title" id="confirmDeleteLabel">Confirm Delete</h6>
+      </div>
+      <div class="modal-body p-2">
+        <div class="form-group mb-2 position-relative">
+          <label for="password"> Please confirm your admin password</label>
+          <input
+            [type]="passwordVisible ? 'text' : 'password'"
+            id="password"
+            class="form-control form-control-sm"
+            [(ngModel)]="admin_password"
+            required
+          />
+          <span
+            class="toggle-password"
+            (click)="togglePasswordVisibility()"
+            [title]="passwordVisible ? 'Hide password' : 'Show password'"
+          >
+            <mat-icon *ngIf="passwordVisible">visibility_off</mat-icon>
+            <mat-icon *ngIf="!passwordVisible">visibility</mat-icon>
+          </span>
+        </div>
+      </div>
+      <div class="modal-footer py-2 d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">No</button>
+        <button
+          type="button"
+          class="btn btn-danger btn-sm"
+          (click)="confirmDelete()"
+          *ngIf="admin_password"
+        >
+          <i class="fa fa-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

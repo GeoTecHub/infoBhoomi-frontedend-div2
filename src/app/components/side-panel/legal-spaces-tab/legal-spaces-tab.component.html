@@ -1,0 +1,830 @@
+<div class="legal-space-tab-content">
+  <div class="legal-space-tab-title">Legal Space ID: {{ legalSpace_id }}</div>
+  <div class="legal-space-image"><img [src]="img" alt="Legal Space Image" /></div>
+
+  <div class="legal-space-tab-attributes">
+    <!-- ################# OUTER-LEGAL SPACE ################## -->
+    <div class="legal-space-tab-title">Outer Legal Space</div>
+    <div class="sub-field">
+      <!-- ################# admin info_outer-LS ################## -->
+      <app-collapsible uniqueId="adminInfo_O_LS" title="Administrative Information">
+        <app-key-value
+          key="Administrative Unit Type"
+          value="{{ adminUnitType_O_LS }}"
+          [editable]="true"
+        ></app-key-value>
+
+        <hr class="divider" />
+        <label>Core details</label>
+        <div class="sub-field">
+          <app-key-value key="Province" value="{{ province_O_LS }}"></app-key-value>
+          <app-key-value key="District" value="{{ district_O_LS }}"></app-key-value>
+          <app-key-value key="DSD" value="{{ dsd_O_LS }}" [editable]="true"></app-key-value>
+        </div>
+        <hr class="divider" />
+
+        <app-key-value
+          key="Grama Niladhari Division"
+          value="{{ gnd_O_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="Assessment ward"
+          value="{{ assesmentWard_O_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="Electorate"
+          value="{{ electorate_O_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="Street Name"
+          value="{{ streetName_O_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="Land Name"
+          value="{{ landName_O_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="Postal Address of Land"
+          value="{{ postalAddress_O_LS }}"
+          [editable]="true"
+        ></app-key-value>
+      </app-collapsible>
+
+      <!-- ################# overview_outer-LS ################## -->
+      <app-collapsible uniqueId="overview_O_LS" title="Land-Legal Space Overview">
+        <app-key-value key="Legal Space System ID" value="{{ legalSpaceSystemID }}"></app-key-value>
+        <app-key-value key="Dimension" value="{{ dimension_O_LS }}"></app-key-value>
+        <app-key-value key="Area" value="{{ area_O_LS }}"></app-key-value>
+        <app-key-value key="Area Unit" value="{{ areaUnit_O_LS }}"></app-key-value>
+        <app-key-value key="Reference Point" value="{{ refPoint_O_LS }}"></app-key-value>
+        <app-key-value
+          key="Surface Relation"
+          value="{{ surfaceRelation_O_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="Land Use Category"
+          value="{{ landUseCategory_O_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <div class="sub-field">
+          <app-key-value
+            key="Sub Category"
+            value="{{ subcategory_O_LS }}"
+            [editable]="true"
+          ></app-key-value>
+        </div>
+      </app-collapsible>
+
+      <!-- ################# utility network info_outer-LS ################## -->
+      <app-collapsible uniqueId="utilityInfo_O_LS" title="Utility Information">
+        <app-key-value
+          key="Electricity"
+          value="{{ electricity_O_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value key="Telecomm." value="{{ telecom_O_LS }}" [editable]="true"></app-key-value>
+        <app-key-value key="Water" value="{{ water_O_LS }}" [editable]="true"></app-key-value>
+        <app-key-value key="Drainage" value="{{ drainage_O_LS }}" [editable]="true"></app-key-value>
+        <hr class="divider" />
+        <label>Sanitation</label>
+        <div class="sub-field">
+          <app-key-value key="Swerage" value="{{ swerage_O_LS }}" [editable]="true"></app-key-value>
+          <app-key-value key="Gully" value="{{ gully_O_LS }}" [editable]="true"></app-key-value>
+        </div>
+        <hr class="divider" />
+        <app-key-value
+          key="Garbage Disposal"
+          value="{{ garbageDisposal_O_LS }}"
+          [editable]="true"
+        ></app-key-value>
+      </app-collapsible>
+
+      <!-- ################# tenure_outer-LS ################## -->
+      <app-collapsible uniqueId="tenure_O_LS" title="Land Tenure">
+        <app-key-value
+          key="Right type"
+          value="{{ rightType_O_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value key="Share" value="{{ share_O_LS }}" [editable]="true"></app-key-value>
+
+        <!-- sub -->
+        <div class="sub-field">
+          <app-collapsible uniqueId="party_O_LS" title="Party">
+            <app-key-value
+              key="Party type"
+              value="{{ partyType_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Party role"
+              value="{{ partyRole_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Party name"
+              value="{{ partyName_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Party NIC/BR"
+              value="{{ partyNic_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Party telephone"
+              value="{{ partyTele_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Party address"
+              value="{{ partyAddress_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+          </app-collapsible>
+
+          <app-collapsible uniqueId="adminSource_O_LS" title="Administrative Sources	">
+            <app-key-value
+              key="Administrative Source Type*"
+              value="{{ adminSourceType_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Availability Status"
+              value="{{ availabilityStatus_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Description"
+              value="{{ description_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Acceptance Date"
+              value="{{ acceptanceDate_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="External Archive Reference"
+              value="{{ ExternalArchiveRef_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Life Span Stamp"
+              value="{{ lifeSpanStamp_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value key="File *" value="{{ file_O_LS }}" [editable]="true"></app-key-value>
+            <app-key-value key="Ref No" value="{{ refNo_O_LS }}" [editable]="true"></app-key-value>
+            <app-key-value
+              key="Document Owner"
+              value="{{ docOwner_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+          </app-collapsible>
+
+          <app-collapsible uniqueId="res_O_LS" title="Responsibility	">
+            <app-key-value
+              key="Party *"
+              value="{{ resParty_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Responsibility Type *"
+              value="{{ resType_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Responsibility ID *"
+              value="{{ resID_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Description"
+              value="{{ resDesc_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Share"
+              value="{{ resShare_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Share Type"
+              value="{{ resShareType_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+          </app-collapsible>
+
+          <app-collapsible uniqueId="restrict_O_LS" title="Restriction	">
+            <app-key-value
+              key="Party *"
+              value="{{ restrictParty_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Restriction Type *"
+              value="{{ restrictType_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Restriction ID *"
+              value="{{ restrictID_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Description"
+              value="{{ restrictDesc_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Share"
+              value="{{ restrictShare_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Share Type"
+              value="{{ restrictShareType_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+          </app-collapsible>
+        </div>
+      </app-collapsible>
+
+      <!-- ################# survey plan pdf_outer-LS ################## -->
+      <app-collapsible uniqueId="SPlanPDF_O_LS" title="Survey Plan - PDF">
+        <app-key-value key="File *" value="{{ spFile_O_LS }}" [editable]="true"></app-key-value>
+        <app-key-value key="Plan No" value="{{ spNo_O_LS }}" [editable]="true"></app-key-value>
+        <!-- sub -->
+        <div class="sub-field">
+          <app-collapsible uniqueId="SPlanPDFSub_O_LS" title="Subdivision Approval">
+            <app-key-value
+              key="Parent land Plan No"
+              value="{{ spSubParentPNo_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Approval Status"
+              value="{{ spSubApprovalStatus_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Approved Date"
+              value="{{ spSubApprovalDate_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Application Number"
+              value="{{ spSubApprovalNo_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+          </app-collapsible>
+        </div>
+      </app-collapsible>
+
+      <!-- ################# assesment no & tax info_outer-LS ################## -->
+      <app-collapsible uniqueId="assesmntTaxInfo_O_LS" title="Assessment and Tax Information">
+        <!-- sub -->
+        <div class="sub-field">
+          <app-collapsible uniqueId="assesmntInfo_O_LS" title="Assessment Information">
+            <app-key-value
+              key="Assessment number"
+              value="{{ assesmntNo_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Annual Value"
+              value="{{ annualValue_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Percentage"
+              value="{{ presentage_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Annual Fee"
+              value="{{ annualFee_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Date of valuation"
+              value="{{ valuationDate_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Year of Assessment"
+              value="{{ assesmntYear_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Property Type"
+              value="{{ propertyType_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Owner Name"
+              value="{{ ownerName_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Outstanding balance"
+              value="{{ outStndingBalance_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+          </app-collapsible>
+        </div>
+
+        <!-- sub -->
+        <div class="sub-field">
+          <app-collapsible uniqueId="taxInfo_O_LS" title="Tax Information">
+            <app-key-value
+              key="Annual Value"
+              value="{{ taxAnnualValue_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Tax Date"
+              value="{{ taxDate_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Tax Type"
+              value="{{ taxType_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Annual Fee"
+              value="{{ taxAnnualFee_O_LS }}"
+              [editable]="true"
+            ></app-key-value>
+          </app-collapsible>
+        </div>
+      </app-collapsible>
+    </div>
+
+    <!-- ################# BUILDINGFLOOR-LEGALSPACE ################## -->
+    <div class="legal-space-tab-title">BuildingFloor Legal Space</div>
+    <div class="sub-field">
+      <!-- ################# admin info_buildingFloor-LS ################## -->
+      <app-collapsible uniqueId="adminInfo_B_LS" title="Administrative Information">
+        <app-key-value
+          key="Administrative Unit Type"
+          value="{{ adminUnitType_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+
+        <hr class="divider" />
+        <label>Core details</label>
+        <div class="sub-field">
+          <app-key-value key="Province" value="{{ province_B_LS }}"></app-key-value>
+          <app-key-value key="District" value="{{ district_B_LS }}"></app-key-value>
+          <app-key-value key="DSD" value="{{ dsd_B_LS }}" [editable]="true"></app-key-value>
+        </div>
+        <hr class="divider" />
+
+        <app-key-value
+          key="Grama Niladhari Division"
+          value="{{ gnd_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="Assessment ward"
+          value="{{ assesmentWard_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="Electorate"
+          value="{{ electorate_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="Street Name"
+          value="{{ streetName_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="Building Name"
+          value="{{ buildingName_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="Postal Address of Building"
+          value="{{ postalAddress_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="House Hold Number"
+          value="{{ houseHoldNumber_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="Number of floors"
+          value="{{ numOfFloors_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+      </app-collapsible>
+
+      <!-- ################# overview_buildingFloor-LS  ################## -->
+      <app-collapsible uniqueId="overview_B_LS" title="BuildingFloor Legal Space Overview">
+        <app-key-value
+          key="Legal Space System ID"
+          value="{{ legalSpaceSystemID_B_LS }}"
+        ></app-key-value>
+        <app-key-value key="Dimension" value="{{ dimension_B_LS }}"></app-key-value>
+        <app-key-value key="Ground Floor Area" value="{{ groundFloorArea_B_LS }}"></app-key-value>
+        <app-key-value key="Area Unit" value="{{ areaUnit_B_LS }}"></app-key-value>
+        <app-key-value key="Height" value="{{ height_B_LS }}" [editable]="true"></app-key-value>
+        <app-key-value
+          key="Height Unit"
+          value="{{ heightUnits_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value key="Reference Point" value="{{ refPoint_B_LS }}"></app-key-value>
+        <app-key-value
+          key="Surface Relation"
+          value="{{ surfaceRelation_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="Apartment Use Category"
+          value="{{ apartmentUseCategory_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <div class="sub-field">
+          <app-key-value
+            key="Sub Category"
+            value="{{ subcategory_B_LS }}"
+            [editable]="true"
+          ></app-key-value>
+        </div>
+      </app-collapsible>
+
+      <!-- ################# utility network info_buildingFloor-LS ################## -->
+      <app-collapsible uniqueId="utilityInfo_B_LS" title="Utility Information">
+        <app-key-value
+          key="Electricity"
+          value="{{ electricity_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value key="Telecomm." value="{{ telecom_B_LS }}" [editable]="true"></app-key-value>
+        <app-key-value key="Internet" value="{{ internet_B_LS }}" [editable]="true"></app-key-value>
+        <app-key-value
+          key="Water Drinking"
+          value="{{ waterDrinking_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="Water Other"
+          value="{{ waterOther_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="**Sanitation"
+          value="{{ sanitation_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="Garbage Disposal"
+          value="{{ garbageDisposal_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+
+        <hr class="divider" />
+        <label>Fire Rescue</label>
+        <div class="sub-field">
+          <app-key-value
+            key="Fire Rescue Recommendation"
+            value="{{ fireRescueRecommendation_B_LS }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value
+            key="Issued Date"
+            value="{{ fireRescueIssuedDate_B_LS }}"
+            [editable]="true"
+          ></app-key-value>
+        </div>
+        <hr class="divider" />
+      </app-collapsible>
+
+      <!-- ################# Building tenure_buildingFloor-LS ################## -->
+      <app-collapsible uniqueId="tenure_B_LS" title="Building Tenure">
+        <app-key-value
+          key="Right type"
+          value="{{ rightType_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value key="Share" value="{{ share_B_LS }}" [editable]="true"></app-key-value>
+
+        <!-- sub -->
+        <div class="sub-field">
+          <app-collapsible uniqueId="party_B_LS" title="Party">
+            <app-key-value
+              key="Party type"
+              value="{{ partyType_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Party role"
+              value="{{ partyRole_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Party name"
+              value="{{ partyName_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Party NIC/BR"
+              value="{{ partyNic_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Party telephone"
+              value="{{ partyTele_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Party address"
+              value="{{ partyAddress_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+          </app-collapsible>
+
+          <app-collapsible uniqueId="adminSource_B_LS" title="Administrative Sources	">
+            <app-key-value
+              key="Administrative Source Type*"
+              value="{{ adminSourceType_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Availability Status"
+              value="{{ availabilityStatus_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Description"
+              value="{{ description_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Acceptance Date"
+              value="{{ acceptanceDate_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="External Archive Reference"
+              value="{{ ExternalArchiveRef_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Life Span Stamp"
+              value="{{ lifeSpanStamp_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value key="File *" value="{{ file_B_LS }}" [editable]="true"></app-key-value>
+            <app-key-value key="Ref No" value="{{ refNo_B_LS }}" [editable]="true"></app-key-value>
+            <app-key-value
+              key="Document Owner"
+              value="{{ docOwner_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+          </app-collapsible>
+
+          <app-collapsible uniqueId="res_B_LS" title="Responsibility	">
+            <app-key-value
+              key="Party *"
+              value="{{ resParty_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Responsibility Type *"
+              value="{{ resType_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Responsibility ID *"
+              value="{{ resID_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Description"
+              value="{{ resDesc_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Share"
+              value="{{ resShare_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Share Type"
+              value="{{ resShareType_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+          </app-collapsible>
+
+          <app-collapsible uniqueId="restrict_B_LS" title="Restriction	">
+            <app-key-value
+              key="Party *"
+              value="{{ restrictParty_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Restriction Type *"
+              value="{{ restrictType_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Restriction ID *"
+              value="{{ restrictID_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Description"
+              value="{{ restrictDesc_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Share"
+              value="{{ restrictShare_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Share Type"
+              value="{{ restrictShareType_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+          </app-collapsible>
+        </div>
+      </app-collapsible>
+
+      <!-- ################# Residents Information_buildingFloor-LS ################## -->
+      <app-collapsible uniqueId="residents_info_B_LS" title="Residents Information">
+        <!-- sub -->
+        <div class="sub-field">
+          <app-collapsible uniqueId="residents_party_buildingfloor_legal_space" title="Party">
+            <app-key-value
+              key="Party type"
+              value="{{ resiInforPartyType_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Party role"
+              value="{{ resiInforPartyRole_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Party name"
+              value="{{ resiInforPartyName_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Party NIC/BR"
+              value="{{ resiInforPartyNIC_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Party telephone"
+              value="{{ resiInforPartyTele_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Party address"
+              value="{{ resiInforPartyAddress_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+          </app-collapsible>
+        </div>
+      </app-collapsible>
+
+      <!-- ################# survey plan pdf_buildingFloor-LS ################## -->
+      <app-collapsible uniqueId="SPlanPDF_B_LS" title="Survey Plan - PDF">
+        <app-key-value key="File *" value="{{ spFile_B_LS }}" [editable]="true"></app-key-value>
+        <app-key-value key="Plan No" value="{{ spNo_B_LS }}" [editable]="true"></app-key-value>
+        <app-key-value
+          key="Approval Status"
+          value="{{ spApprovalStatus_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+        <app-key-value
+          key="Approved Date"
+          value="{{ spApprovedDate_B_LS }}"
+          [editable]="true"
+        ></app-key-value>
+      </app-collapsible>
+
+      <!-- ################# assesment no & tax info_buildingFloor-LS ################## -->
+      <app-collapsible uniqueId="assesmntTaxInfo_B_LS" title="Assessment and Tax Information">
+        <!-- sub -->
+        <div class="sub-field">
+          <app-collapsible uniqueId="assesmntInfo_B_LS" title="Assessment Information">
+            <app-key-value
+              key="Assessment number"
+              value="{{ assesmntNo_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Annual Value"
+              value="{{ annualValue_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Percentage"
+              value="{{ presentage_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Annual Fee"
+              value="{{ annualFee_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Date of valuation"
+              value="{{ valuationDate_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Year of Assessment"
+              value="{{ assesmntYear_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Property Type"
+              value="{{ propertyType_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Owner Name"
+              value="{{ ownerName_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Outstanding balance"
+              value="{{ outStndingBalance_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+          </app-collapsible>
+        </div>
+
+        <!-- sub -->
+        <div class="sub-field">
+          <app-collapsible uniqueId="taxInfo_B_LS" title="Tax Information">
+            <app-key-value
+              key="Annual Value"
+              value="{{ taxAnnualValue_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Tax Date"
+              value="{{ taxDate_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Tax Type"
+              value="{{ taxType_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Annual Fee"
+              value="{{ taxAnnualFee_B_LS }}"
+              [editable]="true"
+            ></app-key-value>
+          </app-collapsible>
+        </div>
+      </app-collapsible>
+    </div>
+  </div>
+  <div class="legal-space-tab-footer">
+    <div class="button-section">
+      <app-custom-buttons
+        buttonText="INQUIRIES"
+        buttonIcon="perm_identity"
+        buttonStyle="primary"
+      ></app-custom-buttons>
+      <app-custom-buttons
+        buttonText="REMINDERS"
+        buttonIcon="event"
+        buttonStyle="primary"
+      ></app-custom-buttons>
+      <app-custom-buttons
+        buttonText="COMBINE"
+        buttonIcon="link"
+        buttonStyle="primary"
+      ></app-custom-buttons>
+      <div class="tag-button">
+        <app-custom-buttons
+          buttonText="TAGS"
+          buttonIcon="bookmark"
+          buttonStyle="primary"
+        ></app-custom-buttons>
+      </div>
+    </div>
+  </div>
+</div>

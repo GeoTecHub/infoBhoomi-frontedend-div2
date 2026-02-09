@@ -1,0 +1,162 @@
+<div class="header">
+  <h2 mat-dialog-title class="text-white">User Profile</h2>
+  <button mat-button mat-dialog-close class="text-white">
+    <mat-icon class="close-button">close</mat-icon>
+  </button>
+</div>
+
+<mat-dialog-content class="mat-typography">
+  <div class="profile-image-block">
+    <div class="d-flex align-items-center gx-4 profile-image-container-main mx-auto">
+      <div class="profile-image-container">
+        <img
+          src="sample/male_avatar.png"
+          alt="Profile Image"
+          class="profile-image"
+          *ngIf="sex.toLowerCase() === 'male'"
+        />
+        <img
+          src="sample/female_avatar.png"
+          alt="Profile Image"
+          class="profile-image"
+          *ngIf="sex.toLowerCase() === 'female'"
+        />
+        <button mat-icon-button class="change-image-button" (click)="editProfilePic()">
+          <mat-icon>photo_camera</mat-icon>
+        </button>
+        <input type="file" #fileInput (change)="onFileSelected($event)" style="display: none" />
+      </div>
+
+      <div class="div-sec-2">
+        <label class="username-label">
+          {{ username }}
+        </label>
+
+        <div class="align-items-center justify-content-between">
+          <div class="change-username-container">
+            <button mat-button class="change-username-link" (click)="changeUsername()">
+              Change Username
+            </button>
+          </div>
+
+          <div class="change-password-container">
+            <button mat-button class="change-password-link" (click)="changePassword()">
+              Change Password
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <form class="user-profile-form">
+      <!-- <label>
+        <b>First Name:</b>
+        <input type="text" [value]="first_name" readonly #firstnameSp [matTooltip]="first_name" [matTooltipDisabled]="!isOverflow(firstnameSp)">
+      </label>
+
+      <label>
+        <b>Last Name:</b>
+        <input type="text" [value]="last_name" readonly #lastnameSp [matTooltip]="last_name" [matTooltipDisabled]="!isOverflow(lastnameSp)">
+      </label> -->
+
+      <label>
+        <b>Name:</b>
+        <input
+          type="text"
+          [value]="first_name + ' ' + last_name"
+          readonly
+          #nameSp
+          [matTooltip]="last_name"
+          [matTooltipDisabled]="!isOverflow(nameSp)"
+        />
+      </label>
+
+      <!-- <label>
+        <b>NIC:</b>
+        <input type="text" [value]="nic" readonly #nicSp [matTooltip]="nic" [matTooltipDisabled]="!isOverflow(nicSp)">
+      </label>
+
+      <label>
+        <b>Age:</b>
+        <input type="text" [value]="age" readonly>
+      </label>
+
+      <label>
+        <b>Sex:</b>
+        <input type="text" [value]="sex" readonly>
+      </label> -->
+
+      <label>
+        <b>Employee ID:</b>
+        <input
+          type="text"
+          [value]="eid"
+          readonly
+          #eidSp
+          [matTooltip]="eid"
+          [matTooltipDisabled]="!isOverflow(eidSp)"
+        />
+      </label>
+
+      <label>
+        <b>Email:</b>
+        <input
+          type="text"
+          [value]="email"
+          readonly
+          #emailSp
+          [matTooltip]="email"
+          [matTooltipDisabled]="!isOverflow(emailSp)"
+        />
+      </label>
+
+      <label>
+        <b>Phone:</b>
+        <input
+          type="text"
+          [value]="mobile"
+          readonly
+          #mobileSp
+          [matTooltip]="mobile"
+          [matTooltipDisabled]="!isOverflow(mobileSp)"
+        />
+      </label>
+
+      <label>
+        <b>Department:</b>
+        <input
+          type="text"
+          [value]="department"
+          readonly
+          #departmentSp
+          [matTooltip]="department"
+          [matTooltipDisabled]="!isOverflow(departmentSp)"
+        />
+      </label>
+
+      <label>
+        <b>Position:</b>
+        <input
+          type="text"
+          [value]="position"
+          readonly
+          #positionSp
+          [matTooltip]="position"
+          [matTooltipDisabled]="!isOverflow(positionSp)"
+        />
+      </label>
+    </form>
+  </div>
+</mat-dialog-content>
+
+<div class="user-profile-form-bottom">
+  <mat-dialog-actions align="end">
+    <button
+      mat-button
+      mat-dialog-close
+      style="background-color: #3c71a6; color: white; width: 100px; height: 35px"
+    >
+      Close
+    </button>
+  </mat-dialog-actions>
+</div>

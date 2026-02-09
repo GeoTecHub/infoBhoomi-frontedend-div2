@@ -1,0 +1,256 @@
+<div class="header-container">
+  <app-admin-header></app-admin-header>
+</div>
+
+<div class="admin-main-body">
+  <div class="side-panel-container">
+    <app-admin-side-bar></app-admin-side-bar>
+  </div>
+
+  <div class="tab-container">
+    <div class="card shadow-sm">
+      <div class="card-header background-primary text-white d-flex align-items-center">
+        <button mat-icon-button class="custom-back-button" (click)="goBack()">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        &nbsp;&nbsp;&nbsp;
+        <h6 class="mb-0 main-title">
+          Edit Organization Area | <span class="head-org-name">{{ orgName }}</span>
+        </h6>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-3">
+            <label class="mb-2 d-block"
+              ><strong style="font-size: 14px">Main Selection</strong></label
+            >
+            <div class="border-bottom-black"></div>
+            <div class="form-group mb-3 mt-2">
+              <label for="province">Province</label>
+              <select
+                id="province"
+                class="form-control form-control-sm select-op-first"
+                [(ngModel)]="selectedProvince"
+                (ngModelChange)="onProvinceChange($event)"
+                [disabled]="loading"
+              >
+                <option [ngValue]="null">Select a Province</option>
+                <option
+                  *ngFor="let province of getPdList(); trackBy: trackByStr"
+                  [ngValue]="province"
+                >
+                  {{ province }}
+                </option>
+              </select>
+              <small *ngIf="loading" class="text-muted">Loading areas…</small>
+            </div>
+
+            <div class="form-group mb-3">
+              <label for="district">District</label>
+              <select
+                id="district"
+                class="form-control form-control-sm"
+                [(ngModel)]="selectedDistrict"
+                (ngModelChange)="onDistrictChange($event)"
+                [disabled]="!orgAreaDefineService.distList.length || loading"
+              >
+                <option [ngValue]="null">Select a District</option>
+                <option
+                  *ngFor="let d of orgAreaDefineService.distList; trackBy: trackByStr"
+                  [ngValue]="d"
+                >
+                  {{ d }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group mb-3">
+              <label for="dsd">DSD</label>
+              <select
+                id="dsd"
+                class="form-control form-control-sm"
+                [(ngModel)]="selectedDsd"
+                (ngModelChange)="onDsdChange($event)"
+                [disabled]="!orgAreaDefineService.dsdList.length || loading"
+              >
+                <option [ngValue]="null">Select a DSD</option>
+                <option
+                  *ngFor="let dsd of orgAreaDefineService.dsdList; trackBy: trackByStr"
+                  [ngValue]="dsd"
+                >
+                  {{ dsd }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="col-md-5">
+            <div class="row">
+              <div class="gnd-area col-md-10">
+                <label class="mb-2 d-block"
+                  ><strong style="font-size: 14px">GN Divisions</strong></label
+                >
+                <div class="border-bottom-black"></div>
+                <div class="mt-2 d-flex gap-2">
+                  <input
+                    type="search"
+                    class="form-control form-control-sm"
+                    placeholder="Search GN by name…"
+                    [(ngModel)]="gnSearchTerm"
+                  />
+                </div>
+
+                <div
+                  class="mt-2 d-flex align-items-center gap-2"
+                  *ngIf="filteredGndOptions.length && !gnSearchTerm.length"
+                >
+                  <label class="d-flex align-items-center gap-2 mb-0">
+                    <input
+                      type="checkbox"
+                      [checked]="allVisibleChecked"
+                      [indeterminate]="someVisibleChecked"
+                      (change)="toggleSelectAllVisible($event)"
+                      [disabled]="!filteredGndOptions.length"
+                    />
+                    <span style="font-size: 14px; font-weight: 600"> Select all </span>
+                  </label>
+                </div>
+
+                <div class="overflow-section mt-2 d-flex flex-wrap">
+                  <div
+                    class="mb-2 col-md-6"
+                    *ngFor="let row of filteredGndOptions; let index = index; trackBy: trackByGid"
+                  >
+                    <label class="d-flex align-items-center gap-2">
+                      <input
+                        type="checkbox"
+                        [ngModel]="selectedGndMap[row.gid] || false"
+                        (ngModelChange)="toggleGnd(row.gid, $event)"
+                        [ngModelOptions]="{ standalone: true }"
+                      />
+                      <span style="font-size: 14px">{{ row.gnd }}</span>
+                    </label>
+                  </div>
+                  <small
+                    class="text-muted"
+                    *ngIf="!filteredGndOptions.length && gnSearchTerm.length"
+                  >
+                    No matching GN Divisions.
+                  </small>
+                </div>
+              </div>
+
+              <div class="col-md-2">
+                <div
+                  *ngIf="hasAnySelected"
+                  class="d-flex align-items-center"
+                  style="min-height: 250px; height: 100%"
+                >
+                  <button class="btn add-btn" (click)="addSelectedGnds()">
+                    Add <mat-icon>chevron_right</mat-icon>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4">
+            <div class="gnd-areas-for-org w-100">
+              <label class="mb-2 d-block"
+                ><strong style="font-size: 14px">Permitted Areas</strong></label
+              >
+              <div class="border-bottom-black"></div>
+
+              <div class="row g-2 mt-2">
+                <div class="col-6">
+                  <input
+                    type="search"
+                    class="form-control form-control-sm"
+                    placeholder="Search GN by name…"
+                    [(ngModel)]="searchAddedGNTerm"
+                  />
+                </div>
+
+                <div class="col-3">
+                  <select
+                    class="form-control form-control-sm"
+                    [ngModel]="filterAddedDist"
+                    (ngModelChange)="onFilterDistChange($event)"
+                    [ngModelOptions]="{ standalone: true }"
+                  >
+                    <option [ngValue]="null">All Districts</option>
+                    <option *ngFor="let d of addedDistOptions; trackBy: trackByStr" [ngValue]="d">
+                      {{ d }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="col-3">
+                  <select
+                    class="form-control form-control-sm"
+                    [ngModel]="filterAddedDsd"
+                    (ngModelChange)="filterAddedDsd = $event"
+                    [disabled]="!addedDsdOptions.length"
+                    [ngModelOptions]="{ standalone: true }"
+                  >
+                    <option [ngValue]="null">All DSDs</option>
+                    <option
+                      *ngFor="let dsd of addedDsdOptions; trackBy: trackByStr"
+                      [ngValue]="dsd"
+                    >
+                      {{ dsd }}
+                    </option>
+                  </select>
+                </div>
+
+                <div class="overflow-section mt-2">
+                  <ul class="list-group mb-3">
+                    <li
+                      class="list-group-item d-flex justify-content-between align-items-center gn-label"
+                      *ngFor="let r of filteredAddedGnds; trackBy: trackByGid"
+                    >
+                      <span>
+                        {{ r.gnd }}
+                        <small class="text-muted">({{ r.dsd }} • {{ r.dist }} )</small>
+                      </span>
+                      <div class="d-flex align-items-center">
+                        <span class="badge bg-light text-dark">GID: {{ r.gid }}</span>
+                        <mat-icon
+                          class="text-danger material-icons-custom remove-item-btn"
+                          (click)="removeSingleGnd(r.gid)"
+                          >delete</mat-icon
+                        >
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+
+                <div class="d-flex gap-2 justify-content-end">
+                  <button
+                    type="button"
+                    mat-icon-button
+                    class="primary-bg-btn"
+                    style="background-color: #dc3545 !important; width: 120px"
+                    (click)="removeAllAddedGnds()"
+                    [disabled]="loading"
+                  >
+                    <mat-icon>delete</mat-icon> Remove All
+                  </button>
+                  <button
+                    type="button"
+                    mat-icon-button
+                    class="primary-bg-btn"
+                    (click)="applyAddedGnds()"
+                    [disabled]="loading"
+                  >
+                    <mat-icon>save</mat-icon> Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,130 @@
+<h4 mat-dialog-title>Query Builder</h4>
+
+<div class="query-builder">
+  <!-- Initial Query Builder -->
+  <div class="query-basic" *ngIf="!isAdvancedMode">
+    <mat-dialog-content>
+      <div class="content">
+        <label for="saved-formulas">Saved Formulas</label>
+        <textarea id="saved-formulas" rows="10" readonly></textarea>
+      </div>
+
+      <div class="content">
+        <label for="formula">Formula</label>
+        <textarea id="formula" rows="5" readonly></textarea>
+      </div>
+
+      <div *ngIf="showProOverlay">
+        <app-pro-version-message></app-pro-version-message>
+      </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions>
+      <app-custom-buttons
+        buttonText="Close"
+        buttonIcon="cancel"
+        buttonStyle="secondary"
+        mat-dialog-close
+      >
+      </app-custom-buttons>
+
+      <app-custom-buttons
+        buttonText="Advanced"
+        buttonIcon="tune"
+        buttonStyle="primary"
+        (buttonClick)="toggleAdvanced()"
+      >
+      </app-custom-buttons>
+
+      <app-custom-buttons buttonText="Apply" buttonIcon="check" buttonStyle="primary">
+      </app-custom-buttons>
+    </mat-dialog-actions>
+  </div>
+
+  <!-- Advanced Query Builder -->
+  <div class="query-advanced" *ngIf="isAdvancedMode">
+    <mat-dialog-content>
+      <div class="content">
+        <div class="form-group">
+          <label for="query-name">Query Name</label>
+          <input id="query-name" type="text" />
+        </div>
+
+        <div class="form-group">
+          <label for="layers">Select Layer</label>
+          <select id="layers" multiple>
+            <!-- All layer names go here -->
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="attributes">Select Attribute</label>
+          <select id="attributes" multiple>
+            <!-- Attributes of selected layer go here -->
+          </select>
+        </div>
+
+        <div class="operators-set-1">
+          <app-custom-buttons buttonText="=" buttonStyle="type-1"> </app-custom-buttons>
+
+          <app-custom-buttons buttonText="&lt;" buttonStyle="type-1"> </app-custom-buttons>
+
+          <app-custom-buttons buttonText="&gt;" buttonStyle="type-1"> </app-custom-buttons>
+
+          <app-custom-buttons buttonText="&lt;=" buttonStyle="type-1"> </app-custom-buttons>
+
+          <app-custom-buttons buttonText="&gt;=" buttonStyle="type-1"> </app-custom-buttons>
+
+          <app-custom-buttons buttonText="%" buttonStyle="type-1"> </app-custom-buttons>
+
+          <app-custom-buttons buttonText="()" buttonStyle="type-1"> </app-custom-buttons>
+        </div>
+
+        <div class="operators-set-1">
+          <app-custom-buttons buttonText="AND" buttonStyle="type-1"> </app-custom-buttons>
+
+          <app-custom-buttons buttonText="OR" buttonStyle="type-1"> </app-custom-buttons>
+
+          <app-custom-buttons buttonText="NOT" buttonStyle="type-1"> </app-custom-buttons>
+
+          <app-custom-buttons buttonText="NULL" buttonStyle="type-1"> </app-custom-buttons>
+
+          <app-custom-buttons buttonText="IN" buttonStyle="type-1"> </app-custom-buttons>
+        </div>
+
+        <div class="form-group">
+          <label for="formula-advanced">Formula</label>
+          <textarea id="formula-advanced" rows="5"></textarea>
+        </div>
+      </div>
+
+      <div *ngIf="showProOverlay">
+        <app-pro-version-message></app-pro-version-message>
+      </div>
+    </mat-dialog-content>
+
+    <mat-dialog-actions>
+      <app-custom-buttons
+        buttonText="Close"
+        buttonIcon="cancel"
+        buttonStyle="secondary"
+        mat-dialog-close
+      >
+      </app-custom-buttons>
+
+      <app-custom-buttons buttonText="Save" buttonIcon="bookmark" buttonStyle="primary">
+      </app-custom-buttons>
+
+      <app-custom-buttons
+        buttonText="Back"
+        buttonIcon="arrow_back"
+        buttonStyle="primary"
+        (buttonClick)="toggleAdvanced()"
+      >
+      </app-custom-buttons>
+
+      <app-custom-buttons buttonText="Apply" buttonIcon="check" buttonStyle="primary">
+      </app-custom-buttons>
+    </mat-dialog-actions>
+  </div>
+</div>

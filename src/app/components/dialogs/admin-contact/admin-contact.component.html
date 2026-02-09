@@ -1,0 +1,23 @@
+<mat-dialog-content class="mat-typography">
+  <app-loader [isLoading]="loading"></app-loader>
+  <div class="about-main-content">
+    <div class="about-contact-block">
+      <h3 class="about-title">Admin Contact Information</h3>
+      <div class="about-info-row"><strong>Name:</strong> {{ first_name + ' ' + last_name }}</div>
+      <!-- <div class="about-info-row"><strong>Position:</strong> {{post}}</div> -->
+      <div class="about-info-row">
+        <strong>Email:</strong>
+        <a [href]="`mailto:${email}`" class="about-link"> {{ email }}</a>
+      </div>
+      <div class="about-info-row"><strong>Phone:</strong> {{ mobile }}</div>
+      <!-- <div class="about-info-row">
+        <strong>Support:</strong>
+        <a href="mailto:info@infobhoomi.com" class="about-link">support&#64;infobhoomi.com</a>
+      </div> -->
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close style="color: #d32f2f">Close</button>
+</mat-dialog-actions>

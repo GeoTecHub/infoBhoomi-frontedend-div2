@@ -1,0 +1,519 @@
+.mat-dialog-container {
+  border-radius: 15px !important;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
+label {
+  font-size: 12px;
+  font-weight: bold;
+  margin-top: -10px;
+}
+
+.sub-field {
+  padding-left: 10px;
+}
+
+/* ********************footer-section******************************** */
+
+.loading-toast {
+  position: absolute;
+  height: calc(100% - 90px);
+  width: 300px;
+}
+
+.keyValueWrapper__keyValue {
+  display: flex;
+  align-items: center;
+  /* Align items vertically */
+  justify-content: space-between;
+  width: 100%;
+  gap: 10px;
+  /* Adjust spacing */
+}
+
+.keyValue__key {
+  font-weight: bold;
+  margin: 18px 0px;
+  color: var(--color-secondary-d2, #555);
+  font-size: 12px;
+  line-height: 14px;
+}
+
+.keyValue__value {
+  color: var(--color-secondary-d1, #333);
+  flex: 2;
+  /* Give more space to input */
+  font-size: 12px;
+  line-height: 14px;
+  padding: 5px;
+}
+
+.primary-custom-sm-btn-2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  font-size: 12px;
+  margin: 10px 0px;
+}
+
+select {
+  border-color: var(--color-secondary-l2, #ccc);
+  border-radius: 5px;
+  border: 1px solid var(--color-secondary-l2, #ccc);
+  background-color: var(--color-white, #fff);
+  transition: border-color 0.2s ease-in-out;
+  padding: 5px;
+  min-width: 100px;
+}
+
+select:focus {
+  outline: none;
+  border-color: var(--color-primary, #007bff);
+}
+
+select::placeholder {
+  color: var(--color-secondary-l2, #ccc);
+  opacity: 0.7;
+}
+
+.keyValue__value {
+  border: 1px solid var(--color-secondary-l2);
+  border-radius: 5px;
+  padding: 5px;
+  min-width: 100px;
+  width: 100%;
+}
+
+.keyValue__value:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.keyValueWrapper {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  padding: 5px;
+}
+
+body {
+  font-family: 'Calibri', sans-serif;
+}
+
+.card-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  /* Ensures spacing between cards */
+  gap: 15px;
+  /* Adds spacing between cards */
+}
+
+.custom-card {
+  flex: 1;
+  /* Ensures each card takes equal space */
+  max-width: 100%;
+  /* Limits each card to 50% of the parent width */
+  margin-bottom: 10px;
+}
+
+.card-main-title {
+  font-weight: bold;
+  color: var(--color-secondary-d2, #555);
+  flex: 1;
+  font-size: 14px;
+  line-height: 14px;
+  margin-bottom: 5px;
+}
+
+.card-sub-title {
+  font-size: 12px;
+  padding: 10px;
+  text-align: center;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  /* 2 equal columns */
+  gap: 16px;
+  /* Space between columns */
+}
+
+mat-form-field {
+  width: 100%;
+  /* Ensure the form field takes up full width of its grid cell */
+}
+
+.label {
+  margin-right: 8px;
+  /* Space between the label and the value */
+}
+
+.row-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Pushes delete button to the right */
+  gap: 10px;
+}
+
+.spacer {
+  flex-grow: 1;
+  /* Pushes the delete button to the row end */
+}
+
+/* Style the overall container for the title and buttons */
+.d-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.control-button {
+  display: flex;
+  gap: 10px;
+  /* Space between the buttons */
+}
+
+/* Style the title */
+.mat-dialog-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+/* Style for individual buttons */
+button.mat-button {
+  border: 1px solid #007bff;
+  /* Border color */
+  color: #007bff;
+  /* Text color */
+  background-color: transparent;
+  /* Transparent background */
+  border-radius: 4px;
+  /* Rounded corners */
+  padding: 5px 10px;
+  /* Padding for the button */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+button.mat-button:hover {
+  background-color: #007bff;
+  /* Hover background color */
+  color: white;
+  /* Hover text color */
+}
+
+/* Style for icons inside buttons */
+button.mat-button i {
+  font-size: 16px;
+  /* Icon size */
+  margin: 0;
+  /* Remove any margin around the icon */
+}
+
+/* Optional: Add additional styles for the outline */
+.btn-outline-primary {
+  border: 1px solid #007bff;
+}
+
+.btn-sm {
+  font-size: 12px;
+}
+
+/* Optional: Style the close button */
+button.mat-dialog-close {
+  background-color: transparent;
+  /* Transparent background */
+  color: #dc3545;
+  /* Red color for close */
+}
+
+.container {
+  display: flex;
+  justify-content: flex-end;
+  /* Align button to the right */
+}
+
+.search-btn {
+  border-radius: 20px;
+  border: none;
+  width: 100px;
+  background-color: #779ab8;
+  color: white;
+  display: flex;
+  margin-top: 10px;
+  align-items: center;
+  justify-content: center;
+  /* border-radius: 4px; */
+  padding: 5px;
+}
+
+.search-btn mat-icon {
+  margin-right: 5px;
+  /* Space between the icon and the text */
+}
+
+.search-btn:hover {
+  background-color: #779ab8;
+}
+
+/* Container for the entire list */
+.label-value-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Space between items */
+  /* max-width: 300px;  */
+  margin: 0 auto;
+  /* Centering the list */
+}
+
+/* Individual label-value item */
+.label-value-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px solid #ddd;
+  /* Optional: add a separator line between items */
+}
+
+/* Style for the label */
+.label {
+  font-weight: bold;
+  color: #333;
+  width: 180px;
+}
+
+/* Style for the value */
+.value {
+  color: #555;
+  text-align: right;
+  /* Align value to the right */
+  flex-grow: 1;
+  /* Allow value to take up remaining space */
+}
+
+.material-header {
+  background-color: #779ab8;
+  /* Material primary color */
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Align title left and button right */
+}
+
+.header-title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.close-btn {
+  border-radius: 0px 15px 0px 0px;
+  background: #e12d2d;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+  padding: 10px 10px;
+}
+
+.close-btn:hover {
+  color: red;
+}
+
+.card .inline {
+  margin: 0;
+  flex-grow: 1;
+  /* Allow text to expand */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.delete-btn {
+  background-color: red !important;
+  color: white !important;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+}
+
+.green-checkbox {
+  accent-color: green;
+  /* For modern browsers */
+}
+
+.red-checkbox {
+  accent-color: red;
+  /* For modern browsers */
+}
+
+.checkbox-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.styled-checkbox {
+  width: 18px;
+  /* Adjust size as needed */
+  height: 16px;
+  /* Adjust size as needed */
+  cursor: pointer;
+}
+
+.small-input {
+  height: 28px !important;
+  min-height: 28px !important;
+}
+
+.table-responsive-scroll {
+  max-height: 250px;
+  /* Adjust height as needed */
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  /* Optional: border for better visibility */
+}
+
+.table thead {
+  position: sticky;
+  top: 0;
+  background: white;
+  /* Keeps the header visible */
+  z-index: 1;
+}
+
+.table-responsive-scroll::-webkit-scrollbar {
+  width: 6px;
+  /* Thin scrollbar */
+}
+
+.table-responsive-scroll::-webkit-scrollbar-thumb {
+  background: #aaa;
+  border-radius: 10px;
+}
+
+/* DELETE MODAL */
+#confirmDeleteModal .modal-header {
+  background-color: #fff;
+  border-bottom: 1px solid #bbd2db;
+}
+
+#confirmDeleteModal .modal-title {
+  color: #721c24;
+  /* Dark red text */
+  font-size: 1rem;
+  /* Adjust font size */
+  font-weight: bold;
+}
+
+/* Close Button */
+#confirmDeleteModal .btn-close {
+  background-color: #df1627;
+  border: none;
+}
+
+/* Modal Body */
+#confirmDeleteModal .modal-body {
+  background-color: #fff;
+  /* Dark yellow text */
+}
+
+#confirmDeleteModal .modal-body p {
+  font-size: 0.9rem;
+  /* Slightly smaller font */
+  margin: 0;
+}
+
+/* Modal Footer */
+#confirmDeleteModal .modal-footer {
+  background-color: #fff;
+  /* Light red footer */
+}
+
+/* Button Styles */
+#confirmDeleteModal .btn-sm {
+  font-size: 0.85rem;
+  /* Smaller font size */
+  padding: 0.5rem 1rem;
+}
+
+#confirmDeleteModal .btn-danger {
+  background-color: #dc3545;
+  /* Red color for the danger button */
+  border: none;
+}
+
+#confirmDeleteModal .btn-secondary {
+  background-color: #6c757d;
+  /* Gray background for the 'No' button */
+  border: none;
+}
+
+/* Button Hover Effects */
+#confirmDeleteModal .btn-danger:hover {
+  background-color: #c82333;
+  /* Darker red on hover */
+}
+
+#confirmDeleteModal .btn-secondary:hover {
+  background-color: #5a6268;
+  /* Darker gray on hover */
+}
+
+/* Icon Size */
+#confirmDeleteModal .fa-trash {
+  margin-right: 5px;
+  font-size: 1rem;
+}
+
+.modal-sm {
+  max-width: 360px !important;
+}
+
+.modal-backdrop {
+  z-index: 1050 !important;
+}
+
+.modal {
+  z-index: 1060 !important;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: calc(24px);
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  bottom: 0;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+.toggle-password:hover {
+  color: #000;
+}

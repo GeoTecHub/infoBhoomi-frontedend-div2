@@ -1,0 +1,89 @@
+.main-body {
+  display: flex;
+  flex-direction: row;
+}
+
+.side-panel-container {
+  background: #fff;
+}
+
+.tab-container {
+  flex-grow: 1;
+  padding: 10px;
+}
+
+.create-btn {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 0px;
+}
+
+.green-checkbox {
+  accent-color: green;
+  /* For modern browsers */
+}
+
+.red-checkbox {
+  accent-color: red;
+  /* For modern browsers */
+}
+
+.checkbox-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.styled-checkbox {
+  width: 18px;
+  /* Adjust size as needed */
+  height: 16px;
+  /* Adjust size as needed */
+  cursor: pointer;
+}
+
+.select-op-first {
+  color: #777878;
+}
+
+.admin-primary-bg-btn {
+  height: 32px;
+  padding-left: 11px;
+  padding-right: 11px;
+}
+
+.admin-pill {
+  background: #e3b729;
+  border-radius: 12px;
+  color: white;
+  font-weight: 400;
+  text-align: center;
+  text-transform: capitalize;
+  width: 60px;
+  margin: auto;
+}
+
+.user-pill {
+  background: #2fa642;
+  border-radius: 12px;
+  color: white;
+  font-weight: 400;
+  text-align: center;
+  text-transform: capitalize;
+  width: 60px;
+  margin: auto;
+}
+
+.disabled-pill {
+  background: #c8c8c8;
+  border-radius: 12px;
+  color: rgb(117, 117, 117);
+  font-weight: 400;
+  text-align: center;
+  text-transform: capitalize;
+  width: 60px;
+  margin: auto;
+}
+
+.link-text {
+  text-decoration: none;
+}

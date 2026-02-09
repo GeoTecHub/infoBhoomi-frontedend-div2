@@ -1,0 +1,58 @@
+<div class="material-header">
+  <div class="header-content">
+    <h2 class="header-title">{{ modelHeader }}</h2>
+  </div>
+</div>
+
+<mat-dialog-content>
+  <mat-card class="custom-card">
+    <mat-card-content>
+      <div class="keyValueList">
+        <div class="show_all_inputs">
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Layer Name</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [readonly]="isDeleteLayer"
+                [(ngModel)]="updatedLayer.layer_name"
+              />
+              <div *ngIf="layerNameRequired" style="color: red; font-size: 12px">
+                *** Layer Name is required
+              </div>
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Color</div>
+              <input type="color" class="keyValue__value" [(ngModel)]="updatedLayer.colour" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <button
+    mat-button
+    mat-dialog-close
+    [ngStyle]="{ color: isDeleteLayer ? 'var(--color-neutral-d2)' : '#005ccb' }"
+  >
+    Cancel
+  </button>
+  <button
+    mat-button
+    (click)="onUpdateDelete()"
+    [ngStyle]="{ color: isDeleteLayer ? 'red' : '#005ccb' }"
+  >
+    {{ buttonTitle }}
+  </button>
+  <div
+    *ngIf="isLoading"
+    style="padding-left: 5px; padding-right: 5px; color: #005ccb; font-size: 12px"
+  ></div>
+  <mat-spinner *ngIf="isLoading" diameter="20" class="loading-spinner"></mat-spinner>
+</mat-dialog-actions>

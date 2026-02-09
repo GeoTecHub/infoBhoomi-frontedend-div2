@@ -1,0 +1,67 @@
+<div class="floor-plan-wrapper" *ngIf="plan">
+  <div class="plan-and-info">
+    <svg
+      class="plan-canvas"
+      [attr.viewBox]="'0 0 ' + plan.width + ' ' + plan.height"
+      preserveAspectRatio="xMidYMid meet"
+    >
+      <!-- Background outline -->
+      <rect
+        x="0"
+        y="0"
+        [attr.width]="plan.width"
+        [attr.height]="plan.height"
+        class="plan-bg"
+      ></rect>
+
+      <!-- Surfaces -->
+      <ng-container *ngFor="let surface of plan.surfaces; trackBy: trackBySurfaceId">
+        <polygon
+          class="plan-surface"
+          [ngClass]="{
+            selected: selectedSurface?.id === surface.id,
+            room: surface.type === 'Room',
+            corridor: surface.type === 'Corridor',
+          }"
+          [attr.points]="getPointsAttr(surface)"
+          (click)="onSurfaceClick($event, surface)"
+        ></polygon>
+
+        <!-- Optional label in the middle of each polygon -->
+        <text
+          *ngIf="surface.points.length > 0"
+          class="surface-label"
+          [attr.x]="surface.points[0].x + 10"
+          [attr.y]="surface.points[0].y + 20"
+        >
+          {{ surface.name }}
+        </text>
+      </ng-container>
+    </svg>
+
+    <!-- Info panel -->
+    <div class="surface-info" *ngIf="selectedSurface">
+      <h3>Selected area</h3>
+      <div class="info-row">
+        <span class="label">ID:</span>
+        <span class="value">{{ selectedSurface.id }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Name:</span>
+        <span class="value">{{ selectedSurface.name }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Type:</span>
+        <span class="value">{{ selectedSurface.type }}</span>
+      </div>
+      <div class="info-row">
+        <span class="label">Vertices:</span>
+        <span class="value">
+          {{ selectedSurface.points.length }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <p class="hint-2d">Click on a room/corridor in the plan to see its details.</p>
+</div>

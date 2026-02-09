@@ -1,0 +1,201 @@
+<div class="primary-tools-group" *ngIf="canView()">
+  <div class="map-tools-content">
+    <div class="map-tool-set-1">
+      <!-- Buttons for set 1 -->
+
+      <!-- Draw Point -->
+      <div class="map-tool" *ngIf="canAdd()">
+        <button
+          mat-fab
+          (click)="onDrawClick('Point')"
+          [disabled]="!(isDrawingReady$ | async)"
+          [ngClass]="{
+            'active-btn': getActiveToolType === 'draw' && getCurrentDrawType === 'Point',
+          }"
+          matTooltip="Draw Point"
+        >
+          <mat-icon>add_location_alt</mat-icon>
+        </button>
+      </div>
+
+      <!-- Draw LineString -->
+      <div class="map-tool" *ngIf="canAdd()">
+        <button
+          mat-fab
+          (click)="onDrawClick('LineString')"
+          [disabled]="!(isDrawingReady$ | async)"
+          [ngClass]="{
+            'active-btn': getActiveToolType === 'draw' && getCurrentDrawType === 'LineString',
+          }"
+          matTooltip="Draw Line"
+        >
+          <mat-icon>timeline</mat-icon>
+        </button>
+      </div>
+
+      <!-- Draw Polygon -->
+      <div class="map-tool" *ngIf="canAdd()">
+        <button
+          mat-fab
+          (click)="onDrawClick('Polygon')"
+          [disabled]="!(isDrawingReady$ | async)"
+          [ngClass]="{
+            'active-btn': getActiveToolType === 'draw' && getCurrentDrawType === 'Polygon',
+          }"
+          matTooltip="Draw Polygon"
+        >
+          <mat-icon>pentagon</mat-icon>
+        </button>
+      </div>
+
+      <!-- Modify Feature -->
+      <div class="map-tool" *ngIf="canEdit()">
+        <button
+          mat-fab
+          (click)="onModifyClick()"
+          [disabled]="!(isDrawingReady$ | async)"
+          [ngClass]="{ 'active-btn': (activeTool$ | async)?.type === 'modify' }"
+          matTooltip="Modify Feature"
+        >
+          <mat-icon>edit_square</mat-icon>
+        </button>
+      </div>
+
+      <!-- Split Polygon -->
+      <div class="map-tool" *ngIf="canEdit()">
+        <button
+          mat-fab
+          aria-label="Split"
+          (click)="splitPolygon()"
+          matTooltip="Split Polygon"
+          [disabled]="!(isDrawingReady$ | async)"
+          [ngClass]="{ 'active-btn': this.isSplitting == true }"
+        >
+          <mat-icon>content_cut</mat-icon>
+        </button>
+      </div>
+
+      <!-- Merge Selected Feature(s) -->
+      <!-- Merge Polygons -->
+      <div class="map-tool" *ngIf="canEdit()">
+        <button
+          mat-fab
+          aria-label="Merge"
+          (click)="onMergeClick()"
+          matTooltip="Merge Polygons"
+          [disabled]="!(isDrawingReady$ | async)"
+          [ngClass]="{ 'active-btn': getActiveToolType === 'merge' }"
+        >
+          <mat-icon>layers</mat-icon>
+        </button>
+      </div>
+
+      <!-- Delete Selected Feature(s) -->
+      <div class="map-tool" *ngIf="canDelete()">
+        <button
+          mat-fab
+          (click)="triggerDeleteSelected()"
+          matTooltip="Delete Selected"
+          [disabled]="!(isDrawingReady$ | async) || (activeTool$ | async)?.type !== 'select'"
+        >
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+
+      <!-- Select Feature(s) -->
+      <div class="map-tool">
+        <button
+          mat-fab
+          aria-label="select"
+          (click)="onSelectClick()"
+          [disabled]="!(isDrawingReady$ | async)"
+          matTooltip="Select Feature(s)"
+          [ngClass]="{ 'active-btn': (activeTool$ | async)?.type === 'select' }"
+        >
+          <mat-icon>touch_app</mat-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Group 2: Bottom Tools (Set 4) -->
+<div class="bottom-tools-group" [ngClass]="isSidebarClosed ? '' : 'offset-sidebar'">
+  <div class="map-tool-set-4-content">
+    <!-- Pan Button -->
+    <div class="map-tool">
+      <button
+        mat-fab
+        aria-label="pan"
+        (click)="toggleDragPan()"
+        matTooltip="Pan Map"
+        [ngClass]="{ 'active-btn': isPanActive }"
+      >
+        <!-- isPanActive is local UI for the pan button itself -->
+        <mat-icon>pan_tool</mat-icon>
+      </button>
+    </div>
+
+    <!-- Measure Button (Placeholder Action) -->
+    <div class="map-tool">
+      <button mat-fab aria-label="measure" matTooltip="Measure Distance/Area" disabled>
+        <!-- Add (click)="activateMeasureTool()" or similar if you implement it -->
+        <mat-icon>square_foot</mat-icon>
+      </button>
+    </div>
+
+    <!-- Toggle Snapping -->
+    <div class="map-tool">
+      <!-- Removed redundant inner <span> with class="span" -->
+      <button
+        mat-fab
+        aria-label="toggle snapping"
+        matTooltip="Toggle Snapping"
+        [ngClass]="{ 'active-btn': (isSnappingEnabled$ | async) }"
+        (click)="toggleSnapping()"
+      >
+        <mat-icon>gps_fixed</mat-icon>
+      </button>
+    </div>
+
+    <!-- Buffer Button (Placeholder Action) -->
+    <div class="map-tool">
+      <button mat-fab aria-label="buffer" matTooltip="Buffer Feature" disabled>
+        <!-- Add (click)="activateBufferTool()" or similar -->
+        <mat-icon>settings_ethernet</mat-icon>
+        <!-- Changed icon example -->
+      </button>
+    </div>
+
+    <!-- Tag Button (Placeholder Action) -->
+    <div class="map-tool">
+      <button mat-fab aria-label="Tag" matTooltip="Tag Feature" disabled>
+        <!-- Add (click)="activateTagTool()" or similar -->
+        <mat-icon>sell</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!--  -->
+<div
+  class="top-tools-group"
+  *ngIf="getChangesCount() > 0"
+  [ngClass]="isSidebarClosed ? '' : 'offset-sidebar'"
+>
+  <div class="map-tool-set-4-content">
+    <!-- Save Button -->
+    <div class="map-tool">
+      <button mat-fab aria-label="save" (click)="saveFeatures()" matTooltip="Save Features">
+        <mat-icon>save</mat-icon>
+      </button>
+    </div>
+
+    <!-- Undo Button -->
+    <div class="map-tool">
+      <button mat-fab aria-label="undo" (click)="undoFeature()" matTooltip="Undo Features">
+        <mat-icon>undo</mat-icon>
+      </button>
+    </div>
+  </div>
+</div>

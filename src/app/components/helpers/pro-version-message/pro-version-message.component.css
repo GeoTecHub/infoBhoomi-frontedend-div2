@@ -1,0 +1,33 @@
+.pro-version-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.01); /* Invisible, but covers content */
+  pointer-events: all;
+  z-index: 10;
+
+  /* Optional: Slight blur/fade of underlying content */
+  backdrop-filter: blur(2px);
+  /* Or use: background: rgba(255,255,255,0.33); for a faint white-out effect */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pro-version-message {
+  background: rgba(255, 255, 255, 0.98);
+  padding: 28px 42px;
+  border-radius: 12px;
+  box-shadow: 0 6px 30px rgba(60, 113, 166, 0.12);
+  text-align: center;
+  border: 1px solid #c9c9c9;
+  z-index: 11;
+}
+
+.pro-version-message mat-icon {
+  margin-bottom: 10px;
+  font-size: 38px;
+  color: #3c71a6;
+}

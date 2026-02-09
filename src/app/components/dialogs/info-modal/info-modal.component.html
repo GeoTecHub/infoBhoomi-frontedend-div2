@@ -1,0 +1,17 @@
+<mat-dialog-content class="mat-typography about-dialog-content">
+  <div class="about-main-content">
+    <div class="about-contact-block">
+      <h3 class="about-title">Feature Created By</h3>
+      <div class="about-info-row"><strong>Feature ID:</strong> {{ id }}</div>
+      <div class="about-info-row"><strong>Name:</strong> {{ name }}</div>
+      <div class="about-info-row"><strong>Email:</strong> {{ email }}</div>
+      <div class="about-info-row">
+        <strong>Created At:</strong> {{ createdAt | date: 'dd/MM/yyyy h:mm:ss a' }}
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close style="color: #d32f2f">Close</button>
+</mat-dialog-actions>

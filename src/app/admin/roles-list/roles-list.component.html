@@ -1,0 +1,392 @@
+<!-- Verifying authentication and get user details -->
+<app-user-authenticator></app-user-authenticator>
+
+<div class="header-container">
+  <app-admin-header></app-admin-header>
+</div>
+
+<div class="admin-main-body">
+  <!-- Sidebar -->
+  <div class="side-panel-container">
+    <app-admin-side-bar></app-admin-side-bar>
+  </div>
+
+  <!-- Wrapped content inside a Bootstrap Card with margin -->
+  <div class="tab-container mt-3 mx-3">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="row">
+          <!-- Role Table + Remarks Card -->
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-body role-table-container">
+                <div class="d-flex align-items-center justify-content-between w-100 mb-3">
+                  <!-- Title -->
+                  <div class="mb-0 admin-pages-title">User Role(s)</div>
+
+                  <div class="d-flex align-items-center" style="gap: 0px; width: 220px">
+                    <!-- Search Input -->
+                    <div class="input-group" style="max-width: 280px; display: contents">
+                      <span class="input-group-text p-0" style="height: 28px">
+                        <mat-icon style="font-size: 14px; margin-top: 9px">search</mat-icon>
+                      </span>
+                      <form autocomplete="off">
+                        <input
+                          type="text"
+                          [(ngModel)]="searchQuery"
+                          class="form-control form-control-sm"
+                          (input)="getRolesList()"
+                          placeholder="Search..."
+                          style="height: 28px; font-size: 12px; padding: 2px 6px; width: 100%"
+                          name="search-input-1"
+                          autocomplete="off"
+                        />
+                      </form>
+                    </div>
+                  </div>
+                </div>
+
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th width="50%">Role Name</th>
+                      <th class="text-center">Type</th>
+                      <th width="25%" class="text-center">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      *ngFor="let role of roles_list"
+                      (click)="selectRole(role)"
+                      [class.selected-role]="role === selectedRole"
+                      [class.row-highlight]="role === highlightedRole"
+                      role="button"
+                      tabindex="0"
+                      (keydown.enter)="selectRole(role)"
+                      (keydown.space)="$event.preventDefault(); selectRole(role)"
+                    >
+                      <td width="50%">{{ role.role_name }}</td>
+
+                      <td>
+                        <div
+                          [ngClass]="
+                            role.role_type === 'admin'
+                              ? 'admin-pill'
+                              : role.role_type === 'user'
+                                ? 'user-pill'
+                                : ''
+                          "
+                        >
+                          {{ role.role_type }} Role
+                        </div>
+                      </td>
+
+                      <td class="text-center" width="25%">
+                        <mat-icon
+                          class="text-gray material-icons-edit"
+                          (click)="$event.stopPropagation(); addRole('edit', role)"
+                          *ngIf="getPermissionEdit(252)"
+                          >edit</mat-icon
+                        >
+
+                        <mat-icon
+                          class="text-danger material-icons-custom"
+                          (click)="$event.stopPropagation(); deleteRole(role, 'role')"
+                          *ngIf="getPermissionDelete(252)"
+                          >delete</mat-icon
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div
+                  class="d-grid gap-2 d-md-flex justify-content-md-end"
+                  *ngIf="getPermissionAdd(252)"
+                >
+                  <button
+                    mat-icon-button
+                    matSuffix
+                    (click)="addRole('create', 'null')"
+                    class="admin-primary-bg-btn cursor-pointer"
+                  >
+                    <mat-icon>add</mat-icon> Create Role
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Remarks Card (Fixed Below) -->
+            <p *ngIf="selectedRole" class="remarks-box">
+              {{ selectedRole.remark || 'No remarks available' }}
+            </p>
+          </div>
+
+          <!-- Users Table (Full Height) -->
+          <div class="col-md-8">
+            <div class="card h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between w-100 mb-3">
+                  <div class="mb-0 admin-pages-title">Assigned User(s)</div>
+                  <div class="input-group" style="max-width: 220px">
+                    <span class="input-group-text p-0" style="height: 28px">
+                      <mat-icon style="font-size: 15px; margin-top: 9px">search</mat-icon>
+                    </span>
+                    <form autocomplete="off">
+                      <input
+                        type="text"
+                        [(ngModel)]="searchQueryUser"
+                        class="form-control form-control-sm"
+                        (input)="searchUserList()"
+                        placeholder="Search..."
+                        style="height: 28px; font-size: 12px; padding: 2px 6px"
+                        name="search-input-2"
+                        autocomplete="off"
+                      />
+                    </form>
+                  </div>
+                </div>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th scope="col">Username</th>
+                      <th scope="col">Email</th>
+                      <th scope="col">Name</th>
+                      <th scope="col">Department</th>
+                      <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let user of filteredUsers">
+                      <td>{{ user.username }}</td>
+                      <td>{{ user.email }}</td>
+                      <td>{{ user.first_name }}</td>
+                      <td>{{ user.department }}</td>
+                      <td class="text-end">
+                        <mat-icon
+                          class="text-danger material-icons-custom"
+                          (click)="openDeleteModal(user, 'user')"
+                          *ngIf="getPermissionDelete(252)"
+                          >delete</mat-icon
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <!-- Add User Button -->
+                <div class="d-flex justify-content-end" *ngIf="selectedRole">
+                  <button
+                    mat-icon-button
+                    (click)="addUsers()"
+                    class="admin-primary-bg-btn d-flex align-items-center"
+                    *ngIf="getPermissionAdd(252)"
+                  >
+                    <mat-icon>add</mat-icon>
+                    <span style="margin-left: 5px">Add User</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex align-items-center justify-content-between w-100 mb-3"></div>
+
+        <div class="col-12 mt-3">
+          <!-- This makes the new table take full width -->
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex align-items-center justify-content-between w-100 mb-3">
+                <div class="mb-0 admin-pages-title">Manage Permissions</div>
+
+                <div class="d-flex align-items-center gap-3">
+                  <div class="d-flex align-items-center">
+                    <select
+                      class="form-select form-select-sm me-2"
+                      style="width: 160px; font-size: 12px"
+                      [(ngModel)]="selectedCategory"
+                      (change)="applyPermissionFilters()"
+                    >
+                      <option value="">All Categories</option>
+                      <option *ngFor="let cat of categoryList" [value]="cat">{{ cat }}</option>
+                    </select>
+                    <select
+                      class="form-select form-select-sm me-3"
+                      style="width: 160px; font-size: 12px"
+                      [(ngModel)]="selectedSubCategory"
+                      (change)="applyPermissionFilters()"
+                      [disabled]="!selectedCategory"
+                    >
+                      <option value="">All Sub Categories</option>
+                      <option *ngFor="let sub of filteredSubCategoryList" [value]="sub">
+                        {{ sub }}
+                      </option>
+                    </select>
+
+                    <div class="input-group" style="width: 220px">
+                      <span class="input-group-text p-0" style="height: 28px">
+                        <mat-icon style="font-size: 15px; margin-top: 9px">search</mat-icon>
+                      </span>
+                      <form autocomplete="off">
+                        <input
+                          type="text"
+                          [(ngModel)]="searchQueryPermisions"
+                          class="form-control form-control-sm"
+                          (input)="applyPermissionFilters()"
+                          placeholder="Search..."
+                          style="height: 28px; font-size: 12px; padding: 2px 6px"
+                          name="search-input-1"
+                          autocomplete="off"
+                        />
+                      </form>
+                    </div>
+                  </div>
+
+                  <!-- Unlock Button (Green) -->
+                  <div>
+                    <button
+                      class="btn"
+                      *ngIf="selectedRole"
+                      [ngClass]="{ 'btn-danger ': !isUnlockClicked, 'btn-light': isUnlockClicked }"
+                      (click)="lockAction()"
+                      style="
+                        border-radius: 4px 0px 0px 4px;
+                        height: 28px;
+                        padding: 0 10px;
+                        border: 1px solid #ced4da !important;
+                        font-size: 12px;
+                      "
+                    >
+                      Lock
+                    </button>
+
+                    <!-- Unlock Button (Light by default) -->
+                    <button
+                      class="btn"
+                      *ngIf="selectedRole"
+                      [ngClass]="{ 'btn-light': !isUnlockClicked, 'btn-success': isUnlockClicked }"
+                      (click)="unlockAction()"
+                      style="
+                        border-radius: 0px 4px 4px 0px;
+                        height: 28px;
+                        padding: 0 10px;
+                        border: 1px solid #ced4da !important;
+                        font-size: 12px;
+                      "
+                      [disabled]="getPermissionEdit(252) ? false : true"
+                    >
+                      Unlock
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th scope="col">Category</th>
+                    <th scope="col">Sub Category</th>
+                    <th scope="col">Permission Name</th>
+                    <th scope="col" class="text-center">View</th>
+                    <th scope="col" class="text-center">Add</th>
+                    <th scope="col" class="text-center">Edit</th>
+                    <th scope="col" class="text-center">Delete</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of permisions_list">
+                    <td>{{ item.category }}</td>
+                    <td>{{ item.sub_category }}</td>
+                    <td>{{ item.permission_name }}</td>
+                    <td class="text-center">
+                      <input
+                        *ngIf="!isNullValue(item, 'view')"
+                        type="checkbox"
+                        [checked]="item.view"
+                        [disabled]="!isUnlockClicked || isNullValue(item, 'view')"
+                        (change)="onCheckboxChange(item, 'view', $event)"
+                        class="custom-checkbox"
+                      />
+                      <span *ngIf="isNullValue(item, 'view')"> - </span>
+                    </td>
+                    <td class="text-center">
+                      <input
+                        *ngIf="!isNullValue(item, 'add')"
+                        type="checkbox"
+                        [checked]="item.add"
+                        [disabled]="!isUnlockClicked || isNullValue(item, 'add')"
+                        (change)="onCheckboxChange(item, 'add', $event)"
+                        class="custom-checkbox"
+                      />
+                      <span *ngIf="isNullValue(item, 'add')"> - </span>
+                    </td>
+                    <td class="text-center">
+                      <input
+                        *ngIf="!isNullValue(item, 'edit')"
+                        type="checkbox"
+                        [checked]="item.edit"
+                        [disabled]="!isUnlockClicked || isNullValue(item, 'edit')"
+                        (change)="onCheckboxChange(item, 'edit', $event)"
+                        class="custom-checkbox"
+                      />
+                      <span *ngIf="isNullValue(item, 'edit')"> - </span>
+                    </td>
+                    <td class="text-center">
+                      <input
+                        *ngIf="!isNullValue(item, 'delete')"
+                        type="checkbox"
+                        [checked]="item.delete"
+                        [disabled]="!isUnlockClicked || isNullValue(item, 'delete')"
+                        (change)="onCheckboxChange(item, 'delete', $event)"
+                        class="custom-checkbox"
+                      />
+                      <span *ngIf="isNullValue(item, 'delete')"> - </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Delete Confirmation Modal -->
+<div
+  class="modal fade"
+  id="confirmDeleteModal"
+  tabindex="-1"
+  aria-labelledby="confirmDeleteLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-sm">
+    <!-- Small modal -->
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h6 class="modal-title" id="confirmDeleteLabel">Confirm Delete</h6>
+      </div>
+      <div class="modal-body text-center p-2">
+        <p class="mb-0">Are you sure you want to remove this role?</p>
+      </div>
+      <div class="modal-footer py-2 d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">No</button>
+        <button
+          type="button"
+          class="btn btn-danger btn-sm"
+          (click)="confirmDeleteRole()"
+          *ngIf="opened_dialog_type == 'role'"
+        >
+          <i class="fa fa-trash"></i> Delete
+        </button>
+        <button
+          type="button"
+          class="btn btn-danger btn-sm"
+          (click)="confirmDelete()"
+          *ngIf="opened_dialog_type == 'user'"
+        >
+          <i class="fa fa-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

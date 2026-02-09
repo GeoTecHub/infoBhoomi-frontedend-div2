@@ -1,0 +1,62 @@
+.button {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  padding: 5px 20px;
+  height: 35px;
+  font-size: 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  border: none;
+  margin: 5px;
+  transition: all 0.3s ease;
+}
+
+.button-icon {
+  font-size: 22px;
+  margin-right: 5px;
+}
+
+.button.primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.button.secondary {
+  background-color: var(--color-secondary-l2);
+  color: black;
+}
+
+.button.danger {
+  background-color: red;
+  color: white;
+}
+
+.button.disabled {
+  background-color: lightgray;
+  cursor: not-allowed;
+}
+
+.button.deactivated {
+  background-color: gray;
+  color: white;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.button.small {
+  padding: 2px 15px;
+  font-size: 12px;
+  border-radius: 50px;
+  height: 25px;
+}
+
+.button.small .button-icon {
+  font-size: 16px; /* Smaller icon size for small buttons */
+  margin-top: 6px;
+  margin-right: 3px; /* Adjust spacing for smaller buttons */
+}
+
+.button:hover:not(.disabled):not(.deactivated) {
+  opacity: 0.8;
+}

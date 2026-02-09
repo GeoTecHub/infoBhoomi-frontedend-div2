@@ -1,0 +1,89 @@
+I need these functions to be created
+:
+ this.featureService.deleteFeature(originalUuid).subscribe({ /* handle response/error */ });
+ this.resetToolStates();
+
+ The logic of making the currentLayer:
+
+under <input
+                            class="layer-checkbox"
+                            type="checkbox"
+                            id="checkbox-default-{{dataItem.layer_id}}" 
+                            [checked]="currentSelectedLayerIdForDrawing === dataItem.layer_id"
+                            (change)="onCheckboxChange(dataItem.layer_id)"
+                            matTooltip="Set as Current Drawing Layer"
+                            matTooltipPosition="above"
+                            aria-label="Set layer as current drawing layer" 
+                            />
+gets the selected layer ID and pass it to the following method:
+
+ onCheckboxChange(layerId: number):void {
+    console.log(`LayerPanel: Checkbox changed for layer ${layerId}`);
+    const currentSelectedId = this.layerService.getSelectedCurrentLayerIdForDrawing();
+
+    if (currentSelectedId === layerId) {
+      console.log(`LayerPanel: Deselecting layer ${layerId} for drawing.`);
+      // Uncheck the currently selected checkbox
+      this.layerService.getSelectedCurrentLayerIdForDrawing();
+    } else {
+      // Select the new layer for drawing
+      console.log(`LayerPanel: Selecting layer ${layerId} for drawing.`);
+      this.layerService.getSelectedCurrentLayerIdForDrawing();
+      this.layerService.setLayerVisibility(layerId, true); // Add this method to service
+      console.log('Current Layer ID:', layerId);
+    }
+  }
+
+the above will check whether the current selected ID and the existing ID are the same?
+
+if it is same then executing the following functions:
+
+getSelectedCurrentLayerIdForDrawing(): number | null {
+  // Primarily return the in-memory state
+  return this.currentLayerIdForDrawingSubject.value;
+  // If initialization from localStorage is used, this will reflect it after service creation.
+}
+
+the above will emit the current selected layer ID
+
+else:
+ it will again select the current layerID and the set the visibility is true
+
+Problem: Layer visibility is not the one I am looking for, it should handle by the following method in the layer
+service as :
+in the layer pannel:
+ (store / remove  layer_ids in selectedLayerIdsSubject array in Shared Layer Functions Service)*/
+  toggleLayerView(layerId: number): void {
+    console.log(`LayerPanel: Toggling visibility for layer ${layerId}`);
+    this.layerService.toggleLayerVisibility(layerId);
+  }
+
+in the layerService:
+toggleLayerVisibility(layerId: number): void {
+  const currentIds = this.selectedLayerIdsSubject.value;
+  let newIds: number[];
+  if (currentIds.includes(layerId)) {
+      newIds = currentIds.filter((id) => id !== layerId);
+      console.log(`LayerService: Removing layer ${layerId} from visible list.`);
+  } else {
+      newIds = [...currentIds, layerId];
+      console.log(`LayerService: Adding layer ${layerId} to visible list.`);
+  }
+  console.log(`LayerService: Emitting new visible IDs:`, newIds);
+  this.selectedLayerIdsSubject.next(newIds);
+  // REMOVE MAP INTERACTION
+}
+
+
+Problem: In the above case I do not see a logic to emit the visibility status of the layers as it may not used in any where of the program.
+
+What I need is make the currentlayer which is activate by the onCheckboxChange() to be used as the current layer so that what ever the feature is drawing is based on that layer?
+
+Further I noticed that multiple checkBoxed can be tick, so that there can be multiple currentlayers, this should not be happen as one one layer can be current layer, if one layer get cheched, the previous layer should automatically get unchecked?
+
+
+
+
+
+
+

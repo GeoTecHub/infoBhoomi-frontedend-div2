@@ -1,0 +1,530 @@
+<div class="material-header">
+  <div class="header-content">
+    <h2 class="header-title">Civilian</h2>
+    <!-- <button class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button> -->
+  </div>
+</div>
+
+<mat-dialog-content>
+  <mat-card class="custom-card">
+    <mat-card-content>
+      <div class="keyValueList">
+        <div class="keyValueWrapper" *ngIf="data.path == 'full' && !show_all_inputs">
+          <div class="keyValueWrapper__keyValue align-items-center">
+            <div class="keyValue__key">Registration Type</div>
+            <select class="keyValue__value" [(ngModel)]="civilian.party_registration_type">
+              <option value="nic">National Identity Card</option>
+              <option value="ps">Passport</option>
+              <option value="dl">Driving License</option>
+            </select>
+          </div>
+        </div>
+
+        <div
+          class="keyValueWrapper"
+          *ngIf="
+            data.path == 'full' && !show_all_inputs && civilian.party_registration_type == 'nic'
+          "
+        >
+          <div class="keyValueWrapper__keyValue align-items-center">
+            <div class="keyValue__key">Number</div>
+            <input
+              class="keyValue__value"
+              [(ngModel)]="civilian.registration_number"
+              maxlength="12"
+              (ngModelChange)="validateAndFormatNIC($event)"
+              placeholder="Enter NIC"
+              [ngClass]="{ 'is-invalid': !id_number_validation }"
+            />
+          </div>
+        </div>
+        <div
+          *ngIf="!id_number_validation && civilian.party_registration_type == 'nic'"
+          class="invalid-feedback"
+        >
+          NIC must be 10 characters ending with 'V' or 'X', or 12 digits.
+        </div>
+
+        <div
+          class="keyValueWrapper"
+          *ngIf="
+            data.path == 'full' && !show_all_inputs && civilian.party_registration_type == 'ps'
+          "
+        >
+          <div class="keyValueWrapper__keyValue align-items-center">
+            <div class="keyValue__key">Number</div>
+            <input
+              class="keyValue__value"
+              [(ngModel)]="civilian.registration_number"
+              (ngModelChange)="validatePassportNumber()"
+              placeholder="Enter Passport number"
+              [ngClass]="{ 'is-invalid': !ps_number_validation }"
+            />
+          </div>
+        </div>
+        <div
+          *ngIf="!ps_number_validation && civilian.party_registration_type == 'ps'"
+          class="invalid-feedback"
+        >
+          Invalid format. Must be one uppercase letter followed by seven digits.
+        </div>
+
+        <div
+          class="keyValueWrapper"
+          *ngIf="
+            data.path == 'full' && !show_all_inputs && civilian.party_registration_type == 'dl'
+          "
+        >
+          <div class="keyValueWrapper__keyValue align-items-center">
+            <div class="keyValue__key">Number</div>
+            <input
+              class="keyValue__value"
+              [(ngModel)]="civilian.registration_number"
+              (ngModelChange)="validateLicenseNumber()"
+              placeholder="Enter License Number"
+              [ngClass]="{ 'is-invalid': !license_number_validation }"
+            />
+          </div>
+        </div>
+        <div
+          *ngIf="!license_number_validation && civilian.party_registration_type == 'dl'"
+          class="invalid-feedback"
+        >
+          Invalid format. Must be one uppercase letter followed by seven digits.
+        </div>
+
+        <div class="container" *ngIf="data.path == 'full'">
+          <button
+            mat-icon-button
+            matSuffix
+            (click)="showCreateInputs()"
+            *ngIf="registed_number_searched && !party_already_existing"
+            class="primary-bg-btn"
+          >
+            Add New +
+          </button>
+          &nbsp; &nbsp;
+          <button
+            mat-icon-button
+            matSuffix
+            *ngIf="data.path == 'full' && !show_all_inputs"
+            (click)="getCivilianUserData()"
+            class="primary-bg-btn"
+          >
+            <mat-icon>search</mat-icon> Search
+          </button>
+        </div>
+        <hr class="hr-divider" *ngIf="this.data.path == 'full' && !show_all_inputs" />
+        <div *ngIf="party_already_existing && !show_all_inputs && data.path == 'full'">
+          <!-- <mat-card-title class="card-main-title">
+            Civilian Information
+          </mat-card-title> -->
+          <div class="label-value-list">
+            <div class="label-value-item">
+              <span class="label"> Identification Type:</span>
+              <span class="value" *ngIf="party_identification.ext_pid_type == 'nic'"
+                >National Identity Card</span
+              >
+              <span class="value" *ngIf="party_identification.ext_pid_type == 'ps'">Passport</span>
+              <span class="value" *ngIf="party_identification.ext_pid_type == 'dl'"
+                >Driving License</span
+              >
+              <span class="value" *ngIf="party_identification.ext_pid_type == 'oth'">Other</span>
+            </div>
+            <div class="label-value-item">
+              <span class="label">Number:</span>
+              <span class="value">{{ party_identification.ext_pid }}</span>
+            </div>
+            <div class="label-value-item">
+              <span class="label"> Name:</span>
+              <span class="value">{{ party_identification.party_full_name }}</span>
+            </div>
+            <div class="label-value-item">
+              <span class="label">Primary Telephone:</span>
+              <span class="value">{{ party_identification.specific_tp }}</span>
+            </div>
+            <div class="label-value-item">
+              <span class="label"> Address:</span>
+              <span class="value">{{ party_identification.pmt_address }}</span>
+            </div>
+          </div>
+          <div class="container" *ngIf="civilian_data__array.length != 0">
+            <a (click)="showPartyAllInputs()" class="link-text">View More...</a>
+          </div>
+        </div>
+        <div class="show_all_inputs" *ngIf="show_all_inputs || data.path == 'create_form'">
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Registration Type</div>
+              <select
+                class="keyValue__value"
+                [(ngModel)]="party_identification.ext_pid_type"
+                disabled
+              >
+                <option value="" disabled selected>Select Party Sub Type</option>
+                <option value="br">Business Registration</option>
+                <option value="nic">National Identity Card</option>
+                <option value="ps">Passport</option>
+                <option value="dl">Driving License</option>
+                <option value="ua">Under Age</option>
+              </select>
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Number</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                readonly
+                [(ngModel)]="party_identification.ext_pid"
+              />
+            </div>
+          </div>
+
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">
+                Name <span class="text-danger" *ngIf="canEditTrue">*</span>
+              </div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [readonly]="canEditTrue()"
+                [(ngModel)]="party_identification.party_name"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">
+                Full Name <span class="text-danger" *ngIf="canEditTrue">*</span>
+              </div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [readonly]="canEditTrue()"
+                [(ngModel)]="party_identification.party_full_name"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Party Type</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                value="Civilian"
+                [(ngModel)]="party_identification.sl_party_type"
+                readonly
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Telephone <span class="text-danger">*</span></div>
+              <input
+                type="number"
+                class="keyValue__value"
+                [readonly]="canEditTrue()"
+                type="tel"
+                maxlength="10"
+                pattern="0\d{9}"
+                (keypress)="allowOnlyNumbers($event)"
+                (input)="limitInputLength($event)"
+                (change)="validationsCheck($event, 'second_number')"
+                [(ngModel)]="party_identification.specific_tp"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Other Telephone</div>
+              <input
+                class="keyValue__value"
+                type="tel"
+                maxlength="10"
+                pattern="0\d{9}"
+                (keypress)="allowOnlyNumbers($event)"
+                (input)="limitInputLength($event)"
+                (change)="validationsCheck($event, 'mobile_number')"
+                [(ngModel)]="party_identification.tp"
+              />
+            </div>
+          </div>
+
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Address <span class="text-danger">*</span></div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [(ngModel)]="party_identification.pmt_address"
+              />
+            </div>
+          </div>
+
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Email</div>
+              <input type="text" class="keyValue__value" [(ngModel)]="party_identification.email" />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Date Of Birth</div>
+              <input
+                type="date"
+                class="keyValue__value"
+                [(ngModel)]="party_identification.date_of_birth"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Gender</div>
+              <select class="keyValue__value" [(ngModel)]="party_identification.gender">
+                <option value="" disabled selected>Select Gender Type</option>
+                <option *ngFor="let option of gender_types_array" [value]="option.name">
+                  {{ option.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Education Level</div>
+              <select class="keyValue__value" [(ngModel)]="party_identification.edu">
+                <option value="" disabled selected>Select Education Level</option>
+                <option *ngFor="let option of education_leval_types_array" [value]="option.name">
+                  {{ option.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Married Status</div>
+              <select class="keyValue__value" [(ngModel)]="party_identification.married_status">
+                <option value="" disabled selected>Select Married Status</option>
+                <option *ngFor="let option of married_types_array" [value]="option.name">
+                  {{ option.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Race</div>
+              <select class="keyValue__value" [(ngModel)]="party_identification.race">
+                <option value="" disabled selected>Select Race</option>
+                <option *ngFor="let option of race_types_array" [value]="option.name">
+                  {{ option.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Religion</div>
+              <select class="keyValue__value" [(ngModel)]="party_identification.religion">
+                <option value="" disabled selected>Select Religion</option>
+                <option *ngFor="let option of religion_types_array" [value]="option.name">
+                  {{ option.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Helth Types</div>
+              <select class="keyValue__value" [(ngModel)]="party_identification.health_status">
+                <option value="" disabled selected>Select Helth Type</option>
+                <option *ngFor="let option of helth_types_array" [value]="option.name">
+                  {{ option.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue align-items-center">
+              <div class="keyValue__key">Remark</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [(ngModel)]="party_identification.remark"
+              />
+            </div>
+          </div>
+          <hr class="hr-divider" />
+          <div class="keyValueList" *ngIf="this.data.path == 'full' && show_all_inputs">
+            <div *ngIf="show_all_inputs">
+              <mat-card-title class="card-main-title"
+                >Other Registration Information</mat-card-title
+              >
+            </div>
+
+            <div
+              class="show_all_inputs"
+              *ngIf="show_all_inputs || this.data.path == 'full'"
+              style="background-color: #fff"
+            >
+              <div class="row">
+                <div class="col-5">
+                  <div class="keyValueWrapper">
+                    <div class="keyValueWrapper__keyValue align-items-center">
+                      <div class="keyValue__key" style="margin-top: 5px; margin-left: 7px">
+                        Type
+                      </div>
+                      <select
+                        class="keyValue__value"
+                        (ngModelChange)="partyTypeChange()"
+                        [(ngModel)]="civilian_party.party_registration_type"
+                      >
+                        <option value="" disabled>Select Reg. Type</option>
+                        <option value="nic" *ngIf="civilian.party_registration_type != 'nic'">
+                          National Identity Card
+                        </option>
+                        <option value="ps" *ngIf="civilian.party_registration_type != 'ps'">
+                          Passport
+                        </option>
+                        <option value="dl" *ngIf="civilian.party_registration_type != 'dl'">
+                          Driving License
+                        </option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-5">
+                  <div class="keyValueWrapper">
+                    <div class="keyValueWrapper__keyValue input-button-wrapper align-items-center">
+                      <div class="keyValue__key" style="margin-top: 5px; margin-left: 7px">
+                        Number
+                      </div>
+                      <input
+                        *ngIf="civilian_party.party_registration_type == 'nic'"
+                        class="keyValue__value"
+                        [(ngModel)]="civilian_party.registration_number"
+                        maxlength="12"
+                        (ngModelChange)="validateAndFormatNIC($event)"
+                        placeholder="Enter NIC"
+                        [ngClass]="{ 'is-invalid': !id_number_validation }"
+                      />
+
+                      <input
+                        *ngIf="civilian_party.party_registration_type == 'ps'"
+                        class="keyValue__value"
+                        [(ngModel)]="civilian_party.registration_number"
+                        (ngModelChange)="validatePassportNumber()"
+                        placeholder="Enter Passport number"
+                        [ngClass]="{ 'is-invalid': !ps_number_validation }"
+                      />
+
+                      <input
+                        *ngIf="civilian_party.party_registration_type == ''"
+                        class="keyValue__value"
+                        placeholder="Enter Reg. No."
+                      />
+                      <input
+                        *ngIf="civilian_party.party_registration_type == 'dl'"
+                        class="keyValue__value"
+                        [(ngModel)]="civilian_party.registration_number"
+                        (ngModelChange)="validateLicenseNumber()"
+                        placeholder="Enter License Number"
+                        [ngClass]="{ 'is-invalid': !license_number_validation }"
+                      />
+                    </div>
+                  </div>
+                  <span
+                    class="text-danger"
+                    style="margin-left: 155px"
+                    *ngIf="
+                      !license_number_validation || !ps_number_validation || !id_number_validation
+                    "
+                    >Invalid format</span
+                  >
+                </div>
+                <div class="col-2" *ngIf="this.data.path == 'full'">
+                  <button class="primary-sm-btn-select-custom" (click)="addRegistrationTypes()">
+                    Add+
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <br />
+          <div *ngIf="registration_array.length > 0 || this.data.path == 'full'">
+            <div class="card">
+              <div class="card-content">
+                <div *ngFor="let item of registration_array; let i = index">
+                  <div class="row other-reg-cards">
+                    <div class="col-5">
+                      <span *ngIf="item.split('|')[0] == 'nic'"> National Identity Card </span>
+                      <span *ngIf="item.split('|')[0] == 'ps'"> Passport </span>
+                      <span *ngIf="item.split('|')[0] == 'dl'"> Driving License </span>
+                    </div>
+                    <div class="col-5">
+                      {{ item.split('|')[1] }}
+                      <!-- Extract "Registration Number:Number" -->
+                    </div>
+                    <div class="col-2">
+                      <button mat-icon-button class="delete-btn" (click)="removeEntry(i)">
+                        <i class="fa fa-trash"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="container"
+            *ngIf="(show_all_inputs && this.data.path == 'full') || this.data.path == 'create_form'"
+          >
+            <button mat-icon-button matSuffix (click)="SubmitAll()" class="primary-bg-btn">
+              <mat-icon>save</mat-icon> Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <!-- *ngIf="civilian_data__array.length != 0" -->
+  <div class="container">
+    &nbsp;
+    <button
+      mat-icon-button
+      matSuffix
+      [disabled]="!civilian"
+      (click)="closeDialog()"
+      class="primary-bg-btn"
+    >
+      <mat-icon>close</mat-icon> Close</button
+    >&nbsp;&nbsp;&nbsp;
+    <button
+      mat-icon-button
+      matSuffix
+      *ngIf="data.path == 'full'"
+      (click)="addCivilian()"
+      class="primary-bg-btn"
+    >
+      <mat-icon>add</mat-icon> Select
+    </button>
+    <button
+      mat-icon-button
+      matSuffix
+      [disabled]="!data_submitted"
+      *ngIf="data.path == 'create_form'"
+      (click)="addData()"
+      class="primary-bg-btn"
+    >
+      Add &nbsp;<i class="fa fa-plus plus-btn"></i>
+    </button>
+  </div>
+</mat-dialog-actions>

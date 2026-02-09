@@ -1,0 +1,118 @@
+.active-log-filters-1 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.center-chips {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap; /* Allows chips to wrap if they exceed the width */
+}
+
+.mat-mdc-standard-chip {
+  --mdc-chip-label-text-color: #ffffff;
+  background-color: #779ab8 !important; /* Initial background color */
+  border-color: #244464;
+}
+
+.selected-chip {
+  --mdc-chip-label-text-color: #ffffff; /* Selected chip font color */
+  background-color: #bbcddc !important; /* Optional: Highlight selected chip */
+}
+
+.active-log-table {
+  margin-top: 5px;
+  overflow-y: auto; /* Enable vertical scrollbar */
+  max-height: 300px;
+}
+
+table.mat-elevation-z8 {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.mat-header-cell,
+.mat-cell {
+  padding: 8px;
+}
+
+.table-header {
+  position: sticky;
+  top: 5px;
+  z-index: 1; /* Ensure it's above other elements */
+  background-color: #3c4d5c;
+  height: 50px;
+  color: white;
+}
+
+.no-column {
+  width: 60px; /* Adjust this value as needed to reduce the width */
+}
+
+:host {
+  --mat-table-header-container-height: 2rem;
+  --mat-table-row-item-container-height: 1.7rem;
+  --mat-table-footer-container-height: 1rem;
+  --mat-sys-on-secondary-container: #000000;
+}
+
+.filter-section {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.2rem 0.4rem;
+  background-color: #ffffff;
+  border: 1px solid #b1b1b1;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-top: 0.5rem;
+  width: 50%;
+  max-width: 300px;
+  min-width: 270px;
+}
+
+.filter-input {
+  flex: 1;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  outline: none;
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+
+.filter-input:focus {
+  border-color: #3c4d5c; /* Accent color on focus */
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+button[mat-icon-button] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: none;
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px var(--color-secondary-d1);
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    box-shadow 0.3s;
+}
+
+button[mat-icon-button]:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+mat-icon {
+  color: var(--color-secondary-d2); /* Example color */
+}
+
+mat-dialog-content {
+  position: relative; /* Required so overlay positions correctly */
+}

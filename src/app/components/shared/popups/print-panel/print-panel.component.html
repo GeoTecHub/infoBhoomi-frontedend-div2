@@ -1,0 +1,79 @@
+<h4 mat-dialog-title>Print</h4>
+
+<mat-dialog-content>
+  <div class="input-fields">
+    <div class="text-input-field">
+      <label class="text-input-label">Data Set Names:</label>
+      <input
+        title="text input"
+        type="text"
+        class="text-input"
+        placeholder="Layer name..."
+        [(ngModel)]="dataSetName"
+        requireds
+      />
+    </div>
+
+    <div class="dropdown">
+      <label class="dropdown-label" for="scale">Scale</label>
+      <select title="dropdown" id="scale" class="dropdown-select">
+        <option *ngFor="let scale of scales" [value]="scale">
+          {{ scale }}
+        </option>
+      </select>
+    </div>
+
+    <div class="dropdown">
+      <label class="dropdown-label" for="scale">Layout</label>
+      <select title="dropdown" id="layout" class="dropdown-select">
+        <option *ngFor="let layout of layouts" [value]="layout">
+          {{ layout }}
+        </option>
+      </select>
+    </div>
+
+    <div class="dropdown">
+      <label class="dropdown-label" for="scale">Orientation</label>
+      <select title="dropdown" id="orientation" class="dropdown-select">
+        <option *ngFor="let orientation of orientations" [value]="orientation">
+          {{ orientation }}
+        </option>
+      </select>
+    </div>
+
+    <div class="dropdown">
+      <label class="dropdown-label" for="scale">Layers</label>
+      <select title="dropdown" id="layers" class="dropdown-select">
+        <option *ngFor="let layer of layers" [value]="layer">
+          {{ layer }}
+        </option>
+      </select>
+    </div>
+
+    <div class="dropdown">
+      <label class="dropdown-label" for="scale">Attributes</label>
+      <select title="dropdown" id="attributes" class="dropdown-select">
+        <option *ngFor="let attribute of attributes" [value]="attribute">
+          {{ attribute }}
+        </option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="showProOverlay">
+    <app-pro-version-message></app-pro-version-message>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <app-custom-buttons
+    buttonText="Close"
+    buttonIcon="cancel"
+    buttonStyle="secondary"
+    mat-dialog-close
+  >
+  </app-custom-buttons>
+
+  <app-custom-buttons buttonText="Apply" buttonIcon="check" buttonStyle="primary">
+  </app-custom-buttons>
+</mat-dialog-actions>

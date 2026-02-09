@@ -1,0 +1,32 @@
+<mat-dialog-content class="mat-typography" [ngClass]="expand ? 'expanded' : ''">
+  <div class="pro-version-overlay">
+    <div class="pro-version-message">
+      <mat-icon style="font-size: 48px; color: #fbbc05">lock</mat-icon>
+      <h3>Login Unavailable</h3>
+      <p>VerText Login is only available in the Infobhoomi Pro version.</p>
+      <p>Upgrade to Pro to access GNSS connectivity and real-time location features.</p>
+      <button mat-button (click)="showExpand()">What is VerText?</button>
+      <div *ngIf="expand" class="mt-3 expanded-content">
+        <p class="text-start">
+          VerText is a low-cost, high-accuracy GNSS receiver developed by Geoinfobox. It enables
+          users to collect centimeter-level accurate RTK data in the field using a mobile app and
+          sync data to the Infobhoomi system in real-time.
+        </p>
+        <ul class="text-start">
+          <li>Affordable GNSS Hardware</li>
+          <li>Real-time System Updates</li>
+          <li>Centimeter-level Accuracy</li>
+          <li>Easy Mobile App Integration</li>
+        </ul>
+        <p class="text-start">
+          VerText is perfect for field surveyors, planners, and organizations who need reliable,
+          cost-effective GNSS data for decision-making
+        </p>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close style="color: #d32f2f">Close</button>
+</mat-dialog-actions>

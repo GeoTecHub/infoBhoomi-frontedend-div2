@@ -1,0 +1,87 @@
+<div class="material-header">
+  <div class="header-content">
+    <h2 class="header-title">Manage Assessment Wards</h2>
+    <!-- <button class="close-btn">
+        <mat-icon>close</mat-icon> 
+      </button> -->
+  </div>
+</div>
+
+<mat-dialog-content>
+  <mat-card class="custom-card">
+    <mat-card-content>
+      <div class="card h-100">
+        <div class="card-body">
+          <div class="d-flex align-items-center justify-content-between w-100 mb-3"></div>
+          <div class="table-responsive-scroll">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th [width]="80">Assessment Ward Name</th>
+                  <th [width]="20" class="text-center">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let ass_ward of ass_wards_list">
+                  <td *ngIf="ass_ward.edit">
+                    <input
+                      type="text"
+                      [(ngModel)]="ass_ward.ward_name"
+                      class="form-control form-control-sm small-input"
+                      placeholder="Enter text"
+                    />
+                  </td>
+                  <td *ngIf="!ass_ward.edit">{{ ass_ward.ward_name }}</td>
+
+                  <td class="text-center">
+                    <mat-icon
+                      class="text-gray material-icons-edit"
+                      *ngIf="!ass_ward.edit"
+                      (click)="editAssWard(ass_ward)"
+                      >edit</mat-icon
+                    >
+                    &nbsp;
+                    <mat-icon
+                      class="text-gray material-icons-edit"
+                      *ngIf="ass_ward.edit"
+                      (click)="updateAssessmentWard(ass_ward)"
+                      >save</mat-icon
+                    >
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="keyValueList" style="margin-top: 10px">
+        <div class="keyValueWrapper">
+          <div class="keyValueWrapper__keyValue">
+            <div class="keyValue__key">Assessment Ward Name</div>
+            <form autocomplete="off">
+              <input
+                type="text"
+                class="keyValue__value"
+                [(ngModel)]="ass_ward_name"
+                name="add-input-1"
+                autocomplete="off"
+              />
+            </form>
+            <button mat-icon-button matSuffix class="primary-custom-sm-btn-2" (click)="SubmitAll()">
+              <i class="fa fa-plus plus-btn"></i> Add
+            </button>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <!-- *ngIf="civilian_data__array.length != 0" -->
+  <div class="container">
+    <button mat-icon-button matSuffix (click)="closeDialog()" class="primary-custom-sm-btn-2">
+      <mat-icon>close</mat-icon> Close
+    </button>
+  </div>
+</mat-dialog-actions>

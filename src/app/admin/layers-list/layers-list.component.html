@@ -1,0 +1,306 @@
+<!-- Verifying authentication and get user details -->
+<app-user-authenticator></app-user-authenticator>
+
+<div class="header-container">
+  <app-admin-header></app-admin-header>
+</div>
+
+<div class="admin-main-body">
+  <!-- Sidebar -->
+  <div class="side-panel-container">
+    <app-admin-side-bar></app-admin-side-bar>
+  </div>
+
+  <!-- Wrapped content inside a Bootstrap Card with margin -->
+  <div class="tab-container mt-3 mx-3">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-body role-table-container">
+                <div class="d-flex align-items-center justify-content-between w-100 mb-3">
+                  <!-- Title -->
+                  <div class="mb-0 admin-pages-title">User Layers</div>
+
+                  <div class="d-flex align-items-center" style="gap: 0px; width: 220px">
+                    <!-- Search Input -->
+                    <div class="input-group" style="max-width: 280px; display: contents">
+                      <span class="input-group-text p-0" style="height: 28px">
+                        <mat-icon style="font-size: 14px; margin-top: 9px">search</mat-icon>
+                      </span>
+                      <form autocomplete="off">
+                        <input
+                          type="text"
+                          [(ngModel)]="searchQuery"
+                          class="form-control form-control-sm"
+                          (input)="getLayers()"
+                          placeholder="Search..."
+                          style="height: 28px; font-size: 12px; padding: 2px 6px; width: 100%"
+                          name="search-user-layer"
+                          id="search-user-layer"
+                          autocomplete="off"
+                        />
+                      </form>
+                    </div>
+                  </div>
+                </div>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Layer Name</th>
+                      <th class="text-center">Color</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      *ngFor="let layer of otherGroups"
+                      (click)="selectLayer(layer)"
+                      class="cursor-pointer"
+                      [class.selected]="selectedLayer === layer"
+                    >
+                      <td>{{ layer.layer_name }}</td>
+                      <td class="text-center">
+                        <span [style.background]="layer.colour" class="color-box"></span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Table for ORG group -->
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-body role-table-container">
+                <div class="d-flex align-items-center justify-content-between w-100 mb-3">
+                  <div class="mb-0 admin-pages-title">Organization Layers</div>
+                </div>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Layer Name</th>
+                      <th class="text-center">Color</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let layer of orgGroup">
+                      <td>{{ layer.layer_name }}</td>
+                      <td class="text-center">
+                        <span [style.background]="layer.colour" class="color-box"></span>
+                      </td>
+                      <td class="text-center">
+                        <mat-icon
+                          class="text-gray material-icons-edit"
+                          (click)="addLayer('edit', layer)"
+                          *ngIf="getPermissionEdit(253)"
+                          >edit</mat-icon
+                        >
+                        &nbsp;
+                        <mat-icon
+                          class="text-danger material-icons-custom"
+                          (click)="openDeleteModal(layer)"
+                          *ngIf="getPermissionDelete(253)"
+                          >delete</mat-icon
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div
+                  class="d-grid gap-2 d-md-flex justify-content-md-end"
+                  *ngIf="getPermissionAdd(253)"
+                >
+                  <button
+                    mat-icon-button
+                    matSuffix
+                    (click)="addLayer('create', 'null')"
+                    class="admin-primary-bg-btn"
+                  >
+                    <mat-icon>add</mat-icon> Create Layer
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Table for OTHER groups -->
+          <div class="col-md-4">
+            <div class="card">
+              <div class="card-body role-table-container">
+                <div class="d-flex align-items-center justify-content-between w-100 mb-3">
+                  <div class="mb-0 admin-pages-title">Default Layers</div>
+                </div>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Layer Name</th>
+                      <th class="text-center">Color</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let layer of nullGroup">
+                      <td>{{ layer.layer_name }}</td>
+                      <td class="text-center">
+                        <span [style.background]="layer.colour" class="color-box"></span>
+                      </td>
+                      <td class="text-center">
+                        <mat-icon
+                          class="text-gray material-icons-edit"
+                          (click)="addLayer('edit', layer)"
+                          *ngIf="getPermissionEdit(253)"
+                          >edit</mat-icon
+                        >
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="d-flex align-items-center justify-content-between w-100 mb-3"></div>
+
+        <div class="col-12 mt-3" *ngIf="selectedLayer">
+          <div class="card">
+            <div class="card-body">
+              <div class="d-flex align-items-center justify-content-between w-100 mb-3">
+                <div class="mb-0 admin-pages-title">User Layer Sharing</div>
+              </div>
+              <table class="table">
+                <thead>
+                  <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th class="text-center">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="owner-row">
+                    <td>
+                      <div class="d-flex gap-2 align-items-center">
+                        <div>
+                          {{ selectedLayer.owner.username }}
+                        </div>
+                        <div class="owner-pill">Owner</div>
+                      </div>
+                    </td>
+                    <td>{{ selectedLayer.owner.email }}</td>
+                    <td>
+                      {{ selectedLayer.owner.first_name }} {{ selectedLayer.owner.last_name }}
+                    </td>
+                    <td>{{ selectedLayer.owner.dep_name }}</td>
+                    <td class="text-center">-</td>
+                  </tr>
+                  <tr *ngFor="let user of selectedLayer.shared_users">
+                    <td>{{ user.username }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.first_name }}</td>
+                    <td>{{ user.dep_name }}</td>
+                    <td class="text-center">
+                      <mat-icon
+                        class="text-danger material-icons-custom mx-auto"
+                        (click)="openDeleteCommonModal(user)"
+                        *ngIf="getPermissionDelete(253)"
+                        >delete</mat-icon
+                      >
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button
+                  mat-icon-button
+                  matSuffix
+                  (click)="shareLayer()"
+                  class="admin-primary-bg-btn"
+                >
+                  <mat-icon>share</mat-icon> Share Layer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Delete Confirmation Modal -->
+<div
+  class="modal fade"
+  id="confirmDeleteModal"
+  tabindex="-1"
+  aria-labelledby="confirmDeleteLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-sm">
+    <!-- Small modal -->
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h6 class="modal-title" id="confirmDeleteLabel">Confirm Delete</h6>
+      </div>
+      <div class="modal-body p-2">
+        <div class="form-group mb-2 position-relative">
+          <label for="password"> Please confirm your admin password</label>
+          <input
+            [type]="passwordVisible ? 'text' : 'password'"
+            id="password"
+            class="form-control form-control-sm"
+            [(ngModel)]="admin_password"
+            required
+          />
+          <span
+            class="toggle-password"
+            (click)="togglePasswordVisibility()"
+            [title]="passwordVisible ? 'Hide password' : 'Show password'"
+          >
+            <mat-icon *ngIf="passwordVisible">visibility_off</mat-icon>
+            <mat-icon *ngIf="!passwordVisible">visibility</mat-icon>
+          </span>
+        </div>
+      </div>
+      <div class="modal-footer py-2 d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">No</button>
+        <button
+          type="button"
+          class="btn btn-danger btn-sm"
+          (click)="confirmDelete()"
+          *ngIf="admin_password"
+        >
+          <i class="fa fa-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- DELETE COMMON  MODAL -->
+<div
+  class="modal fade"
+  id="confirmCommonDeleteModal"
+  tabindex="-1"
+  aria-labelledby="confirmCommonDeleteModal"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-sm">
+    <!-- Small modal -->
+    <div class="modal-content">
+      <div class="modal-header py-2">
+        <h6 class="modal-title" id="confirmCommonDeleteModal">Confirm Delete</h6>
+      </div>
+      <div class="modal-body text-center p-2">
+        <p class="mb-0">Are you sure you want to remove this user?</p>
+      </div>
+      <div class="modal-footer py-2 d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">No</button>
+        <button type="button" class="btn btn-danger btn-sm" (click)="confirmDeleteUser()">
+          <i class="fa fa-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

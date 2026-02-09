@@ -1,0 +1,55 @@
+<div class="tabs-container">
+  <div class="tabs-area">
+    <div
+      class="side-panel-tab"
+      routerLink="/admin-home"
+      routerLinkActive="active"
+      (click)="selectTab(1)"
+    >
+      Home
+    </div>
+    <div
+      *ngIf="this.user_type === 'super_admin'"
+      class="side-panel-tab side-panel-tab-long"
+      routerLink="/admin-organizations"
+      routerLinkActive="active"
+      (click)="selectTab(2)"
+    >
+      Organizations
+    </div>
+    <div
+      class="side-panel-tab"
+      routerLink="/admin-users-list"
+      routerLinkActive="active"
+      (click)="selectTab(3)"
+      *ngIf="getPermissionView(251)"
+    >
+      Users
+    </div>
+    <div
+      class="side-panel-tab"
+      routerLink="/admin-roles-list"
+      routerLinkActive="active"
+      (click)="selectTab(4)"
+      *ngIf="getPermissionView(252)"
+    >
+      Roles
+    </div>
+    <div
+      class="side-panel-tab"
+      routerLink="/admin-layers-list"
+      routerLinkActive="active"
+      (click)="selectTab(5)"
+      *ngIf="getPermissionView(253)"
+    >
+      Layers
+    </div>
+    <!-- <div
+      class="side-panel-tab side-panel-tab-long"
+      [class.active]="activeTab === 6"
+      (click)="openProAlert()"
+    >
+      Activity Log
+    </div> -->
+  </div>
+</div>

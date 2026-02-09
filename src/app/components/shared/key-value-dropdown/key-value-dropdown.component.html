@@ -1,0 +1,18 @@
+<div *ngIf="!hidden" class="keyValueWrapper">
+  <div class="keyValueWrapper__keyValue">
+    <div class="keyValue__key">{{ key }}</div>
+
+    <div class="keyValue__value">
+      <select
+        title="dropdown"
+        [(ngModel)]="value"
+        (ngModelChange)="onValueChange($event)"
+        [disabled]="!editable"
+      >
+        <option *ngFor="let option of options" [value]="option.id">
+          {{ option.name }}
+        </option>
+      </select>
+    </div>
+  </div>
+</div>

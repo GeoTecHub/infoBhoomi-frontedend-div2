@@ -1,0 +1,55 @@
+<div class="material-header">
+  <div class="header-content">
+    <h2 class="header-title">{{ popup_action }} Layer</h2>
+    <!-- <button class="close-btn">
+        <mat-icon>close</mat-icon> 
+      </button> -->
+  </div>
+</div>
+
+<mat-dialog-content>
+  <mat-card class="custom-card">
+    <mat-card-content>
+      <div class="keyValueList">
+        <div class="show_all_inputs">
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Layer Name</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [readonly]="default_layer"
+                [(ngModel)]="layer_name"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Color</div>
+              <input type="color" class="keyValue__value" [(ngModel)]="selectedColor" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <!-- *ngIf="civilian_data__array.length != 0" -->
+  <div class="container">
+    &nbsp;
+    <button
+      mat-icon-button
+      matSuffix
+      (click)="closeDialog()"
+      class="primary-custom-sm-btn"
+      aria-label="Close dialog"
+    >
+      <mat-icon>close</mat-icon> Close
+    </button>
+    &nbsp;&nbsp;&nbsp;
+    <button mat-icon-button matSuffix (click)="SubmitAll()" class="primary-custom-sm-btn">
+      <mat-icon>save</mat-icon> Save
+    </button>
+  </div>
+</mat-dialog-actions>

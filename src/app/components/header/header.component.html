@@ -1,0 +1,392 @@
+<div class="header-content">
+  <div class="logo-container position-relative">
+    <img alt="logo" src="logos/LOGO.svg" (click)="goToHome()" class="logo-header" />
+    <div class="logo-version-row">
+      <small class="logo-version">V1.02</small>
+      <span class="logo-beta">Beta </span>
+    </div>
+  </div>
+
+  <div class="header-elements">
+    <div class="header-top d-flex align-items-center">
+      <div class="header-location-info">
+        <div class="header-location-info-e d-flex align-items-center">
+          <mat-icon class="location-icon">location_on</mat-icon>
+          <nav class="breadcrumb mb-0 nav-breadcrumb">
+            <label class="black-text breadcrumb-label">Location:</label>
+            <span class="black-text breadcrumb-span-1"> Sri Lanka</span>
+            <span class="black-text breadcrumb-span-1">></span>
+            <span class="black-text breadcrumb-span-1">{{ current_location.dist }}</span>
+            <span class="black-text breadcrumb-span-1">></span>
+            <span class="city-text breadcrumb-span-1">{{ current_location.city }}</span>
+          </nav>
+        </div>
+      </div>
+
+      <div class="header-subscription-badge" (click)="openSubscriptionAlert()">
+        <span [ngClass]="getSubscriptionClass()" class="subscription-label">
+          <i class="fas fa-gem"></i>
+          <u>{{ planName }}</u>
+          <ng-container *ngIf="planName === 'Free Trial'">
+            <ng-container *ngIf="planEndsOn; else expiredSoon">
+              | <small>Expires in {{ getRemainingDays() }} days</small>
+            </ng-container>
+            <ng-template #expiredSoon>
+              | <small>Your plan will be expired soon</small>
+            </ng-template>
+          </ng-container>
+        </span>
+      </div>
+
+      <!-- <div class="top-space-1"></div> -->
+      <div class="header-user-info-conteiner">
+        <div class="header-user-info-content" matTooltip="Organization" matTooltipPosition="below">
+          <label>
+            <!-- <img alt="logo" src="logos/local-dev-logo.webp" class="local-dev-logo" /> -->
+            <span class="org-text">
+              <i class="fas fa-building" style="margin-right: 6px; color: #00458f"></i>
+              {{ current_location.org_name }}
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="header-user-info-conteiner" *ngIf="department">
+        <div class="header-user-info-content" matTooltip="Department" matTooltipPosition="below">
+          <label>
+            <!-- <img alt="logo" src="logos/local-dev-logo.webp" class="local-dev-logo" /> -->
+            <span class="org-text">
+              <i class="fas fa-building" style="margin-right: 6px; color: #00458f"></i>
+              {{ department }}
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="header-bottom">
+      <!-- <div class="save-undo">
+        <div class="save-undo-icon">
+          <div class="header-icon">
+            <button mat-icon-button (click)="onHeaderSaveClick()" matTooltip="Save All Changes">
+              <mat-icon style="color: white">save</mat-icon>
+            </button>
+          </div>
+        </div>
+        <div class="save-undo-icon">
+          <div class="header-icon">
+            <button
+              mat-icon-button
+              (click)="onHeaderUndoClick()"
+              matTooltip="Undo Last Action"
+              [disabled]="!canUndo"
+            >
+              <mat-icon style="color: white">undo</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div> -->
+
+      <div class="header-container">
+        <div class="header-layers position-relative" #searchBtn>
+          <div
+            class="button-h-b px-2 d-flex align-items-center"
+            style="padding-right: 24px !important"
+            matRipple
+            (click)="toggleSearch()"
+          >
+            <mat-icon class="dropdown-icon-mat">search</mat-icon>
+            <span class="dropdown-icon-span"> Search </span>
+          </div>
+          <div
+            class="search-popover"
+            [class.show]="isSearchOpen"
+            (click)="$event.stopPropagation()"
+          >
+            <div class="search-row">
+              <!-- FIELD SELECTOR -->
+              <select
+                class="form-select form-select-sm me-0"
+                style="width: 120px; font-size: 12px"
+                [(ngModel)]="selectedSearchField"
+              >
+                <option *ngFor="let field of searchFields" [ngValue]="field.value">
+                  {{ field.label }}
+                </option>
+              </select>
+
+              <!-- SINGLE INPUT: Feature ID / NIC -->
+              <input
+                *ngIf="selectedSearchField === 'su_id' || selectedSearchField === 'nic'"
+                type="text"
+                class="form-control form-control-sm search-input"
+                style="width: 140px; font-size: 12px"
+                [(ngModel)]="searchQuery"
+                [placeholder]="getSearchPlaceholder()"
+                (keyup.enter)="onSearch()"
+                autofocus
+              />
+
+              <!-- RANGE INPUTS: Valuation -->
+              <div
+                *ngIf="selectedSearchField === 'valuation'"
+                class="d-flex align-items-center"
+                style="gap: 4px"
+              >
+                <input
+                  type="number"
+                  class="form-control form-control-sm"
+                  style="width: 90px; font-size: 12px"
+                  [(ngModel)]="valuationFrom"
+                  placeholder="From"
+                  (keyup.enter)="onSearch()"
+                />
+                <span style="font-size: 11px">to</span>
+                <input
+                  type="number"
+                  class="form-control form-control-sm"
+                  style="width: 90px; font-size: 12px"
+                  [(ngModel)]="valuationTo"
+                  placeholder="To"
+                  (keyup.enter)="onSearch()"
+                />
+              </div>
+
+              <!-- SEARCH BUTTON -->
+              <button class="btn admin-primary-bg-btn mt-0 search-go" (click)="onSearch()">
+                <mat-icon style="font-size: 16px; height: 16px">search</mat-icon>
+              </button>
+
+              <!-- CLOSE BUTTON -->
+              <button class="btn btn-light close-btn" (click)="closeSearch()" title="Close">
+                ✕
+              </button>
+            </div>
+            <div class="search-results" *ngIf="false">
+              <div
+                class="result-item d-flex align-items-center gap-3"
+                *ngFor="let r of results; trackBy: trackByParcelId"
+                (click)="onResultClick(r)"
+                (keydown.enter)="onResultClick(r)"
+                (keydown.space)="onResultClick(r)"
+                role="button"
+                tabindex="0"
+              >
+                <div class="icon-holder">
+                  <mat-icon aria-hidden="true" style="width: 20px; height: 20px"
+                    >location_on</mat-icon
+                  >
+                </div>
+                <div class="details-holder">
+                  <div class="m-0 h5-custom">
+                    Feature ID: <span class="mono">{{ r.parcel_id }}</span>
+                  </div>
+                  <div class="m-0 h6-custom">Address: {{ r.address || '—' }}</div>
+                  <div class="m-0 h6-custom">GN Division: {{ r.gn_division || '—' }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="header-layers"
+          #layerBtn
+          (click)="OpenLayersPanel(layerBtn)"
+          [title]="currentLayerName"
+        >
+          <div class="button-h-b px-2 d-flex align-items-center" matRipple>
+            <mat-icon class="dropdown-icon-mat">layers</mat-icon>
+            <span class="dropdown-icon-span">
+              {{ currentLayerName ? 'Layer : ' + currentLayerName.slice(0, 18) : 'Layers' }}
+              {{ currentLayerName.length > 18 ? '...' : '' }}
+            </span>
+            <mat-icon class="arrow-icon" [ngClass]="{ 'rotate-180': isLayersPanelOpen }"
+              >arrow_drop_down</mat-icon
+            >
+          </div>
+        </div>
+
+        <div
+          class="header-layers long"
+          [matMenuTriggerFor]="baseMapMenu"
+          (menuOpened)="isBaseMapMenuOpen = true"
+          (menuClosed)="isBaseMapMenuOpen = false"
+        >
+          <div class="button-h-b px-2 d-flex align-items-center" matRipple>
+            <mat-icon class="dropdown-icon-mat">map</mat-icon>
+            <span class="dropdown-icon-span"> Base Maps </span>
+            <mat-icon class="arrow-icon" [ngClass]="{ 'rotate-180': isBaseMapMenuOpen }"
+              >arrow_drop_down</mat-icon
+            >
+          </div>
+        </div>
+
+        <!-- (2) ADDED: The actual menu that will pop up -->
+        <mat-menu #baseMapMenu="matMenu">
+          <button mat-menu-item (click)="onBaseMapChange('OSM')">
+            <mat-icon *ngIf="activeBaseMap === 'OSM'">check</mat-icon>
+            <span [class.active-map]="activeBaseMap === 'OSM'">OpenStreetMap</span>
+          </button>
+
+          <!-- Sentinel Option -->
+          <button mat-menu-item (click)="onBaseMapChange('SENTINEL')" disabled>
+            <mat-icon *ngIf="activeBaseMap === 'SENTINEL'">check</mat-icon>
+            <span [class.active-map]="activeBaseMap === 'SENTINEL'">Sentinel Hub</span>
+          </button>
+
+          <!-- NASA MODIS Option -->
+          <button mat-menu-item (click)="onBaseMapChange('NASA_MODIS')">
+            <mat-icon *ngIf="activeBaseMap === 'NASA_MODIS'">check</mat-icon>
+            <span [class.active-map]="activeBaseMap === 'NASA_MODIS'">NASA MODIS</span>
+          </button>
+
+          <!-- NASA Landsat Option -->
+          <button mat-menu-item (click)="onBaseMapChange('NASA_LANDSAT')" disabled>
+            <mat-icon *ngIf="activeBaseMap === 'NASA_LANDSAT'">check</mat-icon>
+            <span [class.active-map]="activeBaseMap === 'NASA_LANDSAT'">NASA Landsat</span>
+          </button>
+        </mat-menu>
+
+        <!-- <div class="header-workspace" (click)="OpenVERTEXT()">
+          <div class="button-h-b" matRipple>
+            <mat-icon style="font-size: 21px; margin-right: 5px">gps_fixed</mat-icon>
+            VerText Login
+          </div>
+        </div> -->
+
+        <div class="header-icon">
+          <button
+            mat-icon-button
+            aria-label="buffer"
+            (click)="openProAlert()"
+            class="h-100 d-flex align-items-center"
+          >
+            <mat-icon class="icon-mat-only">notifications</mat-icon>
+          </button>
+
+          <mat-menu #notifiMenu="matMenu" class="settings-menu-container">
+            <button mat-menu-item class="settings-menu-item">
+              <mat-icon>history</mat-icon>Available in Pro Version
+            </button>
+          </mat-menu>
+        </div>
+
+        <div class="header-icon -me-1">
+          <button
+            mat-icon-button
+            aria-label="buffer"
+            [matMenuTriggerFor]="appMenu"
+            class="h-100 d-flex align-items-center"
+          >
+            <mat-icon class="icon-mat-only">settings</mat-icon>
+          </button>
+
+          <!-- * settings button -->
+          <mat-menu #appMenu="matMenu" class="settings-menu-container">
+            <div
+              class="settings-menu-item settings-menu-item-check inner-align"
+              (click)="$event.stopPropagation()"
+            >
+              <input
+                type="checkbox"
+                [checked]="isGndVisible"
+                (change)="toggleGndLayer()"
+                id="gndCheckbox"
+                class="gnd-input"
+              />
+              <label for="gndCheckbox" class="m-0">Organization Area</label>
+            </div>
+            <hr class="m-0 p-0" />
+            <div
+              class="settings-menu-item settings-menu-item-check inner-align"
+              (click)="$event.stopPropagation()"
+            >
+              <input
+                type="checkbox"
+                [checked]="(mapService.showLabels$ | async) ?? false"
+                (change)="mapService.setShowLabels($any($event.target).checked)"
+                id="labelCheckbox"
+                class="gnd-input"
+              />
+              <label for="labelCheckbox" class="m-0">Show Feature ID </label>
+            </div>
+            <hr class="m-0 p-0" />
+            <div
+              class="settings-menu-item settings-menu-item-check inner-align"
+              (click)="$event.stopPropagation()"
+            >
+              <input
+                type="checkbox"
+                [checked]="(mapService.showArea$ | async) ?? false"
+                (change)="mapService.setShowArea($any($event.target).checked)"
+                id="areaCheckbox"
+                class="gnd-input"
+              />
+              <label for="areaCheckbox" class="m-0">Show Area </label>
+            </div>
+            <hr class="m-0 p-0" />
+            <button mat-menu-item class="settings-menu-item" (click)="OpenActivityLog()">
+              <mat-icon>history</mat-icon>Activity Log
+            </button>
+            <button mat-menu-item class="settings-menu-item" (click)="openContact()">
+              <mat-icon>contact_support</mat-icon>Contact Admin
+            </button>
+            <!-- <button mat-menu-item class="settings-menu-item" (click)="OpenUserProfile()">
+              <mat-icon style="color: white"> person</mat-icon>Profile
+            </button> -->
+          </mat-menu>
+          <!-- * -->
+        </div>
+
+        <div class="header-icon profile me-2">
+          <button
+            mat-button
+            aria-label="buffer"
+            [matMenuTriggerFor]="profileMenu"
+            class="profile-btn h-100 relative"
+          >
+            <img
+              *ngIf="sex?.toLowerCase() === 'male'"
+              src="sample/male_avatar.png"
+              alt="Male Profile"
+              class="rounded-avatar"
+            />
+            <img
+              *ngIf="sex?.toLowerCase() === 'female'"
+              src="sample/female_avatar.png"
+              alt="Female Profile"
+              class="rounded-avatar"
+            />
+
+            <span
+              *ngIf="!sex || (sex !== 'male' && sex !== 'female')"
+              class="rounded-avatar initials-avatar"
+            >
+              {{ username | uppercase | slice: 0 : 2 }}
+            </span>
+
+            <span class="username-ellipsis" [title]="username">
+              {{ username }}
+            </span>
+          </button>
+
+          <mat-menu #profileMenu="matMenu" class="settings-menu-container">
+            <button mat-menu-item class="settings-menu-item" (click)="OpenUserProfile()">
+              <mat-icon>person</mat-icon>Profile
+            </button>
+            <button mat-menu-item class="settings-menu-item" title="Logout" (click)="logout()">
+              <mat-icon>logout</mat-icon>Logout
+            </button>
+          </mat-menu>
+        </div>
+      </div>
+
+      <!-- <div class="header-workspace" (click)="OpenWorkspacePanel()">
+        <div class="button-h-b" matRipple>
+          <mat-icon style="font-size: 21px; margin-right: 5px">grid_view</mat-icon>
+          Workspace
+        </div>
+      </div> -->
+    </div>
+  </div>
+</div>

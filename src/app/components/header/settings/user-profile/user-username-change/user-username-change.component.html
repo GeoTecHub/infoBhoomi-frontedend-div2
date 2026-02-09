@@ -1,0 +1,39 @@
+<div class="header">
+  <h2 mat-dialog-title>Change Username</h2>
+  <button mat-button mat-dialog-close>
+    <mat-icon class="close-button">close</mat-icon>
+  </button>
+</div>
+
+<div class="content">
+  <mat-dialog-content>
+    <form class="form-content">
+      <div class="sub-form-content">
+        <div class="row">
+          <div class="inputfield_1">
+            <label for="new-username" class="form_txt">New Username</label>
+            <input
+              type="text"
+              id="new-username"
+              name="new-username"
+              [(ngModel)]="Obj.new_username"
+              class="input"
+              required
+              placeholder="Enter new username"
+            />
+          </div>
+        </div>
+      </div>
+    </form>
+  </mat-dialog-content>
+</div>
+
+<mat-dialog-actions>
+  <button mat-button mat-dialog-close class="cancel-button">Cancel</button>
+  <button mat-button (click)="onClick()" [disabled]="isLoading || !Obj.new_username">Change</button>
+  <div
+    *ngIf="isLoading"
+    style="padding-left: 5px; padding-right: 5px; color: blue; font-size: 12px"
+  ></div>
+  <mat-spinner *ngIf="isLoading" diameter="20" class="loading-spinner"></mat-spinner>
+</mat-dialog-actions>

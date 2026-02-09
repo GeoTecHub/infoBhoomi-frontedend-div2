@@ -1,0 +1,202 @@
+.main-body {
+  display: flex;
+  flex-direction: row;
+  margin: 84px 0px;
+}
+
+.side-panel-container {
+  background: #fff;
+}
+
+.tab-container {
+  flex-grow: 1;
+  padding: 10px;
+}
+
+.select-op-first {
+  color: #777878;
+}
+.selected {
+  background-color: #779ab8 !important;
+  color: white;
+  /* White text */
+  cursor: pointer;
+}
+
+/* Make role table scrollable */
+.role-table-container {
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+}
+
+.h-100 {
+  height: 100%;
+}
+
+.card-body {
+  padding: 0.5rem 1rem !important;
+}
+
+/* DELETE MODAL */
+#confirmDeleteModal .modal-header {
+  background-color: #fff;
+  border-bottom: 1px solid #bbd2db;
+}
+
+#confirmDeleteModal .modal-title {
+  color: #721c24;
+  /* Dark red text */
+  font-size: 1rem;
+  /* Adjust font size */
+  font-weight: bold;
+}
+
+/* Close Button */
+#confirmDeleteModal .btn-close {
+  background-color: #df1627;
+  border: none;
+}
+
+/* Modal Body */
+#confirmDeleteModal .modal-body {
+  background-color: #fff;
+  /* Light yellow background */
+  color: #856404;
+  /* Dark yellow text */
+}
+
+#confirmDeleteModal .modal-body p {
+  font-size: 0.9rem;
+  /* Slightly smaller font */
+  margin: 0;
+}
+
+/* Modal Footer */
+#confirmDeleteModal .modal-footer {
+  background-color: #fff;
+  /* Light red footer */
+}
+
+/* Button Styles */
+#confirmDeleteModal .btn-sm {
+  font-size: 0.85rem;
+  /* Smaller font size */
+  padding: 0.5rem 1rem;
+}
+
+#confirmDeleteModal .btn-danger {
+  background-color: #dc3545;
+  /* Red color for the danger button */
+  border: none;
+}
+
+#confirmDeleteModal .btn-secondary {
+  background-color: #6c757d;
+  /* Gray background for the 'No' button */
+  border: none;
+}
+
+/* Button Hover Effects */
+#confirmDeleteModal .btn-danger:hover {
+  background-color: #c82333;
+  /* Darker red on hover */
+}
+
+#confirmDeleteModal .btn-secondary:hover {
+  background-color: #5a6268;
+  /* Darker gray on hover */
+}
+
+/* Icon Size */
+#confirmDeleteModal .fa-trash {
+  margin-right: 5px;
+  font-size: 1rem;
+}
+
+.custom-modal-width {
+  max-width: 80%;
+}
+.custom-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: green; /* Green color for the checkbox */
+  margin-top: 2px;
+}
+
+.material-icons-custom {
+  vertical-align: middle; /* Align icons vertically */
+  line-height: 1; /* Ensures consistent line spacing */
+  font-size: 20px; /* Adjust icon size if necessary */
+  margin: 2px 5px; /* Ensure even top and bottom margins */
+  display: inline-flex; /* Centers the icons properly */
+  align-items: center; /* Ensures proper alignment */
+  color: #f15562;
+}
+.material-icons-edit {
+  font-family: 'Material Icons';
+  vertical-align: middle; /* Align icons vertically */
+  line-height: 1; /* Ensures consistent line spacing */
+  font-size: 20px; /* Adjust icon size if necessary */
+  margin: 2px 5px; /* Ensure even top and bottom margins */
+  display: inline-flex; /* Centers the icons properly */
+  align-items: center; /* Ensures proper alignment */
+  color: #3b3636;
+}
+.modal-sm {
+  max-width: 360px !important;
+}
+.btn i {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0;
+  padding-bottom: 2px;
+}
+
+.btn {
+  border: none !important;
+  box-shadow: none !important;
+}
+.color-box {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+  box-shadow: 0 0 0 1000px white inset !important;
+  -webkit-box-shadow: 0 0 0 1000px white inset !important;
+  -webkit-text-fill-color: #222 !important;
+}
+
+.owner-pill {
+  background: #7065d2;
+  border-radius: 12px;
+  color: white;
+  font-weight: 400;
+  text-align: center;
+  text-transform: capitalize;
+  width: 60px;
+}
+
+.owner-row {
+  font-weight: 500;
+}
+
+.toggle-password {
+  position: absolute;
+  right: 10px;
+  top: calc(24px);
+  cursor: pointer;
+  color: #666;
+  display: flex;
+  align-items: center;
+  bottom: 0;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+.toggle-password:hover {
+  color: #000;
+}

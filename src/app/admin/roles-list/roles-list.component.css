@@ -1,0 +1,255 @@
+.main-body {
+  display: flex;
+  flex-direction: row;
+  margin: 84px 0px;
+}
+
+.side-panel-container {
+  background: #fff;
+}
+
+.tab-container {
+  flex-grow: 1;
+  padding: 10px;
+}
+
+.create-btn {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 0px;
+}
+
+.green-checkbox {
+  accent-color: green;
+  /* For modern browsers */
+}
+
+.red-checkbox {
+  accent-color: red;
+  /* For modern browsers */
+}
+
+.checkbox-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.styled-checkbox {
+  width: 18px;
+  /* Adjust size as needed */
+  height: 16px;
+  /* Adjust size as needed */
+  cursor: pointer;
+}
+
+.select-op-first {
+  color: #777878;
+}
+
+.selected-role {
+  background-color: #779ab8;
+  /* Blue background */
+  color: white;
+  /* White text */
+  cursor: pointer;
+}
+
+/* Make role table scrollable */
+.role-table-container {
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+}
+
+.selected-role,
+.row-highlight {
+  background-color: #779ab8 !important;
+  color: white;
+  cursor: pointer;
+}
+
+.h-100 {
+  height: 100%;
+}
+
+.card-body {
+  padding: 0.5rem 1rem !important;
+}
+
+/* DELETE MODAL */
+#confirmDeleteModal .modal-header {
+  background-color: #fff;
+  /* Light red background */
+  border-bottom: 1px solid #fff;
+  /* Light border */
+}
+
+#confirmDeleteModal .modal-title {
+  color: #721c24;
+  /* Dark red text */
+  font-size: 1rem;
+  /* Adjust font size */
+  font-weight: bold;
+}
+
+/* Close Button */
+#confirmDeleteModal .btn-close {
+  background-color: #df1627;
+  border: none;
+}
+
+/* Modal Body */
+#confirmDeleteModal .modal-body {
+  background-color: #fff;
+  /* Light yellow background */
+  color: #856404;
+  /* Dark yellow text */
+}
+
+#confirmDeleteModal .modal-body p {
+  font-size: 0.9rem;
+  /* Slightly smaller font */
+  margin: 0;
+}
+
+/* Modal Footer */
+#confirmDeleteModal .modal-footer {
+  background-color: #fff;
+  /* Light red footer */
+}
+
+/* Button Styles */
+#confirmDeleteModal .btn-sm {
+  font-size: 0.85rem;
+  /* Smaller font size */
+  padding: 0.5rem 1rem;
+}
+
+#confirmDeleteModal .btn-danger {
+  background-color: #dc3545;
+  /* Red color for the danger button */
+  border: none;
+}
+
+#confirmDeleteModal .btn-secondary {
+  background-color: #6c757d;
+  /* Gray background for the 'No' button */
+  border: none;
+}
+
+/* Button Hover Effects */
+#confirmDeleteModal .btn-danger:hover {
+  background-color: #c82333;
+  /* Darker red on hover */
+}
+
+#confirmDeleteModal .btn-secondary:hover {
+  background-color: #5a6268;
+  /* Darker gray on hover */
+}
+
+/* Icon Size */
+#confirmDeleteModal .fa-trash {
+  margin-right: 5px;
+  font-size: 1rem;
+}
+
+.custom-modal-width {
+  max-width: 80%;
+}
+
+.custom-checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: green;
+  /* Green color for the checkbox */
+  margin-top: 2px;
+}
+
+.material-icons-custom {
+  vertical-align: middle;
+  /* Align icons vertically */
+  line-height: 1;
+  /* Ensures consistent line spacing */
+  font-size: 20px;
+  /* Adjust icon size if necessary */
+  margin: 2px 5px;
+  /* Ensure even top and bottom margins */
+  display: inline-flex;
+  /* Centers the icons properly */
+  align-items: center;
+  /* Ensures proper alignment */
+  color: #f15562;
+}
+
+.material-icons-edit {
+  font-family: 'Material Icons';
+  vertical-align: middle;
+  /* Align icons vertically */
+  line-height: 1;
+  /* Ensures consistent line spacing */
+  font-size: 20px;
+  /* Adjust icon size if necessary */
+  margin: 2px 5px;
+  /* Ensure even top and bottom margins */
+  display: inline-flex;
+  /* Centers the icons properly */
+  align-items: center;
+  /* Ensures proper alignment */
+  color: #3b3636;
+}
+
+.modal-sm {
+  max-width: 360px !important;
+}
+
+.btn i {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0;
+  padding-bottom: 2px;
+}
+
+.remarks-box {
+  background-color: #e8f4ff;
+  border-left: 4px solid #007bff;
+  padding: 8px 12px;
+  margin-top: 10px;
+  font-size: 13px;
+  /* font-style: italic; */
+  color: #004085;
+  border-radius: 4px;
+}
+
+.btn {
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.cursor-not-allowed {
+  cursor: not-allowed;
+}
+
+.admin-pill {
+  background: #e3b729;
+  border-radius: 12px;
+  color: white;
+  font-weight: 400;
+  text-align: center;
+  text-transform: capitalize;
+  width: 75px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.user-pill {
+  background: #2fa642;
+  border-radius: 12px;
+  color: white;
+  font-weight: 400;
+  text-align: center;
+  text-transform: capitalize;
+  width: 75px;
+  margin-left: auto;
+  margin-right: auto;
+}

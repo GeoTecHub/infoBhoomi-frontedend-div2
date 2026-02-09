@@ -1,0 +1,115 @@
+<h3 mat-dialog-title *ngIf="!ActiveProjectPanel" class="login-title" style="font-size: 1.3rem">
+  VerText Account login
+  <button mat-button mat-dialog-close>
+    <mat-icon class="close-button" style="color: white">close</mat-icon>
+  </button>
+</h3>
+<h2 mat-dialog-title *ngIf="ActiveProjectPanel" class="panel-title">VerText</h2>
+<mat-dialog-content class="mat-typography" *ngIf="!ActiveProjectPanel">
+  <div class="container">
+    <div class="row">
+      <!-- <div class="col image-col">
+            <h3>VERTEXT</h3>
+        </div> -->
+      <div class="col form-col">
+        <div class="login-body">
+          <h3 style="font-size: 1.2rem">Login</h3>
+          <form>
+            <div class="form-group">
+              <label for="email" class="form-label">Username</label>
+              <input
+                [(ngModel)]="loginObj.username"
+                name="user_name"
+                type="text"
+                id="name"
+                class="form-control"
+                #username="ngModel"
+              />
+              <div *ngIf="usernameRequired" style="color: red; font-size: 12px">
+                *** Username is required
+              </div>
+            </div>
+
+            <div class="form-group position-relative">
+              <label for="pass" class="form-label">Password</label>
+              <input
+                [(ngModel)]="loginObj.password"
+                name="password"
+                [type]="passwordVisible ? 'text' : 'password'"
+                id="pass"
+                class="form-control"
+              />
+              <span
+                class="toggle-password"
+                (click)="togglePasswordVisibility()"
+                [title]="passwordVisible ? 'Hide password' : 'Show password'"
+              >
+                <mat-icon *ngIf="passwordVisible">visibility_off</mat-icon>
+                <mat-icon *ngIf="!passwordVisible">visibility</mat-icon>
+              </span>
+              <div *ngIf="passwordRequired" style="color: red; font-size: 12px">
+                *** Password is required
+              </div>
+            </div>
+            <button type="submit" class="custom-login-btn" (click)="onClick()">Login</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-content class="mat-typography" *ngIf="ActiveProjectPanel">
+  <div class="expcontent">
+    <h3 style="font-size: 1rem" class="sub-topic-project-panel">
+      PROJECT LIST | {{ userDeatils.user.first_name }}{{ ' ' }}{{ userDeatils.user.last_name }}
+    </h3>
+    <table class="project-table">
+      <!-- Table Headers -->
+      <thead>
+        <tr>
+          <th></th>
+          <th>Project Name</th>
+          <th>Survey Method</th>
+          <th>Date Created</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (dataItem of projectList | sortArray: 'project_name'; track dataItem.project_id) {
+          <tr class="clickable-row" [ngClass]="{ 'selected-row': isRowSelected(dataItem) }">
+            <td>
+              <input
+                type="checkbox"
+                id="myCheckbox"
+                [checked]="isRowSelected(dataItem)"
+                (change)="onCheckboxChange(dataItem, $event)"
+              />
+            </td>
+            <td>
+              <div class="name_checkbox_2">
+                <div
+                  class="layer-name"
+                  matTooltip="{{ dataItem.project_name }}"
+                  matTooltipPosition="above"
+                >
+                  {{ dataItem.project_name }}
+                </div>
+              </div>
+            </td>
+            <td>{{ dataItem.survey_methode }}</td>
+            <td>{{ dataItem.date_created | date: 'yyyy-MM-dd' }}</td>
+            <td>{{ dataItem.date_created | date: 'HH:mm:ss' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close *ngIf="ActiveProjectPanel" style="color: red">Close</button>
+  <button mat-button mat-dialog-close *ngIf="ActiveProjectPanel" (click)="addToMap()">
+    Add to Map
+  </button>
+</mat-dialog-actions>

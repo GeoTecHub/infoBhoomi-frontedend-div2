@@ -1,0 +1,239 @@
+<app-user-authenticator></app-user-authenticator>
+
+<div class="header-container">
+  <app-admin-header></app-admin-header>
+</div>
+
+<div class="admin-main-body">
+  <div class="side-panel-container">
+    <app-admin-side-bar></app-admin-side-bar>
+  </div>
+
+  <div class="tab-container">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="card shadow-sm" *ngIf="!edit_details_show">
+          <div class="card-header background-primary text-white">
+            <button mat-icon-button class="custom-back-button" (click)="goBack()">
+              <mat-icon>arrow_back</mat-icon>
+            </button>
+            &nbsp;&nbsp;&nbsp;
+            <h6 class="mb-0 main-title">About Organization</h6>
+          </div>
+
+          <div class="card-body d-flex justify-content-center">
+            <div class="w-100 px-4" style="max-width: 600px">
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Name:</strong>
+                <span>{{ organizationForm.get('display_name')?.value }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Permit Start:</strong>
+                <span>{{ organizationForm.get('permit_start_date')?.value || '-' }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Permit End:</strong>
+                <span>{{ organizationForm.get('permit_end_date')?.value || '-' }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Director:</strong>
+                <span>{{ organizationForm.get('director')?.value }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Contact No:</strong>
+                <span>{{ organizationForm.get('contact_no')?.value }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Email:</strong> <span>{{ organizationForm.get('org_email')?.value }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Address:</strong>
+                <span>{{ organizationForm.get('org_address')?.value }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Subscription Plan:</strong>
+                <span>{{ planLabel(organizationForm.get('subscription_plan')?.value) }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Users Limit:</strong>
+                <span>{{ organizationForm.get('users_limit')?.value }}</span>
+              </div>
+
+              <div class="mb-2 d-flex justify-content-end">
+                <button mat-icon-button matSuffix (click)="getEdit()" class="primary-custom-sm-btn">
+                  <mat-icon>edit</mat-icon> Edit
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EDIT VIEW -->
+        <div class="card shadow-sm" *ngIf="edit_details_show">
+          <div class="card-header background-primary text-white">
+            <button mat-icon-button class="custom-back-button" (click)="goBack()">
+              <mat-icon>arrow_back</mat-icon>
+            </button>
+            &nbsp;&nbsp;&nbsp;
+            <h6 class="mb-0 main-title">Edit Organization</h6>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <form [formGroup]="organizationForm" class="w-100 px-4">
+                <div class="row">
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="display_name">Name</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      id="display_name"
+                      placeholder="Enter Name"
+                      formControlName="display_name"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group mb-3 col-md-3">
+                    <label for="permit_start_date">Permit Start</label>
+                    <input
+                      type="date"
+                      class="form-control form-control-sm"
+                      id="permit_start_date"
+                      formControlName="permit_start_date"
+                    />
+                  </div>
+
+                  <div class="form-group mb-3 col-md-3">
+                    <label for="permit_end_date">Permit End</label>
+                    <input
+                      type="date"
+                      class="form-control form-control-sm"
+                      id="permit_end_date"
+                      formControlName="permit_end_date"
+                    />
+                  </div>
+
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="director">Director</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      id="director"
+                      placeholder="Enter Director Name"
+                      formControlName="director"
+                    />
+                  </div>
+
+                  <div class="form-group mb-3 col-md-3">
+                    <label for="contact_no">Contact Number</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      id="contact_no"
+                      placeholder="Enter Contact Number"
+                      formControlName="contact_no"
+                    />
+                    <div
+                      *ngIf="
+                        organizationForm.get('contact_no')?.invalid &&
+                        organizationForm.get('contact_no')?.touched
+                      "
+                      class="text-danger"
+                    >
+                      <small *ngIf="organizationForm.get('contact_no')?.errors?.['pattern']">
+                        Enter a valid 10-digit mobile number starting with 0.
+                      </small>
+                    </div>
+                  </div>
+
+                  <div class="form-group mb-3 col-md-3">
+                    <label for="org_email">Email</label>
+                    <input
+                      type="email"
+                      class="form-control form-control-sm"
+                      id="org_email"
+                      placeholder="Enter Email"
+                      formControlName="org_email"
+                      (input)="formatEmail()"
+                    />
+                    <div
+                      *ngIf="
+                        organizationForm.get('org_email')?.invalid &&
+                        organizationForm.get('org_email')?.touched
+                      "
+                      class="text-danger"
+                    >
+                      <small *ngIf="organizationForm.get('org_email')?.errors?.['email']">
+                        Incorrect email format.
+                      </small>
+                    </div>
+                  </div>
+
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="org_address">Address</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      id="org_address"
+                      placeholder="Enter Address"
+                      formControlName="org_address"
+                    />
+                  </div>
+
+                  <div class="form-group mb-3 col-md-3">
+                    <label for="subscription_plan">Subscription Plan</label>
+                    <select
+                      class="form-control form-control-sm"
+                      id="subscription_plan"
+                      formControlName="subscription_plan"
+                      required
+                    >
+                      <option value="" disabled selected>Select Plan</option>
+                      <option *ngFor="let plan of subscriptionPlans" [value]="plan.value">
+                        {{ plan.label }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div class="form-group mb-3 col-md-3">
+                    <label for="users_limit">Users Limit</label>
+                    <input
+                      type="number"
+                      class="form-control form-control-sm"
+                      id="users_limit"
+                      placeholder="Enter User Limit"
+                      formControlName="users_limit"
+                    />
+                    <div
+                      *ngIf="
+                        organizationForm.get('users_limit')?.invalid &&
+                        organizationForm.get('users_limit')?.touched
+                      "
+                      class="text-danger"
+                    >
+                      <small *ngIf="organizationForm.get('users_limit')?.errors?.['min']">
+                        Users limit must be at least 1.
+                      </small>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group d-flex justify-content-end mt-3">
+                  <button
+                    mat-icon-button
+                    (click)="editOrganization()"
+                    class="primary-bg-btn"
+                    [disabled]="organizationForm.invalid || loading"
+                  >
+                    <mat-icon>save</mat-icon> Update
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

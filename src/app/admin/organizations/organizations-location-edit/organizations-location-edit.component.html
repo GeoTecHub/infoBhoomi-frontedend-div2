@@ -1,0 +1,131 @@
+<!-- Auth + Header -->
+<app-user-authenticator></app-user-authenticator>
+<div class="header-container">
+  <app-admin-header></app-admin-header>
+</div>
+
+<div class="admin-main-body">
+  <div class="side-panel-container">
+    <app-admin-side-bar></app-admin-side-bar>
+  </div>
+
+  <div class="tab-container">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="card shadow-sm">
+          <div class="card-header background-primary text-white d-flex align-items-center">
+            <button mat-icon-button class="custom-back-button" (click)="goBack()">
+              <mat-icon>arrow_back</mat-icon>
+            </button>
+            &nbsp;&nbsp;&nbsp;
+            <h6 class="mb-0 main-title">
+              Edit Organization Location | <span class="head-org-name">{{ orgName }}</span>
+            </h6>
+          </div>
+
+          <div class="card">
+            <div class="card-body">
+              <form [formGroup]="organizationLocationForm" class="w-100 px-4">
+                <div class="row">
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="dist">District</label>
+                    <!-- <input
+                      id="dist"
+                      type="text"
+                      class="form-control form-control-sm"
+                      formControlName="dist"
+                      placeholder="Enter District"
+                      required
+                    /> -->
+                    <select
+                      id="dist"
+                      type="text"
+                      class="form-control form-control-sm"
+                      formControlName="dist"
+                      placeholder="Enter District"
+                      required
+                    >
+                      <option *ngFor="let dist of distList" [value]="dist">{{ dist }}</option>
+                    </select>
+                    <small
+                      class="text-danger"
+                      *ngIf="ctrl('dist')?.touched && ctrl('dist')?.invalid"
+                    >
+                      District is required.
+                    </small>
+                  </div>
+
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="city">City</label>
+                    <input
+                      id="city"
+                      type="text"
+                      class="form-control form-control-sm"
+                      formControlName="city"
+                      placeholder="Enter City"
+                      required
+                    />
+                    <small
+                      class="text-danger"
+                      *ngIf="ctrl('city')?.touched && ctrl('city')?.invalid"
+                    >
+                      City is required.
+                    </small>
+                  </div>
+
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="latitude">Latitude (−90 to 90)</label>
+                    <input
+                      id="latitude"
+                      type="number"
+                      class="form-control form-control-sm"
+                      formControlName="latitude"
+                      placeholder="e.g., 6.8514"
+                      required
+                    />
+                    <small
+                      class="text-danger"
+                      *ngIf="ctrl('latitude')?.touched && ctrl('latitude')?.invalid"
+                    >
+                      Enter a valid latitude between −90 and 90.
+                    </small>
+                  </div>
+
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="longitude">Longitude (−180 to 180)</label>
+                    <input
+                      id="longitude"
+                      type="number"
+                      class="form-control form-control-sm"
+                      formControlName="longitude"
+                      placeholder="e.g., 79.8660"
+                      required
+                    />
+                    <small
+                      class="text-danger"
+                      *ngIf="ctrl('longitude')?.touched && ctrl('longitude')?.invalid"
+                    >
+                      Enter a valid longitude between −180 and 180.
+                    </small>
+                  </div>
+                </div>
+
+                <div class="d-flex justify-content-end mt-3">
+                  <button
+                    type="button"
+                    mat-icon-button
+                    (click)="saveLocation()"
+                    class="primary-bg-btn"
+                    [disabled]="organizationLocationForm.invalid || loading"
+                  >
+                    <mat-icon>save</mat-icon> Save
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

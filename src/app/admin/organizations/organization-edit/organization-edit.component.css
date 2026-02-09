@@ -1,0 +1,38 @@
+.main-body {
+  display: flex;
+  flex-direction: row;
+}
+
+.side-panel-container {
+  background: #fff;
+}
+
+.tab-container {
+  flex-grow: 1;
+  padding: 10px;
+}
+
+.create-btn {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 0px;
+}
+
+.background-primary {
+  background-color: #779ab8;
+}
+
+.main-title {
+  font-size: 17px;
+}
+
+.incorrect-pw {
+  margin-bottom: 0px;
+  font-size: 13px;
+}
+
+.default-pw-text {
+  font-weight: 300;
+  color: #779ab8;
+  font-size: 11px;
+}

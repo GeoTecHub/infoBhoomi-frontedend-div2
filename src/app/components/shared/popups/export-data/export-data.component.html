@@ -1,0 +1,93 @@
+<div class="export-container">
+  <h2 mat-dialog-title>Export Data</h2>
+  <mat-dialog-content class="export-content">
+    <!-- Step 1: Choose Export Type -->
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>What do you want to export?</mat-label>
+      <mat-select [(ngModel)]="exportType" (selectionChange)="onExportTypeChange()">
+        <mat-option value="selectedObjects">Selected Objects on Map</mat-option>
+        <mat-option value="layers">Entire Layer(s)</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Step 2a: UI for Selecting Objects -->
+    <div *ngIf="exportType === 'selectedObjects'" class="selection-controls">
+      <!-- The START button -->
+      <button
+        *ngIf="!isSelectingForExport"
+        mat-raised-button
+        color="primary"
+        (click)="startSelectionProcess()"
+      >
+        <mat-icon>mouse</mat-icon>
+        <span>Select Objects on Map</span>
+      </button>
+
+      <!-- The STOP button -->
+      <button
+        *ngIf="isSelectingForExport"
+        mat-raised-button
+        color="accent"
+        (click)="stopSelectionProcess()"
+      >
+        <mat-icon>check_circle</mat-icon>
+        <span>Done Selecting</span>
+      </button>
+
+      <!-- Banner shown DURING selection -->
+      <div *ngIf="isSelectingForExport" class="selection-banner">
+        <p>
+          Selection active. Selected: <strong>{{ selectedFeaturesForExport.length }}</strong>
+        </p>
+      </div>
+
+      <!-- Summary shown AFTER selection -->
+      <div
+        *ngIf="selectedFeaturesForExport.length > 0 && !isSelectingForExport"
+        class="selection-count"
+      >
+        <p>{{ selectedFeaturesForExport.length }} feature(s) ready for export.</p>
+      </div>
+    </div>
+
+    <!-- Step 2b: UI for Exporting Layers -->
+    <div *ngIf="exportType === 'layers'" class="export-section">
+      <!-- ... your layer selection form field ... -->
+    </div>
+
+    <!-- Step 3: Common UI for Format and Filename -->
+    <div *ngIf="showFormatOptions" class="export-section">
+      <!-- ... your format and filename form fields ... -->
+    </div>
+  </mat-dialog-content>
+
+  <!-- Dialog Actions -->
+  <mat-dialog-actions align="end">
+    <!-- <button mat-button (click)="onCancel()">Cancel</button>
+
+    <button mat-flat-button color="primary" (click)="executeExport()" [disabled]="isProcessing || !isExportReady()"
+      class="export-button">
+      <mat-icon *ngIf="isProcessing">hourglass_empty</mat-icon>
+      <span *ngIf="!isProcessing">Export</span>
+      <mat-progress-spinner *ngIf="isProcessing" diameter="20" mode="indeterminate"></mat-progress-spinner>
+    </button> -->
+
+    <app-custom-buttons
+      buttonText="Close"
+      buttonIcon="cancel"
+      buttonStyle="secondary"
+      mat-dialog-close
+      (click)="onCancel()"
+    >
+    </app-custom-buttons>
+
+    <app-custom-buttons
+      buttonText="Export"
+      [buttonIcon]="!isProcessing ? 'upload' : 'hourglass_empty'"
+      buttonStyle="primary"
+      (click)="executeExport()"
+      [disabled]="isProcessing || !isExportReady()"
+    >
+    </app-custom-buttons>
+  </mat-dialog-actions>
+</div>

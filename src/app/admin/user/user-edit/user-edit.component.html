@@ -1,0 +1,348 @@
+<!-- Verifying authentication and get user details -->
+<app-user-authenticator></app-user-authenticator>
+
+<div class="header-container">
+  <app-admin-header></app-admin-header>
+</div>
+
+<div class="admin-main-body">
+  <!-- Sidebar -->
+  <div class="side-panel-container">
+    <app-admin-side-bar></app-admin-side-bar>
+  </div>
+
+  <!-- Tab Container with Card -->
+  <div class="tab-container">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="card shadow-sm" *ngIf="!edit_details_show">
+          <div class="card-header background-primary text-white">
+            <button mat-icon-button class="custom-back-button" (click)="goBack()">
+              <mat-icon>arrow_back</mat-icon></button
+            >&nbsp;&nbsp; &nbsp;
+            <h6 class="mb-0 main-title">About User</h6>
+          </div>
+
+          <div class="card-body d-flex justify-content-center">
+            <div class="w-100 px-4" style="max-width: 600px">
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Username:</strong> <span>{{ userForm.get('username')?.value }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Email:</strong> <span>{{ userForm.get('email')?.value }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>First Name:</strong> <span>{{ userForm.get('first_name')?.value }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Last Name:</strong> <span>{{ userForm.get('last_name')?.value }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Mobile:</strong> <span>{{ userForm.get('mobile')?.value }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Address:</strong> <span>{{ userForm.get('address')?.value }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>NIC:</strong> <span>{{ userForm.get('nic')?.value }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Birthday:</strong> <span>{{ userForm.get('birthday')?.value }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Sex:</strong> <span>{{ userForm.get('sex')?.value }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Department:</strong> <span>{{ department_name }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Position:</strong> <span>{{ userForm.get('post')?.value }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Employee ID:</strong> <span>{{ userForm.get('emp_id')?.value }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Last Login:</strong>
+                <span>{{ last_login ? (last_login | date: 'dd/MM/yyyy h:mm:ss a') : '' }}</span>
+              </div>
+              <div class="mb-2 d-flex justify-content-end" *ngIf="getPermission(251)">
+                <button
+                  mat-icon-button
+                  (click)="openPasswordResetModal(passwordResetModal)"
+                  class="primary-custom-sm-btn"
+                >
+                  <mat-icon>lock_reset</mat-icon> Reset Password
+                </button>
+                &nbsp;&nbsp; &nbsp;
+                <button mat-icon-button matSuffix (click)="getEdit()" class="primary-custom-sm-btn">
+                  <mat-icon>edit</mat-icon> Edit
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm" *ngIf="edit_details_show">
+          <div class="card-header background-primary text-white">
+            <button mat-icon-button class="custom-back-button" (click)="goBack()">
+              <mat-icon>arrow_back</mat-icon></button
+            >&nbsp;&nbsp; &nbsp;
+            <h6 class="mb-0 main-title">Edit User</h6>
+          </div>
+          <div class="card">
+            <div class="card-body">
+              <form [formGroup]="userForm" class="w-100 px-4">
+                <div class="row">
+                  <!-- Username -->
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="username">Username</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      id="username"
+                      placeholder="Enter Username"
+                      formControlName="username"
+                      readonly
+                      required
+                    />
+                  </div>
+
+                  <!-- Email -->
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="email">Email</label>
+                    <input
+                      type="email"
+                      class="form-control form-control-sm"
+                      id="email"
+                      placeholder="Enter Email"
+                      formControlName="email"
+                      required
+                      (input)="formatEmail()"
+                    />
+                    <div
+                      *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched"
+                      class="text-danger"
+                    >
+                      <small *ngIf="userForm.get('email')?.errors?.['email']"
+                        >Incorrect email format.</small
+                      >
+                    </div>
+                  </div>
+
+                  <!-- First Name -->
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="firstName">First Name</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      id="firstName"
+                      placeholder="Enter First Name"
+                      formControlName="first_name"
+                      required
+                    />
+                  </div>
+
+                  <!-- Last Name -->
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="lastName">Last Name</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      id="lastName"
+                      placeholder="Enter Last Name"
+                      formControlName="last_name"
+                      required
+                    />
+                  </div>
+
+                  <!-- Mobile -->
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="mobile">Mobile</label>
+                    <input
+                      type="number"
+                      class="form-control form-control-sm"
+                      id="mobile"
+                      placeholder="Enter Mobile"
+                      formControlName="mobile"
+                      required
+                    />
+                    <div
+                      *ngIf="userForm.get('mobile')?.invalid && userForm.get('mobile')?.touched"
+                      class="text-danger"
+                    >
+                      <small *ngIf="userForm.get('mobile')?.errors?.['pattern']"
+                        >Enter a valid 10-digit mobile number starting with 0.</small
+                      >
+                    </div>
+                  </div>
+
+                  <!-- Address -->
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="address">Address</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      id="address"
+                      placeholder="Enter Address"
+                      formControlName="address"
+                      required
+                    />
+                  </div>
+
+                  <!-- NIC -->
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="nic">NIC</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      id="nic"
+                      placeholder="Enter NIC"
+                      formControlName="nic"
+                      maxlength="12"
+                      required
+                    />
+                    <div
+                      *ngIf="userForm.get('nic')?.invalid && userForm.get('nic')?.touched"
+                      class="text-danger"
+                    >
+                      <small *ngIf="userForm.get('nic')?.errors?.['pattern']"
+                        >NIC must be 12 digits or 9 digits followed by 'V' or 'X'.</small
+                      >
+                    </div>
+                  </div>
+
+                  <!-- Birthday -->
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="birthday">Birthday</label>
+                    <input
+                      type="date"
+                      class="form-control form-control-sm"
+                      id="birthday"
+                      placeholder="Enter Birthday"
+                      formControlName="birthday"
+                      required
+                    />
+                  </div>
+
+                  <!-- Sex -->
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="sex">Sex</label>
+                    <select
+                      class="form-control form-control-sm"
+                      id="sex"
+                      formControlName="sex"
+                      required
+                    >
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                    </select>
+                  </div>
+
+                  <!-- Department -->
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="department">Department</label>
+                    <select
+                      class="form-control form-control-sm"
+                      type="text"
+                      id="department"
+                      formControlName="dep_id"
+                      required
+                    >
+                      <option value="" disabled selected>Select Department</option>
+                      <option
+                        *ngFor="let department of departments_list"
+                        [value]="department.dep_id"
+                      >
+                        {{ department.dep_name }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Post -->
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="post">Position</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      id="post"
+                      placeholder="Enter Post"
+                      formControlName="post"
+                      required
+                    />
+                  </div>
+
+                  <div class="form-group mb-3 col-md-6">
+                    <label for="emp_id">Employee ID</label>
+                    <input
+                      type="text"
+                      class="form-control form-control-sm"
+                      id="emp_id"
+                      placeholder="Enter Employee ID"
+                      formControlName="emp_id"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div class="form-group d-flex justify-content-end mt-3" *ngIf="getPermission(251)">
+                  <button
+                    mat-icon-button
+                    matSuffix
+                    (click)="editUser()"
+                    class="primary-bg-btn"
+                    [disabled]="userForm.invalid"
+                  >
+                    <mat-icon>save</mat-icon> Update
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Button to open the modal -->
+
+<!-- Modal content inside ng-template -->
+<ng-template #passwordResetModal let-modal>
+  <div class="modal-header">
+    <h5 class="modal-title" style="font-size: 19px" id="passwordResetModalLabel">
+      Reset Password To Default
+    </h5>
+    <button type="button" class="close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body" *ngIf="!show_user_password_inputs">
+    <!-- Reset Password Form -->
+    <form [formGroup]="adminDetailsForm">
+      <div class="form-group mb-2 position-relative">
+        <label for="password"> Please confirm your admin password</label>
+        <input
+          [type]="passwordVisible ? 'text' : 'password'"
+          id="password"
+          class="form-control form-control-sm"
+          formControlName="password"
+          required
+        />
+        <span
+          class="toggle-password"
+          (click)="togglePasswordVisibility()"
+          [title]="passwordVisible ? 'Hide password' : 'Show password'"
+        >
+          <mat-icon *ngIf="passwordVisible">visibility_off</mat-icon>
+          <mat-icon *ngIf="!passwordVisible">visibility</mat-icon>
+        </span>
+      </div>
+      <div class="d-flex justify-content-between">
+        <span class="default-pw-text">Default password : {{ default_pw }} </span>
+        <button mat-icon-button matSuffix (click)="onNext()" class="primary-custom-sm-pw-btn">
+          Submit
+          <mat-icon style="font-size: 20px; padding-top: 2px">arrow_forward</mat-icon>
+        </button>
+      </div>
+    </form>
+  </div>
+</ng-template>

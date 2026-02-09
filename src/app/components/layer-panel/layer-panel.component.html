@@ -1,0 +1,479 @@
+<!-- layer-panel.component.html -->
+<div class="header rounded-0" cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
+  <h2 class="panel-title">Layer Panel</h2>
+  <button mat-button mat-dialog-close (click)="$event.stopPropagation()">
+    <mat-icon class="close-button">close</mat-icon>
+  </button>
+</div>
+
+<mat-dialog-content class="mat-typography p-3 layer-panel-pop">
+  <!-- Default Layers -->
+  <mat-expansion-panel class="expansion-panel" #panel_1 hideToggle="true" expanded="true">
+    <!-- Start expanded? -->
+    <mat-expansion-panel-header class="exp-header">
+      <mat-panel-title class="exp-title">Default Layers</mat-panel-title>
+      <!-- Optional: Icons for expand/collapse -->
+      <mat-icon *ngIf="!panel_1.expanded">expand_more</mat-icon>
+      <mat-icon *ngIf="panel_1.expanded">expand_less</mat-icon>
+    </mat-expansion-panel-header>
+
+    <div class="expcontent">
+      @for (dataItem of LayerList | sortArray: 'layer_name'; track dataItem.layer_id) {
+        <!-- Verify this condition: Does group_name *contain* 'default' or *equal* 'default'? -->
+        <div
+          class="tb_row"
+          *ngIf="dataItem.group_name?.includes('default')"
+          [class.disabled]="dataItem.layer_id === 3 && isBuildingsDisabled"
+        >
+          <!-- Removed empty td -->
+          <div class="name_checkbox_2 d-flex items-center">
+            <mat-icon
+              class="visibility-icon small-icon h-auto"
+              (click)="dataItem.view && toggleLayerView(dataItem.layer_id)"
+              [ngStyle]="{
+                color: selectedLayerIds.includes(dataItem.layer_id) ? 'black' : '#D3D3D3',
+                opacity: dataItem.view ? '1' : '0.4',
+                'pointer-events': dataItem.view ? 'auto' : 'none',
+                cursor: dataItem.view ? 'pointer' : 'not-allowed',
+              }"
+              [matTooltip]="
+                dataItem.layer_id === 3 && isBuildingsDisabled
+                  ? 'Building layer is disabled'
+                  : dataItem.view
+                    ? 'Toggle Visibility'
+                    : 'No View Permission'
+              "
+              matTooltipPosition="above"
+            >
+              visibility
+            </mat-icon>
+
+            <!-- *** ADD CHECKBOX BACK *** -->
+            <input
+              class="layer-checkbox"
+              type="checkbox"
+              id="checkbox-default-{{ dataItem.layer_id }}"
+              [checked]="currentSelectedLayerIdForDrawing === dataItem.layer_id"
+              (change)="onCheckboxChange(dataItem.layer_id)"
+              matTooltip="Set as Current Drawing Layer"
+              matTooltipPosition="above"
+              aria-label="Set layer as current drawing layer"
+              [disabled]="
+                !dataItem?.edit ||
+                !dataItem?.view ||
+                (dataItem.layer_id === 3 && isBuildingsDisabled)
+              "
+            />
+
+            <!-- ************************* -->
+
+            <div class="color-name">
+              <div
+                class="color-display"
+                [style.backgroundColor]="getColorHex(dataItem.colour)"
+              ></div>
+              <div
+                class="layer-name"
+                matTooltip="{{ dataItem.layer_name }}"
+                matTooltipPosition="above"
+                [ngStyle]="{
+                  opacity:
+                    dataItem.view && !(dataItem.layer_id === 3 && isBuildingsDisabled) ? '1' : '1',
+                }"
+              >
+                {{ dataItem.layer_name }}
+              </div>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <!-- This block renders if LayerList is empty AFTER the pipe/initial check -->
+        <div class="no-layers-message">No default layers available.</div>
+      }
+
+      <!-- ================================================================= -->
+      <!-- NEW: Hardcoded entry for the static GND Layer -->
+      <!-- ================================================================= -->
+      <!-- ================================================================= -->
+      <!-- End of new entry -->
+      <!-- ================================================================= -->
+    </div>
+  </mat-expansion-panel>
+
+  <!-- Organization Layers -->
+  <mat-expansion-panel class="expansion-panel" #panel_2 hideToggle="true" expanded="false">
+    <mat-expansion-panel-header class="exp-header">
+      <mat-panel-title class="exp-title">Organization Layers</mat-panel-title>
+
+      <mat-icon *ngIf="!panel_2.expanded">expand_more</mat-icon>
+      <mat-icon *ngIf="panel_2.expanded">expand_less</mat-icon>
+    </mat-expansion-panel-header>
+    <div class="expcontent">
+      @for (dataItem of LayerList | sortArray: 'layer_name'; track dataItem.layer_id) {
+        <div class="tb_row" *ngIf="dataItem.group_name?.includes('org')">
+          <div class="name_checkbox_2 d-flex items-center">
+            <mat-icon
+              class="visibility-icon small-icon h-auto"
+              [ngStyle]="{
+                color: selectedLayerIds.includes(dataItem.layer_id) ? 'black' : '#D3D3D3',
+              }"
+              (click)="toggleLayerView(dataItem.layer_id)"
+            >
+              visibility
+            </mat-icon>
+            <input
+              class="layer-checkbox"
+              type="checkbox"
+              id="checkbox-org-{{ dataItem.layer_id }}"
+              [checked]="currentSelectedLayerIdForDrawing === dataItem.layer_id"
+              (change)="onCheckboxChange(dataItem.layer_id)"
+              title="Set as Current Drawing Layer"
+            />
+            <label [for]="'checkbox-org-' + dataItem.layer_id" style="display: none">
+              Set as Current Drawing Layer for {{ dataItem.layer_name }}
+            </label>
+
+            <div class="color-name">
+              <div
+                class="color-display"
+                [style.backgroundColor]="getColorHex(dataItem.colour)"
+              ></div>
+              <div
+                class="layer-name"
+                matTooltip="{{ dataItem.layer_name }}"
+                matTooltipPosition="above"
+              >
+                {{ dataItem.layer_name }}
+              </div>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <div class="no-layers-message">No organization layers available.</div>
+      }
+    </div>
+  </mat-expansion-panel>
+
+  <!-- ---------------------------------SHARED LAYERS (for user only)------------------------------------------- -->
+  <mat-expansion-panel
+    class="expansion-panel"
+    #panel_4
+    *ngIf="user_type === 'user'"
+    hideToggle="true"
+    expanded="false"
+  >
+    <mat-expansion-panel-header
+      class="exp-header"
+      [ngClass]="{ 'expanded-header': panel_4.expanded }"
+    >
+      <mat-panel-title class="exp-title" [ngClass]="{ 'expanded-tittle': panel_4.expanded }">
+        Shared Layers</mat-panel-title
+      >
+      <mat-icon *ngIf="!panel_4.expanded">expand_more</mat-icon>
+      <mat-icon *ngIf="panel_4.expanded">expand_less</mat-icon>
+    </mat-expansion-panel-header>
+
+    <div class="expcontent">
+      @for (dataItem of LayerList | sortArray: 'layer_name'; track dataItem.layer_id) {
+        <div *ngIf="dataItem.group_name?.includes(user_id)" class="tb_row d-flex align-items-start">
+          <div
+            *ngIf="dataItem.shared_users.length > 0"
+            style="padding-right: 10px; display: flex; justify-content: flex-start"
+            #iconRef1
+            (mouseenter)="
+              dataItem.shared_users.length ? showTooltip(iconRef1, dataItem.shared_users) : null
+            "
+            (mouseleave)="hideTooltip()"
+          >
+            <mat-icon
+              style="color: var(--color-success); font-size: 18px"
+              matBadgeSize="medium"
+              aria-hidden="false"
+            >
+              people
+            </mat-icon>
+          </div>
+          <div *ngIf="dataItem.shared_users.length <= 0" style="padding-right: 10px">
+            &nbsp;
+            <!-- Placeholder for spacing -->
+          </div>
+
+          <div class="name_checkbox_2 d-flex items-center flex-grow-1">
+            <mat-icon
+              class="visibility-icon small-icon h-auto"
+              [ngStyle]="{
+                color: selectedLayerIds.includes(dataItem.layer_id) ? 'black' : '#D3D3D3',
+              }"
+              (click)="toggleLayerView(dataItem.layer_id)"
+            >
+              visibility
+            </mat-icon>
+            <input
+              type="checkbox"
+              id="myCheckbox-{{ dataItem.layer_id }}"
+              [checked]="currentSelectedLayerIdForDrawing === dataItem.layer_id"
+              (change)="onCheckboxChange(dataItem.layer_id)"
+              title="Set as Current Drawing Layer for {{ dataItem.layer_name }}"
+            />
+            <label [for]="'myCheckbox-' + dataItem.layer_id" style="display: none">
+              Set as Current Drawing Layer for {{ dataItem.layer_name }}
+            </label>
+            <div class="color-name">
+              <div
+                class="color-display"
+                [style.backgroundColor]="getColorHex(dataItem.colour)"
+              ></div>
+              <div
+                class="layer-name"
+                matTooltip="{{ dataItem.layer_name }}"
+                matTooltipPosition="above"
+              >
+                {{ dataItem.layer_name }}
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </mat-expansion-panel>
+
+  <!-- ---------------------------------MY LAYERS (for user only)------------------------------------------- -->
+  <mat-expansion-panel
+    class="expansion-panel"
+    #panel_3
+    *ngIf="user_type === 'user'"
+    hideToggle="true"
+    expanded="false"
+  >
+    <mat-expansion-panel-header
+      class="exp-header"
+      [ngClass]="{ 'expanded-header': panel_3.expanded }"
+    >
+      <mat-panel-title class="exp-title" [ngClass]="{ 'expanded-tittle': panel_3.expanded }">
+        My Layers</mat-panel-title
+      >
+      <mat-icon *ngIf="!panel_3.expanded">expand_more</mat-icon>
+      <mat-icon *ngIf="panel_3.expanded">expand_less</mat-icon>
+    </mat-expansion-panel-header>
+
+    <div class="expcontent">
+      @for (dataItem of LayerList | sortArray: 'layer_name'; track dataItem.layer_id) {
+        <div *ngIf="dataItem.user_id === user_id_number" class="tb_row_2 d-flex align-items-start">
+          <div
+            *ngIf="
+              (user_type === 'user'
+                ? filterSharedUsersWithoutOwner(dataItem.shared_users)
+                : dataItem.shared_users
+              ).length > 0
+            "
+            style="
+              padding-right: 10px;
+              display: flex;
+              justify-content: flex-start;
+              align-items: center;
+            "
+            #iconRef2
+            (mouseenter)="
+              dataItem.shared_users.length
+                ? showTooltip(
+                    iconRef2,
+                    user_type === 'user'
+                      ? filterSharedUsersWithoutOwner(dataItem.shared_users)
+                      : dataItem.shared_users
+                  )
+                : null
+            "
+            (mouseleave)="hideTooltip()"
+          >
+            <mat-icon
+              style="color: var(--color-success); font-size: 18px; margin-top: 4px; height: 18px"
+              matBadge="{{
+                user_type === 'user'
+                  ? dataItem.shared_users.length - 1
+                  : dataItem.shared_users.length
+              }}"
+              matBadgeSize="medium"
+              aria-hidden="false"
+            >
+              people
+            </mat-icon>
+          </div>
+          <div
+            *ngIf="
+              (user_type === 'user'
+                ? filterSharedUsersWithoutOwner(dataItem.shared_users)
+                : dataItem.shared_users
+              ).length <= 0
+            "
+            style="width: 34px"
+          ></div>
+
+          <div class="name_checkbox_2 d-flex align-items-center flex-grow-1">
+            <mat-icon
+              class="visibility-icon small-icon"
+              [ngStyle]="{
+                color: selectedLayerIds.includes(dataItem.layer_id) ? 'black' : '#D3D3D3',
+                height: '16px',
+              }"
+              (click)="toggleLayerView(dataItem.layer_id)"
+            >
+              visibility
+            </mat-icon>
+            <input
+              type="checkbox"
+              id="myCheckbox-{{ dataItem.layer_id }}"
+              [checked]="currentSelectedLayerIdForDrawing === dataItem.layer_id"
+              (change)="onCheckboxChange(dataItem.layer_id)"
+              title="Set as Current Drawing Layer for {{ dataItem.layer_name }}"
+            />
+            <label [for]="'myCheckbox-' + dataItem.layer_id" style="display: none">
+              Set as Current Drawing Layer for {{ dataItem.layer_name }}
+            </label>
+            <div class="color-name">
+              <div
+                class="color-display"
+                [style.backgroundColor]="getColorHex(dataItem.colour)"
+              ></div>
+              <div
+                class="layer-name"
+                matTooltip="{{ dataItem.layer_name }}"
+                matTooltipPosition="above"
+              >
+                {{ dataItem.layer_name }}
+              </div>
+            </div>
+          </div>
+
+          <div class="edit-delete d-flex align-items-center">
+            <button type="button" (click)="onEditLayer(dataItem)" *ngIf="canEditLayer(94)">
+              <mat-icon
+                class="custom-icon-size"
+                style="color: #475c6e; font-size: 16px; height: 16px"
+                >edit</mat-icon
+              >
+            </button>
+            <button
+              type="button"
+              (click)="displaySnack()"
+              *ngIf="dataItem.shared_users.length > 0 && canDeleteLayer(94)"
+            >
+              <mat-icon
+                class="custom-icon-size"
+                style="color: #475c6e; font-size: 16px; height: 16px"
+                >delete</mat-icon
+              >
+            </button>
+            <button
+              type="button"
+              (click)="onDeleteLayer(dataItem)"
+              *ngIf="dataItem.shared_users.length <= 0 && canDeleteLayer(94)"
+            >
+              <mat-icon
+                class="custom-icon-size"
+                style="color: #475c6e; font-size: 16px; height: 16px"
+                >delete</mat-icon
+              >
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+  </mat-expansion-panel>
+
+  <!-- ---------------------------------USER DEFINED LAYERS (for admin only)------------------------------------------- -->
+  <mat-expansion-panel
+    class="expansion-panel"
+    #panel_5
+    *ngIf="user_type === 'admin' || this.user_type === 'super_admin'"
+    hideToggle="true"
+    expanded="false"
+  >
+    <mat-expansion-panel-header
+      class="exp-header"
+      [ngClass]="{ 'expanded-header': panel_5.expanded }"
+    >
+      <mat-panel-title class="exp-title" [ngClass]="{ 'expanded-tittle': panel_5.expanded }">
+        User-Created Layers
+      </mat-panel-title>
+      <mat-icon *ngIf="!panel_5.expanded">expand_more</mat-icon>
+      <mat-icon *ngIf="panel_5.expanded">expand_less</mat-icon>
+    </mat-expansion-panel-header>
+
+    <div class="expcontent">
+      @for (dataItem of LayerList | sortArray: 'layer_name'; track dataItem.layer_id) {
+        <div
+          class="tb_row_2 d-flex align-items-start"
+          *ngIf="!dataItem.group_name?.includes('org') && !dataItem.group_name?.includes('default')"
+        >
+          <div
+            *ngIf="dataItem.shared_users.length > 0"
+            style="
+              padding-right: 10px;
+              display: flex;
+              justify-content: flex-start;
+              align-items: center;
+              position: relative;
+            "
+            #iconRef
+            (mouseenter)="
+              dataItem.shared_users.length ? showTooltip(iconRef, dataItem.shared_users) : null
+            "
+            (mouseleave)="hideTooltip()"
+          >
+            <mat-icon
+              style="color: var(--color-success); font-size: 18px; margin-top: 4px; height: 18px"
+              [matBadge]="dataItem.shared_users.length - 1"
+              matBadgeSize="medium"
+              aria-hidden="false"
+              fontIcon="people"
+            ></mat-icon>
+          </div>
+
+          <div class="name_checkbox_2 d-flex items-center flex-grow-1">
+            <mat-icon
+              class="visibility-icon small-icon h-100"
+              [ngStyle]="{
+                color: selectedLayerIds.includes(dataItem.layer_id) ? 'black' : '#D3D3D3',
+              }"
+              (click)="toggleLayerView(dataItem.layer_id)"
+            >
+              visibility
+            </mat-icon>
+            <input
+              type="checkbox"
+              id="myCheckbox"
+              type="checkbox"
+              [checked]="currentSelectedLayerIdForDrawing === dataItem.layer_id"
+              (change)="onCheckboxChange(dataItem.layer_id)"
+            />
+
+            <div class="color-name">
+              <div
+                class="color-display"
+                [style.backgroundColor]="getColorHex(dataItem.colour)"
+              ></div>
+              <div
+                class="layer-name"
+                matTooltip="{{ dataItem.layer_name }}"
+                matTooltipPosition="above"
+              >
+                {{ dataItem.layer_name }}
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </mat-expansion-panel>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="footer">
+  <button
+    mat-flat-button
+    (click)="openAddLayerDialog()"
+    class="action-btn"
+    *ngIf="canCreateLayer(94) && user_type === 'user'"
+  >
+    <mat-icon>add</mat-icon> Create New Layer
+  </button>
+</mat-dialog-actions>

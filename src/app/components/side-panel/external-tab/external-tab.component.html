@@ -1,0 +1,279 @@
+<div class="external-tab-content">
+  <div class="external-tab-title">Feature ID: {{ feature_id }}</div>
+  <div class="external-image"><img [src]="img" alt="Building Image" /></div>
+
+  <div class="external-tab-attributes">
+    <!-- ################# NATURAL FEATURE ################## -->
+    <app-collapsible uniqueId="natural_feature" title="Natural Feature">
+      <div class="sub-field">
+        <!-- ################# admin info natural feature ################## -->
+        <app-collapsible uniqueId="adminInfo_NF" title="Administrative Information">
+          <app-key-value
+            key="Administrative Unit Type"
+            value="{{ adminUnitType_NF }}"
+            [editable]="true"
+          ></app-key-value>
+
+          <hr class="divider" />
+          <label>Core details</label>
+          <div class="sub-field">
+            <app-key-value key="Province" value="{{ province_NF }}"></app-key-value>
+            <app-key-value key="District" value="{{ district_NF }}"></app-key-value>
+            <app-key-value key="DSD" value="{{ dsd_NF }}" [editable]="true"></app-key-value>
+          </div>
+          <hr class="divider" />
+
+          <app-key-value
+            key="Grama Niladhari Division"
+            value="{{ gnd_NF }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value
+            key="Assessment ward"
+            value="{{ assesmentWard_NF }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value
+            key="Feature Name"
+            value="{{ featureName_NF }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value
+            key="Feature Authority"
+            value="{{ featureAuthority_NF }}"
+            [editable]="true"
+          ></app-key-value>
+        </app-collapsible>
+
+        <!-- ################# overview natural feature ################## -->
+        <app-collapsible uniqueId="overview_NF" title="Overview">
+          <app-key-value key="System ID" value="{{ systemID_NF }}"></app-key-value>
+          <app-key-value key="InfoBhoomi ID" value="{{ infoBhoomiID_NF }}"></app-key-value>
+          <app-key-value key="Dimension" value="{{ dimension_NF }}"></app-key-value>
+          <app-key-value
+            key=" Natural Feature type"
+            value="{{ type_NF }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value
+            key=" Natural Feature XType"
+            value="{{ Xtype_NF }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value
+            key="Natural Feature Built Type"
+            value="{{ builtType_NF }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value key="Area/Length" value="{{ area_NF }}"></app-key-value>
+          <app-key-value key="Area/Lenear Unit" value="{{ areaUnit_NF }}"></app-key-value>
+          <div class="sub-field">
+            <app-key-value key="Width" value="{{ width_NF }}"></app-key-value>
+            <app-key-value key="Lenear Unit" value="{{ lenearUnit_NF }}"></app-key-value>
+          </div>
+
+          <app-key-value
+            key="Reference Point"
+            value="{{ refPoint_NF }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value
+            key="Surface Relation"
+            value="{{ surfaceRelation_NF }}"
+            [editable]="true"
+          ></app-key-value>
+        </app-collapsible>
+      </div>
+    </app-collapsible>
+
+    <!-- ################# MAN MADE FEATURE ################## -->
+
+    <app-collapsible uniqueId="manmade_feature" title="Man-Made Feature">
+      <div class="sub-field">
+        <!-- ################# admin info man made feature ################## -->
+        <app-collapsible uniqueId="adminInfo_MMF" title="Administrative Information">
+          <app-key-value
+            key="Administrative Unit Type"
+            value="{{ adminUnitType_MMF }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value
+            key="Feature Name"
+            value="{{ featureName_MMF }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value
+            key="Feature Authority"
+            value="{{ featureAuthority_MMF }}"
+            [editable]="true"
+          ></app-key-value>
+        </app-collapsible>
+
+        <!-- ################# overview man made feature ################## -->
+        <app-collapsible uniqueId="overview_MMF" title="Overview">
+          <app-key-value key="System ID" value="{{ systemID_MMF }}"></app-key-value>
+          <app-key-value key="InfoBhoomi ID" value="{{ infoBhoomiID_MMF }}"></app-key-value>
+          <app-key-value key="Dimension" value="{{ dimension_MMF }}"></app-key-value>
+          <app-key-value
+            key=" Man-Made Feature type"
+            value="{{ type_MMF }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value
+            key=" Man-Made Feature XType"
+            value="{{ Xtype_MMF }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value
+            key="Man-Made Feature Built Type"
+            value="{{ builtType_MMF }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value key="Area/Length" value="{{ area_MMF }}"></app-key-value>
+          <app-key-value key="Area/Lenear Unit" value="{{ areaUnit_MMF }}"></app-key-value>
+          <div class="sub-field">
+            <app-key-value key="Width" value="{{ width_MMF }}"></app-key-value>
+            <app-key-value key="Lenear Unit" value="{{ lenearUnit_MMF }}"></app-key-value>
+          </div>
+          <app-key-value
+            key="Reference Point"
+            value="{{ refPoint_MMF }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value
+            key="Surface Relation"
+            value="{{ surfaceRelation_MMF }}"
+            [editable]="true"
+          ></app-key-value>
+        </app-collapsible>
+      </div>
+    </app-collapsible>
+
+    <!-- ################# TEMPORARY FEATURE ################## -->
+
+    <app-collapsible uniqueId="temporary_feature" title="Temporary Feature">
+      <div class="sub-field">
+        <!-- ################# admin info temporary feature ################## -->
+        <app-collapsible uniqueId="adminInfo_TF" title="Administrative Information">
+          <app-key-value
+            key="Administrative Unit Type"
+            value="{{ adminUnitType_TF }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value key="Name" value="{{ name_TF }}" [editable]="true"></app-key-value>
+          <app-key-value
+            key="Authority"
+            value="{{ authority_TF }}"
+            [editable]="true"
+          ></app-key-value>
+        </app-collapsible>
+
+        <!-- ################# overview temporary feature ################## -->
+        <app-collapsible uniqueId="overview_TF" title="Overview">
+          <app-key-value key="System ID" value="{{ systemID_TF }}"></app-key-value>
+          <app-key-value key="InfoBhoomi ID" value="{{ infoBhoomiID_TF }}"></app-key-value>
+          <app-key-value key="Dimension" value="{{ dimension_TF }}"></app-key-value>
+          <app-key-value key="XType" value="{{ Xtype_TF }}" [editable]="true"></app-key-value>
+          <app-key-value
+            key="Built Type"
+            value="{{ builtType_TF }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value key="Area/Length" value="{{ area_TF }}"></app-key-value>
+
+          <hr class="divider" />
+          <label>Lenear Unit</label>
+          <div class="sub-field">
+            <app-key-value key="Width" value="{{ width_TF }}"></app-key-value>
+            <app-key-value key="Lenear Unit" value="{{ lenearUnit_TF }}"></app-key-value>
+          </div>
+          <hr class="divider" />
+
+          <app-key-value
+            key="Reference Point"
+            value="{{ refPoint_TF }}"
+            [editable]="true"
+          ></app-key-value>
+          <app-key-value
+            key="Surface Relation"
+            value="{{ surfaceRelation_TF }}"
+            [editable]="true"
+          ></app-key-value>
+          <hr class="divider" />
+          <label>If Line</label>
+          <div class="sub-field">
+            <app-key-value
+              key="Start Point"
+              value="{{ startPoint_TF }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="End Point"
+              value="{{ endPoint_TF }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value key="Start Coordinate" value="{{ startCoordinate_TF }}"></app-key-value>
+            <app-key-value key="End Coordinate" value="{{ endCoordinate_TF }}"></app-key-value>
+          </div>
+          <hr class="divider" />
+
+          <app-key-value key="Type" value="{{ type_TF }}"></app-key-value>
+          <div class="sub-field">
+            <app-key-value
+              key="Sub Type"
+              value="{{ subType_TF }}"
+              [editable]="true"
+            ></app-key-value>
+          </div>
+          <app-collapsible
+            uniqueId="overview_colorScheme_TF"
+            title="Color Scheme (Grading Schedule)"
+          >
+            <app-key-value
+              key="First Color"
+              value="{{ firstColor_TF }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Second Color"
+              value="{{ secondColor_TF }}"
+              [editable]="true"
+            ></app-key-value>
+            <app-key-value
+              key="Third Color"
+              value="{{ thirdColor_TF }}"
+              [editable]="true"
+            ></app-key-value>
+          </app-collapsible>
+        </app-collapsible>
+      </div>
+    </app-collapsible>
+  </div>
+
+  <div class="external-tab-footer">
+    <div class="button-section">
+      <app-custom-buttons
+        buttonText="INQUIRIES"
+        buttonIcon="perm_identity"
+        buttonStyle="primary"
+      ></app-custom-buttons>
+      <app-custom-buttons
+        buttonText="REMINDERS"
+        buttonIcon="event"
+        buttonStyle="primary"
+      ></app-custom-buttons>
+      <app-custom-buttons
+        buttonText="COMBINE"
+        buttonIcon="link"
+        buttonStyle="primary"
+      ></app-custom-buttons>
+      <div class="tag-button">
+        <app-custom-buttons
+          buttonText="TAGS"
+          buttonIcon="bookmark"
+          buttonStyle="primary"
+        ></app-custom-buttons>
+      </div>
+    </div>
+  </div>
+</div>

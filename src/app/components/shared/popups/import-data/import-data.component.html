@@ -1,0 +1,96 @@
+<h4 mat-dialog-title>
+  <!-- <mat-icon class="mt-2">download</mat-icon> -->
+  Import Data Layer
+</h4>
+
+<mat-dialog-content>
+  <div class="import-container">
+    <!-- 1. File Upload -->
+    <div class="form-section">
+      <label for="fileInput" class="section-label">1. Choose File</label>
+      <small>Select KML, SHP (in .zip), GeoJSON, TXT, or GeoTIFF.</small>
+      <input
+        id="fileInput"
+        type="file"
+        class="file-input mb-0 mt-2"
+        aria-label="Choose file to import"
+        accept=".kml, .zip, .geojson, .json, .tif, .tiff, .txt"
+        (change)="onFileSelected($event)"
+        [disabled]="isLoading"
+      />
+    </div>
+
+    <!-- 2. Status Message (Loading/File Info) -->
+    <div class="status-container" *ngIf="isLoading || selectedFileName">
+      <div *ngIf="isLoading" class="status-item loading-indicator">
+        <mat-spinner diameter="22"></mat-spinner>
+        <span>Parsing file, please wait...</span>
+      </div>
+      <div
+        *ngIf="selectedFileName && !isLoading"
+        class="status-item file-info status-item file-info d-flex align-items-center mt-2"
+      >
+        <mat-icon>check_circle</mat-icon>
+        <span class="ms-2">Ready: {{ selectedFileName }}</span>
+      </div>
+    </div>
+
+    <!-- 3. Source Projection -->
+    <div class="form-section mt-3" *ngIf="processedGeoJsonData && !isLoading">
+      <div class="mb-1">
+        <label for="sourceCrsSelect" class="section-label">2. Verify Source Projection (CRS)</label>
+      </div>
+      <small
+        >Confirm the coordinate system of the uploaded file. Change if auto-detection is
+        incorrect.</small
+      >
+      <select
+        id="sourceCrsSelect"
+        class="dropdown-select mt-2"
+        title="Specify CRS"
+        [(ngModel)]="sourceCrsUserInput"
+      >
+        <option value="" disabled selected>Select Projection</option>
+        <option value="EPSG:4326">EPSG:4326 (WGS 84 - Standard Lat/Lon)</option>
+        <option value="EPSG:5235">EPSG:5235 (SLD99 / Sri Lanka Grid 1999)</option>
+        <option value="EPSG:3857">EPSG:3857 (Web Mercator - OSM/Google)</option>
+      </select>
+    </div>
+
+    <!-- 4. Dataset Name -->
+    <!-- <div
+      class="form-section mt-3 mb-2"
+      *ngIf="(processedGeoJsonData || processedGeoTiffData) && !isLoading"
+    >
+      <div>
+        <label for="dataSetNameInput" class="section-label">3. Name Your Layer</label>
+      </div>
+      <input
+        id="dataSetNameInput"
+        type="text"
+        class="form-input mt-2"
+        placeholder="e.g., 'Imported Parcel Boundaries'"
+        [(ngModel)]="dataSetName"
+      />
+    </div> -->
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <app-custom-buttons
+    buttonText="Close"
+    buttonIcon="cancel"
+    buttonStyle="secondary"
+    mat-dialog-close
+  >
+  </app-custom-buttons>
+
+  <app-custom-buttons
+    buttonText="Import"
+    buttonIcon="download"
+    buttonStyle="primary"
+    [disabled]="!(processedGeoJsonData || processedGeoTiffData) || isLoading"
+    (click)="importData()"
+  >
+  </app-custom-buttons>
+</mat-dialog-actions>

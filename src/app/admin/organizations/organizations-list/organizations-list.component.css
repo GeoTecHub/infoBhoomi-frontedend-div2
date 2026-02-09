@@ -1,0 +1,108 @@
+.main-body {
+  display: flex;
+  flex-direction: row;
+}
+
+.side-panel-container {
+  background: #fff;
+}
+
+.tab-container {
+  flex-grow: 1;
+  padding: 10px;
+}
+
+.create-btn {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 0px;
+}
+
+.green-checkbox {
+  accent-color: green;
+  /* For modern browsers */
+}
+
+.red-checkbox {
+  accent-color: red;
+  /* For modern browsers */
+}
+
+.checkbox-cell {
+  text-align: center;
+  vertical-align: middle;
+}
+
+.styled-checkbox {
+  width: 18px;
+  /* Adjust size as needed */
+  height: 16px;
+  /* Adjust size as needed */
+  cursor: pointer;
+}
+
+.select-op-first {
+  color: #777878;
+}
+
+.admin-primary-bg-btn {
+  height: 32px;
+  padding-left: 11px;
+  padding-right: 11px;
+}
+
+.org-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22f26f;
+  margin-left: 2px;
+  vertical-align: middle;
+}
+
+.link-text {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    background-color 0.2s,
+    color 0.2s,
+    box-shadow 0.2s;
+  margin-top: 4px !important;
+  margin-bottom: 4px !important;
+}
+
+.permit-expired-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.72rem;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.set-loc-btn {
+  background-color: #c52222;
+  color: #fff;
+}
+
+.set-loc-btn:hover {
+  background-color: #a31616;
+  box-shadow: 0 2px 6px rgba(34, 197, 94, 0.4);
+}
+
+.update-loc-btn {
+  background-color: #22c55e;
+  color: #fff;
+}
+
+.update-loc-btn:hover {
+  background-color: #16a34a;
+  box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+}

@@ -1,0 +1,415 @@
+.header-content {
+  display: flex;
+  flex-direction: row;
+}
+
+.header-elements {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* *** HEADER TOP *** */
+.header-top {
+  display: flex;
+  flex-direction: row;
+  height: 45px;
+  margin-left: -50px;
+}
+
+.header-container {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.top-space-1 {
+  background-color: var(--color-secondary-l1);
+  width: calc((100% - 250px));
+}
+
+.header-user-info-conteiner {
+  background-color: #d4e0fc;
+  text-align: right;
+  border-radius: 100px;
+  padding: 7px 14px;
+  margin-right: 7px;
+}
+
+.header-user-info-content {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  line-height: 14px;
+  padding: 0px;
+  border-radius: 100px;
+  justify-content: space-between;
+  gap: 5px;
+  width: 100%;
+}
+
+.header-user-info-content label {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+}
+
+.header-user-info-content span {
+  font-size: 14px;
+}
+
+.header-user-info-content b {
+  flex: 1;
+  text-align: left;
+}
+
+.header-icon {
+  width: 40px;
+}
+
+.header-icon.profile {
+  width: auto;
+}
+
+/* *** HEADER BOTTOM *** */
+.header-bottom {
+  margin-left: 30px;
+  border-radius: 30px 0px 0px 0px;
+  background: #3c71a6;
+  display: flex;
+  flex-direction: row;
+  height: 35px;
+}
+
+.header-location-info {
+  border-radius: 20px 0 0 0;
+  color: var(--color-secondary-l1);
+  margin-left: 100px;
+}
+
+.header-location-info-e {
+  display: flex;
+  flex-direction: row;
+  margin-left: 0px;
+  margin-top: 5px;
+  padding: 5px;
+}
+
+.header-search {
+  background-color: var(--color-primary);
+  min-width: 310px;
+  cursor: pointer;
+  display: flex;
+  justify-content: end;
+}
+
+.header-layers,
+.header-workspace {
+  /* background-color: var(--color-primary); */
+  background-color: #3c71a6;
+  cursor: pointer;
+  text-align: center;
+}
+
+.button-h-b {
+  display: flex;
+  justify-content: center;
+  padding: 5px;
+  color: var(--color-secondary-l1);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.button-h-b:hover {
+  background-color: var(--color-primary-l1);
+  transition: background-color 0.5s ease;
+  color: var(--color-primary-d1);
+}
+
+.header-user-info-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.save-undo {
+  display: flex;
+  margin-left: 124px;
+  align-items: center;
+}
+
+.save-undo-btns {
+  color: white;
+}
+
+.city-text {
+  color: var(--color-primary);
+}
+
+.location-icon {
+  color: red;
+}
+
+.black-text {
+  color: black;
+}
+
+.name-text {
+  margin: 5px 20px;
+  color: white;
+  font-size: 18px;
+}
+
+.org-text b {
+  color: #779ab8;
+}
+
+.logo-container {
+  position: relative;
+  display: inline-block;
+  width: 180px;
+  min-width: 180px;
+  max-width: 180px;
+}
+
+.logo-version-row {
+  position: absolute;
+  left: 110px;
+  bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.logo-version {
+  font-size: 11px;
+  font-weight: 500;
+  color: #39516b;
+  letter-spacing: 0.2px;
+}
+
+.logo-beta {
+  font-size: 10px;
+  color: #fff;
+  background: #ff9100;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  margin-left: 2px;
+  box-shadow: 0 0 2px #ffe0b2;
+  letter-spacing: 0.5px;
+}
+
+.layer-name {
+  font-size: 14px;
+  width: 500px;
+  color: white;
+  display: flex;
+  align-items: center;
+  margin-left: 50px;
+}
+
+.profile-btn {
+  display: flex;
+  align-items: center;
+}
+
+.leave-admin-btn {
+  width: 90px;
+  font-size: 15px;
+}
+
+.rounded-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: white;
+}
+
+.initials-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #607d8b;
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.dropdown-icon-mat {
+  font-size: 18px;
+  margin-right: 10px;
+  height: 20px;
+}
+
+.logo-header {
+  width: 150px;
+  align-content: center;
+  margin-top: 2px;
+}
+
+.nav-breadcrumb {
+  font-size: 15px;
+}
+
+.breadcrumb-label {
+  margin-right: 10px;
+}
+
+.breadcrumb-span-1 {
+  margin-right: 5px;
+}
+
+.layer-name-span {
+  font-weight: 500;
+  margin-left: 4px;
+}
+
+.dropdown-icon-span {
+  font-size: 0.975rem;
+}
+
+.icon-mat-only {
+  color: white;
+  font-size: 20px;
+}
+
+.gnd-input {
+  margin-right: 12px;
+  margin-left: 2px;
+  height: 20px;
+  width: 20px;
+}
+
+.username-ellipsis {
+  color: white;
+  font-size: 12px;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+.leave-admin-btn .button-h-b {
+  color: #fff;
+  background-color: #d9534f;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 400;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+}
+
+.leave-admin-btn .button-h-b:hover {
+  background-color: #c9302c;
+}
+
+.leave-admin-btn mat-icon {
+  color: white;
+  font-size: 20px;
+  margin-right: 7px;
+  transform: rotateY(180deg);
+  font-weight: 400;
+}
+
+.arrow-icon {
+  font-size: 18px;
+  margin-left: 4px;
+  color: inherit;
+  height: 18px;
+  transition: transform 0.3s ease;
+}
+
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* Org text */
+.header-user-info-content .org-text {
+  font-weight: 500;
+  color: #00458f;
+  text-shadow: 0 0 2px rgba(0, 123, 255, 0.2);
+  font-size: 13px;
+}
+
+/* Subscription Badge */
+.header-subscription-badge {
+  margin: 0 7px;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.subscription-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  text-decoration: none;
+}
+
+.subscription-label:hover u {
+  text-decoration: underline;
+}
+
+.subscription-label small {
+  font-size: 12px;
+}
+
+.free-trial {
+  background-color: #e69b0c;
+}
+
+.free-trial:hover {
+  background-color: #cc880a;
+}
+
+.classic {
+  background-color: #007bff;
+}
+
+.classic:hover {
+  background-color: #005dc6;
+}
+
+.premium {
+  background-color: #0ad52a;
+  color: #000;
+}
+
+.premium:hover {
+  background-color: #08b823;
+}
+
+.org-admin-btn .button-h-b {
+  color: #fff;
+  background-color: #2fa642;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-weight: 400;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease;
+  max-height: 35px;
+}
+
+.org-admin-btn .button-h-b:hover {
+  background-color: #1b7c2b;
+}
+
+.org-admin-btn mat-icon {
+  color: white;
+  font-size: 20px;
+  margin-right: 7px;
+  transform: rotateY(180deg);
+  font-weight: 400;
+  margin-left: 14px;
+}

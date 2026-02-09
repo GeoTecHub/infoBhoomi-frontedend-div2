@@ -1,0 +1,176 @@
+<div class="header-content" style="border-bottom: 2px solid var(--color-secondary-l2)">
+  <div class="logo-container position-relative">
+    <img alt="logo" src="logos/LOGO.svg" class="logo-header" />
+    <div class="logo-version-row">
+      <small class="logo-version">V1.02</small>
+      <span class="logo-beta">Beta </span>
+    </div>
+  </div>
+
+  <div class="header-elements">
+    <div class="header-top d-flex align-items-center">
+      <div class="header-location-info">
+        <div class="header-location-info-e d-flex align-items-center">
+          <mat-icon class="location-icon">location_on</mat-icon>
+          <nav class="breadcrumb mb-0 nav-breadcrumb">
+            <label class="black-text breadcrumb-label">Location: </label>
+            <span class="black-text breadcrumb-span-1"> Sri Lanka</span>
+            <span class="black-text breadcrumb-span-1">></span>
+            <span class="black-text breadcrumb-span-1">{{ current_location.dist }}</span>
+            <span class="black-text breadcrumb-span-1">></span>
+            <span class="city-text breadcrumb-span-1">{{ current_location.city }}</span>
+          </nav>
+        </div>
+      </div>
+
+      <div class="header-subscription-badge" (click)="openSubscriptionAlert()">
+        <span [ngClass]="getSubscriptionClass()" class="subscription-label">
+          <i class="fas fa-gem"></i>
+          <u>{{ planName }}</u>
+          <ng-container *ngIf="planName === 'Free Trial' && planEndsOn">
+            | <small>Expires in {{ getRemainingDays() }} days</small>
+          </ng-container>
+        </span>
+      </div>
+
+      <!-- <div class="top-space-1"></div> -->
+      <div class="header-user-info-conteiner">
+        <div class="header-user-info-content" matTooltip="Organization" matTooltipPosition="below">
+          <label>
+            <!-- <img alt="logo" src="logos/local-dev-logo.webp" class="local-dev-logo" /> -->
+            <span class="org-text">
+              <i class="fas fa-building" style="margin-right: 6px; color: #00458f"></i>
+              {{ current_location.org_name }}
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div class="header-user-info-conteiner" *ngIf="department">
+        <div class="header-user-info-content" matTooltip="Department" matTooltipPosition="below">
+          <label>
+            <!-- <img alt="logo" src="logos/local-dev-logo.webp" class="local-dev-logo" /> -->
+            <span class="org-text">
+              <i class="fas fa-building" style="margin-right: 6px; color: #00458f"></i>
+              {{ department }}
+            </span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="header-bottom">
+      <div class="header-container">
+        <div class="header-workspace_ leave-admin-btn">
+          <div
+            class="button-h-b cursor-pointer align-items-center d-flex justify-content-start"
+            matRipple
+            (click)="backToMain()"
+          >
+            <mat-icon class="material-symbols-outlined dropdown-icon-mat ms-0">logout</mat-icon>
+            Exit
+          </div>
+        </div>
+
+        <ng-container *ngIf="userType === 'super_admin' && !hideSelector">
+          <div
+            class="header-layers org-admin-btn"
+            [matMenuTriggerFor]="orgMenu"
+            (menuOpened)="isOrgsMenuOpen = true"
+            (menuClosed)="isOrgsMenuOpen = false"
+            [matTooltip]="current_org.display_name"
+            matTooltipPosition="above"
+          >
+            <div class="button-h-b px-2 d-flex align-items-center" matRipple>
+              <mat-icon class="dropdown-icon-mat">business</mat-icon>
+              <span class="dropdown-icon-span">
+                {{ current_org.display_name.slice(0, 35) }}
+              </span>
+              <mat-icon class="arrow-icon" [ngClass]="{ 'rotate-180': isOrgsMenuOpen }"
+                >arrow_drop_down</mat-icon
+              >
+            </div>
+          </div>
+
+          <mat-menu #orgMenu="matMenu" class="org-menu">
+            <ng-container *ngIf="organizations_list?.length">
+              <button
+                mat-menu-item
+                *ngFor="let org of organizations_list"
+                (click)="onOrgChange(org)"
+              >
+                <mat-icon *ngIf="current_org.org_id === org.org_id">check</mat-icon>
+                {{ org.display_name }}
+              </button>
+            </ng-container>
+          </mat-menu>
+        </ng-container>
+
+        <div class="header-icon">
+          <button
+            mat-icon-button
+            aria-label="buffer"
+            (click)="openProAlert()"
+            class="h-100 d-flex align-items-center"
+          >
+            <mat-icon class="icon-mat-only">notifications</mat-icon>
+          </button>
+
+          <mat-menu #notifiMenu="matMenu" class="settings-menu-container">
+            <button mat-menu-item class="settings-menu-item">
+              <mat-icon>history</mat-icon>Available in Pro Version
+            </button>
+          </mat-menu>
+        </div>
+
+        <div class="header-icon profile me-2">
+          <button
+            mat-button
+            aria-label="buffer"
+            [matMenuTriggerFor]="profileMenu"
+            class="profile-btn h-100 relative"
+          >
+            <img
+              *ngIf="sex?.toLowerCase() === 'male'"
+              src="sample/male_avatar.png"
+              alt="Male Profile"
+              class="rounded-avatar"
+            />
+            <img
+              *ngIf="sex?.toLowerCase() === 'female'"
+              src="sample/female_avatar.png"
+              alt="Female Profile"
+              class="rounded-avatar"
+            />
+
+            <span
+              *ngIf="!sex || (sex !== 'male' && sex !== 'female')"
+              class="rounded-avatar initials-avatar"
+            >
+              {{ username | uppercase | slice: 0 : 2 }}
+            </span>
+
+            <span class="username-ellipsis" [title]="username">
+              {{ username }}
+            </span>
+          </button>
+
+          <mat-menu #profileMenu="matMenu" class="settings-menu-container">
+            <button mat-menu-item class="settings-menu-item" (click)="OpenUserProfile()">
+              <mat-icon>person</mat-icon>Profile
+            </button>
+            <button mat-menu-item class="settings-menu-item" title="Logout" (click)="logout()">
+              <mat-icon>logout</mat-icon>Logout
+            </button>
+          </mat-menu>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- * profile button -->
+<mat-menu #profileMenu="matMenu" class="settings-menu-container">
+  <button mat-menu-item class="settings-menu-item" (click)="OpenUserProfile()">
+    <mat-icon> person</mat-icon>Profile
+  </button>
+</mat-menu>

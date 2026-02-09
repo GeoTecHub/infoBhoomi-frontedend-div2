@@ -1,0 +1,69 @@
+<div class="side-panel-content" [class.collapsed]="isSidebarClosed" [class.extended]="extendWidth">
+  <div class="side-panel-tab-content" *ngIf="!isSidebarClosed">
+    <ng-container *ngIf="activeTab === 1">
+      <app-home-tab></app-home-tab>
+    </ng-container>
+    <ng-container *ngIf="activeTab === 2">
+      <app-land-tab [selected_feature_ID]="selected_feature_ID"></app-land-tab>
+    </ng-container>
+    <ng-container *ngIf="activeTab === 3">
+      <app-building-tab [selected_feature_ID]="selected_feature_ID"></app-building-tab>
+    </ng-container>
+    <ng-container *ngIf="activeTab === 4">
+      <app-legal-spaces-tab></app-legal-spaces-tab>
+    </ng-container>
+    <ng-container *ngIf="activeTab === 5">
+      <app-external-tab></app-external-tab>
+    </ng-container>
+  </div>
+
+  <div class="side-panel-tabs">
+    <div class="toggle-button" (click)="toggleSidebar()">
+      <mat-icon>{{ isSidebarClosed ? 'chevron_left' : 'chevron_right' }}</mat-icon>
+    </div>
+
+    <div
+      class="side-panel-tab"
+      [class.active]="activeTab === 1"
+      (click)="selectTab(1); removeExtend()"
+    >
+      Home
+    </div>
+    <div
+      class="side-panel-tab"
+      [class.active]="activeTab === 2"
+      [class.disabled]="
+        !(selected_layer_ID === 1 || selected_layer_ID === 6) || !this.selected_feature_ID
+      "
+      (click)="selected_layer_ID ? selectTab(2) : null; makeExtend()"
+    >
+      Land
+    </div>
+    <div
+      class="side-panel-tab"
+      [class.active]="activeTab === 3"
+      [class.disabled]="
+        !(selected_layer_ID === 3 || selected_layer_ID === 12) || !this.selected_feature_ID
+      "
+      (click)="selected_layer_ID ? selectTab(3) : null; makeExtend()"
+    >
+      Buildings
+    </div>
+    <div
+      class="side-panel-tab max"
+      [class.active]="activeTab === 4"
+      (click)="this.openProAlert()"
+      [class.disabled]="true"
+    >
+      Legal Spaces
+    </div>
+    <div
+      class="side-panel-tab"
+      [class.active]="activeTab === 5"
+      (click)="this.openProAlert()"
+      [class.disabled]="true"
+    >
+      External
+    </div>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+<div class="wrap-collabsible">
+  <input id="{{ uniqueId }}" id="collapsible" class="toggle" type="checkbox" />
+  <label for="{{ uniqueId }}" for="collapsible" class="lbl-toggle">
+    {{ title }}
+  </label>
+  <div class="collapsible-content">
+    <div class="content-inner">
+      <ng-content></ng-content>
+    </div>
+  </div>
+</div>

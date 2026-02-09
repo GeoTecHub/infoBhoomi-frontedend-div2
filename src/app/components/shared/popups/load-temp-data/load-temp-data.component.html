@@ -1,0 +1,44 @@
+<h4 mat-dialog-title>Load Temporary Data</h4>
+
+<mat-dialog-content>
+  <div *ngIf="isLoading">Loading data...</div>
+  <div *ngIf="!isLoading">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Layer Name</th>
+          <th>Creation Date</th>
+          <th>Actions</th>
+          <!-- New column for delete button -->
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let feature of geoJsonData"
+          [class.active-row]="feature === selectedFeature"
+          (click)="onRowSelect(feature)"
+        >
+          <td>{{ feature.properties.dataset_name }}</td>
+          <td>{{ feature.properties.date_created | date: 'short' }}</td>
+          <td>
+            <!-- Remove button for each row -->
+            <button class="remove-button" (click)="removeData(feature)">Remove</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  <app-custom-buttons
+    buttonText="Close"
+    buttonIcon="cancel"
+    buttonStyle="secondary"
+    mat-dialog-close
+  >
+  </app-custom-buttons>
+
+  <app-custom-buttons buttonText="Load Data" buttonIcon="check" buttonStyle="primary">
+  </app-custom-buttons>
+</mat-dialog-actions>

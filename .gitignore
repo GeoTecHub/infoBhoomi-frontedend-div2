@@ -1,0 +1,8 @@
+node_modules
+*.tsbuildinfo
+.angular
+dist
+
+temp.md
+
+*.zip

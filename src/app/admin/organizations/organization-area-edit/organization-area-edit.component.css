@@ -1,0 +1,93 @@
+.main-body {
+  display: flex;
+  flex-direction: row;
+}
+
+.side-panel-container {
+  background: #fff;
+}
+
+.tab-container {
+  flex-grow: 1;
+  padding: 10px;
+}
+
+.create-btn {
+  display: flex;
+  justify-content: flex-end;
+  margin-right: 0px;
+}
+
+.background-primary {
+  background-color: #779ab8;
+}
+
+.main-title {
+  font-size: 17px;
+}
+
+.incorrect-pw {
+  margin-bottom: 0px;
+  font-size: 13px;
+}
+
+.default-pw-text {
+  font-weight: 300;
+  color: #779ab8;
+  font-size: 11px;
+}
+
+.gn-label {
+  font-size: 12px !important;
+}
+
+.border-bottom-black {
+  height: 1px;
+  background-color: black;
+}
+
+.overflow-section {
+  max-height: calc(100vh - 320px);
+  overflow-y: auto;
+}
+
+.add-btn {
+  background-color: #3c71a6;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 0px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  margin: auto;
+  font-size: 14px;
+  height: 60px;
+}
+
+.remove-item-btn {
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+}
+
+.text-muted {
+  font-size: 11px;
+}
+
+label,
+input,
+select {
+  font-size: 14px;
+}
+
+.head-org-name {
+  color: #084b93;
+  background: #d4e0fc;
+  padding-left: 11px;
+  padding-right: 11px;
+  border-radius: 14px;
+  font-weight: 500;
+  font-size: 15px;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}

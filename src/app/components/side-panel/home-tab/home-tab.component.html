@@ -1,0 +1,112 @@
+<div class="side-panel-space-1">
+  <div
+    *ngIf="show_admin_panel"
+    matRipple
+    class="side-panel-button highlight-btn"
+    (click)="openAdminPanelDialog()"
+  >
+    <mat-icon class="icon-highlight">admin_panel_settings</mat-icon>
+    <div class="button-label">
+      <ng-container *ngIf="user_type === 'super_admin'"> Super </ng-container>
+      Admin Panel
+    </div>
+  </div>
+
+  <div matRipple class="side-panel-button" (click)="openImportDialog()">
+    <mat-icon>download</mat-icon>
+    <div class="button-label">Import</div>
+  </div>
+  <div matRipple class="side-panel-button" (click)="openExportPanel()">
+    <mat-icon>upload</mat-icon>
+    <div class="button-label">Export</div>
+  </div>
+  <!-- <div matRipple class="side-panel-button" (click)="openLoadTempDataDialog()">
+    <mat-icon>autorenew</mat-icon>
+    <div class="button-label">Load Temporary Points</div>
+  </div>
+  <div matRipple class="side-panel-button">
+    <mat-icon>delete_forever</mat-icon>
+    <div class="button-label">Remove Temporary Points</div>
+  </div> -->
+</div>
+
+<mat-divider></mat-divider>
+
+<div class="side-panel-space-1">
+  <div matRipple class="side-panel-button" (click)="openPrintanel()">
+    <mat-icon>print</mat-icon>
+    <div class="button-label">Print</div>
+  </div>
+</div>
+
+<mat-divider></mat-divider>
+
+<!-- <div class="side-panel-space-1">
+  <div matRipple class="side-panel-button">
+    <mat-icon>cloud_upload</mat-icon>
+    <div class="button-label">Upload to Infobhoomi Web</div>
+  </div>
+</div>
+
+<mat-divider></mat-divider> -->
+
+<div class="side-panel-space-1">
+  <div matRipple class="side-panel-button" (click)="openQueryBuilderPanel()">
+    <mat-icon>tune</mat-icon>
+    <div class="button-label">Query Builder</div>
+  </div>
+</div>
+
+<mat-divider></mat-divider>
+
+<div class="side-panel-space-1">
+  <div matRipple class="side-panel-button" (click)="openProAlert()">
+    <mat-icon>summarize</mat-icon>
+    <div class="button-label">Reports</div>
+  </div>
+</div>
+
+<mat-divider></mat-divider>
+
+<div class="side-panel-space-1">
+  <div matRipple class="side-panel-button" (click)="openProAlert()">
+    <mat-icon>history</mat-icon>
+    <div class="button-label">History</div>
+  </div>
+</div>
+
+<mat-divider></mat-divider>
+
+<div class="side-panel-space-1">
+  <div matRipple class="side-panel-button" (click)="OpenVERTEXT()">
+    <mat-icon>gps_fixed</mat-icon>
+    <div class="button-label">VerText Login</div>
+  </div>
+</div>
+
+<mat-divider></mat-divider>
+
+<div class="side-panel-space-1">
+  <div matRipple class="side-panel-button" (click)="openProAlert()">
+    <mat-icon>alarm</mat-icon>
+    <div class="button-label">Reminders</div>
+  </div>
+</div>
+
+<!-- <mat-divider></mat-divider>
+
+<div class="side-panel-space-1">
+  <div matRipple class="side-panel-button" (click)="openProAlert()">
+    <mat-icon>call_merge</mat-icon>
+    <div class="button-label">Combine</div>
+  </div>
+</div> -->
+
+<mat-divider></mat-divider>
+
+<div class="side-panel-space-1">
+  <div matRipple class="side-panel-button" (click)="OpenAbout()">
+    <mat-icon>help_outline</mat-icon>
+    <div class="button-label">About</div>
+  </div>
+</div>

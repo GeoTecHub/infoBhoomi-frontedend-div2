@@ -1,0 +1,1203 @@
+<div class="land-tab-content">
+  <div class="land-tab-title">
+    Feature ID: {{ selected_feature_ID }}
+
+    <!-- <button
+      mat-icon-button
+      class="info-btn"
+      [matTooltip]="parcelInfoText"
+      matTooltipPosition="above"
+      [matTooltipShowDelay]="200"
+      [matTooltipHideDelay]="100"
+      matTooltipClass="info-tooltip"
+      aria-label="Parcel info"
+    >
+      <i class="fa fa-info-circle"></i>
+    </button> -->
+  </div>
+
+  <div class="parcel-image-container">
+    <div class="parcel-image">
+      <div class="hover-text">Upload New Image</div>
+      <img [src]="parsal_image ? parsal_image : 'sample/s_img_1.jpg'" alt="Parcel Image" />
+    </div>
+    <!-- Upload Icon with Save Icon Overlay -->
+    <label class="save-icon" (click)="saveImage()">
+      <i class="fa fa-save"></i>
+      <!-- Save icon on top -->
+      <span class="upload-hover-text">Save Image</span>
+    </label>
+
+    <label *ngIf="!parsal_image" class="upload-icon">
+      <input type="file" (change)="onFileSelected($event)" accept=".png,.webp,.jpg,.jpeg" hidden />
+      <i class="fa fa-upload"></i>
+      <span class="upload-hover-text">Click to Upload</span>
+    </label>
+
+    <label *ngIf="parsal_image" class="delete-icon" (click)="deleteImage()">
+      <i class="fa-solid fa-trash"></i>
+      <span class="delete-hover-text">Delete Image</span>
+    </label>
+  </div>
+
+  <!-- Main Information -->
+  <div class="parcel-image-container">
+    <app-loader [isLoading]="is_loading_summary"></app-loader>
+
+    <div class="keyValue__key property-title-section" *ngIf="canSummaryView(10)">
+      <ng-container *ngIf="summaryPropertyType; else noPropertyType">
+        {{ summaryPropertyType }} Property
+      </ng-container>
+      <ng-template #noPropertyType>-</ng-template>
+    </div>
+
+    <div class="keyValueWrapper" *ngIf="canViewRRR(38)">
+      <div class="keyValueWrapper__keyValue d-flex align-items-center">
+        <div class="keyValue__key">
+          {{ isCoOwners ? 'Co-Owners' : 'Owner' }}
+        </div>
+
+        <div class="keyValue__value">
+          <ng-container *ngIf="summaryOwner && summaryOwner.trim(); else noOwner">
+            {{ summaryOwner }}
+          </ng-container>
+          <ng-template #noOwner>-</ng-template>
+        </div>
+      </div>
+    </div>
+
+    <div class="keyValueWrapper" *ngIf="canSummaryView(11)">
+      <div class="keyValueWrapper__keyValue d-flex align-items-center">
+        <div class="keyValue__key">Address</div>
+        <div class="keyValue__value">
+          <ng-container *ngIf="summaryPostalAdLnd; else noAddress">
+            {{ summaryPostalAdLnd }}
+          </ng-container>
+          <ng-template #noAddress>-</ng-template>
+        </div>
+      </div>
+    </div>
+
+    <!-- <div class="keyValueWrapper" *ngIf="canSummaryView(24)">
+      <div class="keyValueWrapper__keyValue d-flex align-items-center">
+        <div class="keyValue__key">Assessment No</div>
+        <div class="keyValue__value">
+          <ng-container>
+            <span>{{ summaryAssessmentNo }}</span>
+            <br *ngIf="summaryAssessmentNo" />
+            <span>{{ summaryAssessmentDiv || '' }}</span>
+            <span *ngIf="!summaryAssessmentNo && !summaryAssessmentDiv">-</span>
+          </ng-container>
+          <ng-template #noAssessment>-</ng-template>
+        </div>
+      </div>
+    </div> -->
+  </div>
+
+  <div class="collapsible-container">
+    <!--Ownership Section -->
+    <button
+      class="toggle-button"
+      (click)="toggleCollapse('ownership_is_collapsed')"
+      [ngClass]="{ active: !ownership_is_collapsed }"
+    >
+      {{ ownership_is_collapsed ? 'Ownership' : 'Ownership' }}
+      <span class="arrow" [ngClass]="{ rotated: !ownership_is_collapsed }">&#9660;</span>
+    </button>
+
+    <div class="keyValueList text-center py-0" *ngIf="!ownership_is_collapsed">
+      <!-- <i class="fas fa-tools fa-2x text-secondary mb-2"></i>
+      <div class="fw-semibold mt-2" style="font-size: 13px">
+        This Ownership section is under construction.<br />
+        Please check back soon!
+      </div> -->
+      <button
+        mat-button
+        class="admin-primary-bg-btn"
+        (click)="openRRRPanel()"
+        *ngIf="canViewRRR(38) || canAddRRR(38)"
+      >
+        Open RRR Panel
+      </button>
+    </div>
+  </div>
+
+  <!-- **********************************Administrative Information********************************************* -->
+
+  <div class="collapsible-container">
+    <!-- Administrative Information Section -->
+    <button
+      class="toggle-button"
+      (click)="toggleCollapse('administrative_is_collapsed')"
+      [ngClass]="{ active: !administrative_is_collapsed }"
+    >
+      {{
+        administrative_is_collapsed ? 'Administrative Information' : 'Administrative Information'
+      }}
+      <span class="arrow" [ngClass]="{ rotated: !administrative_is_collapsed }">&#9660;</span>
+    </button>
+    <div class="keyValueList" *ngIf="!administrative_is_collapsed">
+      <app-loader [isLoading]="is_loading_toast_admin_info"></app-loader>
+
+      <!-- <div class="keyValueWrapper" *ngIf="canView(1)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Administrative Type</div>
+          <select class="keyValue__value" [(ngModel)]="adminInfo.sl_ba_unit_type"
+            [disabled]="!canEdit(1) || !isAdminInfoEditMode">
+            <option value="" disabled selected>Select admin type </option>
+            <option *ngFor="let option of administrative_types_array" [value]="option.name">
+              {{ option.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <hr class="divider" /> -->
+      <!-- <label class="my-1">Core details</label> -->
+
+      <div class="keyValueWrapper" *ngIf="canView(1)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Administrative Type</div>
+          <select
+            class="keyValue__value"
+            [(ngModel)]="adminInfo.administrative_type"
+            [disabled]="!canEdit(1) || !isAdminInfoEditMode"
+          >
+            <option value="" disabled selected>Select admin type</option>
+            <option *ngFor="let option of administrative_types_array" [value]="option.name">
+              {{ option.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="keyValueWrapper" *ngIf="canView(2)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Province</div>
+          <input type="text" readonly class="keyValue__value" [(ngModel)]="adminInfo.pd" />
+        </div>
+      </div>
+      <div class="keyValueWrapper" *ngIf="canView(3)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">District</div>
+          <input type="text" readonly class="keyValue__value" [(ngModel)]="adminInfo.dist" />
+        </div>
+      </div>
+      <div class="keyValueWrapper" *ngIf="canView(4)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">DS Division</div>
+          <input type="text" class="keyValue__value" readonly [(ngModel)]="adminInfo.dsd" />
+        </div>
+      </div>
+      <div class="keyValueWrapper" *ngIf="canView(5)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">GN Division</div>
+          <select
+            class="keyValue__value"
+            [(ngModel)]="adminInfo.gnd_id"
+            [disabled]="!canView(5) || !isAdminInfoEditMode"
+          >
+            <option value="" disabled selected>Select GN Division</option>
+            <option *ngFor="let option of GND_array" [value]="option.gid">
+              {{ option.gnd }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="keyValueWrapper" *ngIf="canView(7)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Electorate</div>
+          <input type="text" class="keyValue__value" readonly [(ngModel)]="adminInfo.eletorate" />
+        </div>
+      </div>
+      <div class="keyValueWrapper" *ngIf="canView(8)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Local Auth</div>
+          <input type="text" class="keyValue__value" readonly [(ngModel)]="adminInfo.local_auth" />
+        </div>
+      </div>
+      <div class="keyValueWrapper" *ngIf="canView(6)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Assess Ward</div>
+          <!-- <input type="text" class="keyValue__value" placeholder="Enter assessment ward" [(ngModel)]="adminInfo.ass_div"
+            [readonly]="!canEdit(6) || !isAdminInfoEditMode"> -->
+          <select
+            class="keyValue__value"
+            [(ngModel)]="adminInfo.ass_div"
+            [disabled]="!isAdminInfoEditMode || !canEdit(6)"
+          >
+            <option value="" disabled selected>Select ward</option>
+            <option *ngFor="let option of Ward_array" [value]="option.id">
+              {{ option.ward_name }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="keyValueWrapper" *ngIf="canView(9)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Street Name</div>
+          <input
+            type="text"
+            class="keyValue__value"
+            placeholder="Enter street name"
+            [readonly]="!canEdit(9) || !isAdminInfoEditMode"
+            [(ngModel)]="adminInfo.access_road"
+          />
+        </div>
+      </div>
+      <div class="keyValueWrapper" *ngIf="canView(12)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Property Name</div>
+          <input
+            type="text"
+            class="keyValue__value"
+            placeholder="Enter land name"
+            [readonly]="!canEdit(12) || !isAdminInfoEditMode"
+            [(ngModel)]="adminInfo.land_name"
+          />
+        </div>
+      </div>
+      <div class="keyValueWrapper" *ngIf="canView(11)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Postal Address</div>
+          <textarea
+            name=""
+            class="keyValue__value"
+            rows="4"
+            [readonly]="!canEdit(11) || !isAdminInfoEditMode"
+            [(ngModel)]="adminInfo.postal_ad_lnd"
+            placeholder="Enter postal address"
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="keyValueWrapper" *ngIf="canView(10)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Property Type</div>
+          <select
+            class="keyValue__value"
+            [(ngModel)]="adminInfo.sl_land_type"
+            [disabled]="!canEdit(10) || !isAdminInfoEditMode"
+          >
+            <option value="" disabled selected>Select property type</option>
+            <option value="Private">Private</option>
+            <option value="Government">Government</option>
+            <option value="Semi-Government">Semi-Government</option>
+            <option value="N/A">N/A</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Dynamic attributes - Administrative Information -->
+      <div class="keyValueWrapper" *ngFor="let attr of customAttributes[SECTION_KEYS.ADMIN_INFO]">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">
+            {{ attr.label }}
+          </div>
+          <div class="keyValue__value d-flex align-items-center gap-2">
+            <input
+              type="text"
+              class="keyValue__value"
+              [(ngModel)]="attr.value"
+              placeholder="Enter value"
+              [readonly]="!isAdminInfoEditMode || !attr.id"
+            />
+            <button
+              class="save-button_ sm-inner-section-btn"
+              *ngIf="isAdminInfoEditMode && attr.id"
+              (click)="saveAttributeValue(attr, SECTION_KEYS.ADMIN_INFO)"
+              [disabled]="attr.isSavingValue"
+            >
+              <i class="fa fa-save"></i>
+              {{ attr.isSavingValue ? 'Saving...' : 'Save' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="keyValueWrapper" *ngIf="isAdminInfoEditMode">
+        <div class="keyValueWrapper__keyValue">
+          <!-- <div class="keyValue__key">Custom attribute</div> -->
+          <div class="w-100">
+            <!-- <ng-container
+              *ngIf="!isAddingAttribute[SECTION_KEYS.ADMIN_INFO]; else adminAddAttrForm"
+            >
+              <button
+                class="edit-button sm-inner-section-btn"
+                type="button"
+                (click)="startAddAttribute(SECTION_KEYS.ADMIN_INFO)"
+              >
+                <i class="fa fa-plus"></i> Add attribute
+              </button>
+            </ng-container> -->
+            <ng-template #adminAddAttrForm>
+              <div class="d-flex gap-2 align-items-center">
+                <input
+                  type="text"
+                  class="keyValue__value ms-0"
+                  placeholder="Enter label (e.g. attr-x)"
+                  [(ngModel)]="newAttributeLabel[SECTION_KEYS.ADMIN_INFO]"
+                />
+                <button
+                  class="save-button_ sm-inner-section-btn mt-0"
+                  type="button"
+                  (click)="saveNewAttributeMeta(SECTION_KEYS.ADMIN_INFO)"
+                  [disabled]="
+                    isSavingNewAttributeMeta[SECTION_KEYS.ADMIN_INFO] ||
+                    !newAttributeLabel[SECTION_KEYS.ADMIN_INFO].trim()
+                  "
+                >
+                  <i class="fa fa-save"></i>
+                  {{ isSavingNewAttributeMeta[SECTION_KEYS.ADMIN_INFO] ? 'Saving...' : 'Save' }}
+                </button>
+                <button
+                  class="edit-button-inverse sm-inner-section-btn mt-0"
+                  type="button"
+                  (click)="cancelAddAttribute(SECTION_KEYS.ADMIN_INFO)"
+                >
+                  Cancel
+                </button>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+      <!-- End Dynamic attributes - Administrative Information -->
+
+      <div class="d-flex gap-2 justify-content-end">
+        <button
+          class="edit-button sm-inner-section-btn"
+          *ngIf="!isAdminInfoEditMode"
+          (click)="isAdminInfoEditMode = true"
+        >
+          <i class="fa-solid fa-pencil"></i> Edit
+        </button>
+
+        <button
+          class="edit-button-inverse sm-inner-section-btn"
+          *ngIf="isAdminInfoEditMode"
+          (click)="isAdminInfoEditMode = false"
+        >
+          <i class="fa-solid fa-pencil"></i> Cancel
+        </button>
+
+        <button
+          *ngIf="isAdminInfoEditMode"
+          class="save-button_ sm-inner-section-btn"
+          (click)="saveData('lt_admin_info'); isAdminInfoEditMode = false"
+        >
+          <i class="fa fa-save"></i> Save
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- **********************************Land Overview********************************************* -->
+
+  <div class="collapsible-container">
+    <!--Land Overview Section -->
+    <button
+      class="toggle-button"
+      (click)="toggleCollapse('land_overview_is_collapsed')"
+      [ngClass]="{ active: !land_overview_is_collapsed }"
+    >
+      {{ land_overview_is_collapsed ? 'Land Overview' : 'Land Overview' }}
+      <span class="arrow" [ngClass]="{ rotated: !land_overview_is_collapsed }">&#9660;</span>
+    </button>
+
+    <div class="keyValueList" *ngIf="!land_overview_is_collapsed">
+      <app-loader [isLoading]="is_loading_toast_overview"></app-loader>
+
+      <div class="keyValueWrapper" *ngIf="canViewLandOverView(13)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Dimension</div>
+          <input
+            type="text"
+            class="keyValue__value"
+            placeholder="Enter dimension"
+            [(ngModel)]="landInfo.dimension_2d_3d"
+            readonly
+          />
+        </div>
+      </div>
+      <div class="keyValueWrapper" *ngIf="canViewLandOverView(16)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Reference Point</div>
+          <input
+            type="text"
+            class="keyValue__value"
+            [(ngModel)]="landInfo.reference_coordinate"
+            readonly
+          />
+        </div>
+      </div>
+      <div class="keyValueWrapper" *ngIf="canViewLandOverView(14)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Area (m²)</div>
+          <input
+            type="text"
+            class="keyValue__value"
+            readonly
+            placeholder="Enter area"
+            [(ngModel)]="landInfo.area"
+          />
+        </div>
+      </div>
+      <div class="keyValueWrapper" *ngIf="canViewLandOverView(17)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Land Use Category</div>
+          <select
+            class="keyValue__value"
+            [disabled]="!canEditLandOverView(17) || !isOverviewInfoEditMode"
+            [(ngModel)]="landInfo.ext_landuse_type"
+          >
+            <option value="" disabled selected>Select Land Use Category</option>
+            <option *ngFor="let option of land_ext_landuse_type_array" [value]="option.name">
+              {{ option.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="keyValueWrapper" *ngIf="canViewLandOverView(18)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Sub Category</div>
+          <select
+            class="keyValue__value"
+            [disabled]="!canEditLandOverView(18) || !isOverviewInfoEditMode"
+            [(ngModel)]="landInfo.ext_landuse_sub_type"
+          >
+            <option value="" disabled selected>Select sub category</option>
+            <option *ngFor="let option of land_sub_category_array" [value]="option.name">
+              {{ option.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <!-- <button class="save-button" (click)="saveData('land_overview')">Save</button> -->
+
+      <!-- Dynamic attributes - Land Overview -->
+      <div
+        class="keyValueWrapper"
+        *ngFor="let attr of customAttributes[SECTION_KEYS.LAND_OVERVIEW]"
+      >
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">
+            {{ attr.label }}
+          </div>
+          <div class="keyValue__value d-flex align-items-center gap-2">
+            <input
+              type="text"
+              class="keyValue__value"
+              [(ngModel)]="attr.value"
+              placeholder="Enter value"
+              [readonly]="!isOverviewInfoEditMode || !attr.id"
+            />
+            <button
+              class="save-button_ sm-inner-section-btn"
+              *ngIf="isOverviewInfoEditMode && attr.id"
+              (click)="saveAttributeValue(attr, SECTION_KEYS.LAND_OVERVIEW)"
+              [disabled]="attr.isSavingValue"
+            >
+              <i class="fa fa-save"></i>
+              {{ attr.isSavingValue ? 'Saving...' : 'Save' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="keyValueWrapper" *ngIf="isOverviewInfoEditMode">
+        <div class="keyValueWrapper__keyValue">
+          <!-- <div class="keyValue__key">Custom attribute</div> -->
+          <div class="w-100">
+            <!-- <ng-container
+              *ngIf="!isAddingAttribute[SECTION_KEYS.LAND_OVERVIEW]; else overviewAddAttrForm"
+            >
+              <button
+                class="edit-button sm-inner-section-btn"
+                type="button"
+                (click)="startAddAttribute(SECTION_KEYS.LAND_OVERVIEW)"
+              >
+                <i class="fa fa-plus"></i> Add attribute
+              </button>
+            </ng-container> -->
+            <ng-template #overviewAddAttrForm>
+              <div class="d-flex gap-2 align-items-center">
+                <input
+                  type="text"
+                  class="keyValue__value ms-0"
+                  placeholder="Enter label (e.g. attr-x)"
+                  [(ngModel)]="newAttributeLabel[SECTION_KEYS.LAND_OVERVIEW]"
+                />
+                <button
+                  class="save-button_ sm-inner-section-btn mt-0"
+                  type="button"
+                  (click)="saveNewAttributeMeta(SECTION_KEYS.LAND_OVERVIEW)"
+                  [disabled]="
+                    isSavingNewAttributeMeta[SECTION_KEYS.LAND_OVERVIEW] ||
+                    !newAttributeLabel[SECTION_KEYS.LAND_OVERVIEW].trim()
+                  "
+                >
+                  <i class="fa fa-save"></i>
+                  {{ isSavingNewAttributeMeta[SECTION_KEYS.LAND_OVERVIEW] ? 'Saving...' : 'Save' }}
+                </button>
+                <button
+                  class="edit-button-inverse sm-inner-section-btn mt-0"
+                  type="button"
+                  (click)="cancelAddAttribute(SECTION_KEYS.LAND_OVERVIEW)"
+                >
+                  Cancel
+                </button>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+      <!-- End Dynamic attributes - Land Overview -->
+
+      <div class="d-flex gap-2 justify-content-end">
+        <button
+          class="edit-button sm-inner-section-btn"
+          *ngIf="!isOverviewInfoEditMode"
+          (click)="isOverviewInfoEditMode = true"
+        >
+          <i class="fa-solid fa-pencil"></i> Edit
+        </button>
+
+        <button
+          class="edit-button-inverse sm-inner-section-btn"
+          *ngIf="isOverviewInfoEditMode"
+          (click)="isOverviewInfoEditMode = false"
+        >
+          <i class="fa-solid fa-pencil"></i> Cancel
+        </button>
+
+        <button
+          *ngIf="isOverviewInfoEditMode"
+          class="save-button_ sm-inner-section-btn"
+          (click)="saveData('land_overview'); isOverviewInfoEditMode = false"
+        >
+          <i class="fa fa-save"></i> Save
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- *************************************Utility Network Information****************************************** -->
+
+  <div class="collapsible-container">
+    <!--Utility Information Section -->
+    <button
+      class="toggle-button"
+      (click)="toggleCollapse('utility_information_is_collapsed')"
+      [ngClass]="{ active: !utility_information_is_collapsed }"
+    >
+      {{
+        utility_information_is_collapsed
+          ? 'Utility Network Information'
+          : 'Utility Network Information'
+      }}
+      <span class="arrow" [ngClass]="{ rotated: !utility_information_is_collapsed }">&#9660;</span>
+    </button>
+    <div class="keyValueList" *ngIf="!utility_information_is_collapsed">
+      <app-loader [isLoading]="is_loading_toast_utility_info"></app-loader>
+      <div class="keyValueWrapper" *ngIf="canViewUtility(19)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Electricity</div>
+          <select
+            class="keyValue__value"
+            [(ngModel)]="lt_util_Info.electricity"
+            [disabled]="!canEditUtility(19) || !isUtilityInfoEditMode"
+          >
+            <option value="" disabled selected>Select electricity option</option>
+            <option *ngFor="let option of electricityOptions" [value]="option">
+              {{ option }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="keyValueWrapper" *ngIf="canViewUtility(20)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Water</div>
+          <select
+            class="keyValue__value"
+            [(ngModel)]="lt_util_Info.water_supply"
+            [disabled]="!canEditUtility(20) || !isUtilityInfoEditMode"
+          >
+            <option value="" disabled selected>Select water supply</option>
+            <option *ngFor="let option of water_supplyOptions" [value]="option.name">
+              {{ option.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="keyValueWrapper" *ngIf="canViewUtility(21)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Drainage</div>
+          <select
+            class="keyValue__value"
+            [(ngModel)]="lt_util_Info.drainage_system"
+            [disabled]="!canEditUtility(21) || !isUtilityInfoEditMode"
+          >
+            <option value="" disabled selected>Select drainage</option>
+            <option *ngFor="let option of drainageOptions" [value]="option">
+              {{ option }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <!-- <div class="keyValueWrapper" *ngIf="canViewUtility(22)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Swerage</div>
+          <select class="keyValue__value" [(ngModel)]="lt_util_Info.sanitation_sewerage"
+            [disabled]="!canEditUtility(22) || !isUtilityInfoEditMode">
+            <option value="" disabled selected>Select swerage </option>
+            <option *ngFor="let option of sanitation_sewerageOptions" [value]="option">
+              {{ option }}
+            </option>
+          </select>
+        </div>
+      </div> -->
+      <div class="keyValueWrapper" *ngIf="canViewUtility(22)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Gully</div>
+          <select
+            class="keyValue__value"
+            [(ngModel)]="lt_util_Info.sanitation_gully"
+            [disabled]="!canEditUtility(22) || !isUtilityInfoEditMode"
+          >
+            <option value="" disabled selected>Select gully</option>
+            <option *ngFor="let option of gullyOptions" [value]="option.name">
+              {{ option.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="keyValueWrapper" *ngIf="canViewUtility(23)">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">Garbage disposal</div>
+          <select
+            class="keyValue__value"
+            [(ngModel)]="lt_util_Info.garbage_disposal"
+            [disabled]="!canEditUtility(23) || !isUtilityInfoEditMode"
+          >
+            <option value="" disabled selected>Select garbage disposal</option>
+            <option *ngFor="let option of garbage_supplyOptions" [value]="option">
+              {{ option }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <!-- <button class="save-button" (click)="saveData('lt_util_info')">Save</button> -->
+
+      <!-- Dynamic attributes - Utility Information -->
+      <div class="keyValueWrapper" *ngFor="let attr of customAttributes[SECTION_KEYS.UTILITY_INFO]">
+        <div class="keyValueWrapper__keyValue">
+          <div class="keyValue__key">
+            {{ attr.label }}
+          </div>
+          <div class="keyValue__value d-flex align-items-center gap-2">
+            <input
+              type="text"
+              class="keyValue__value"
+              [(ngModel)]="attr.value"
+              placeholder="Enter value"
+              [readonly]="!isUtilityInfoEditMode || !attr.id"
+            />
+            <button
+              class="save-button_ sm-inner-section-btn"
+              *ngIf="isUtilityInfoEditMode && attr.id"
+              (click)="saveAttributeValue(attr, SECTION_KEYS.UTILITY_INFO)"
+              [disabled]="attr.isSavingValue"
+            >
+              <i class="fa fa-save"></i>
+              {{ attr.isSavingValue ? 'Saving...' : 'Save' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="keyValueWrapper" *ngIf="isUtilityInfoEditMode">
+        <div class="keyValueWrapper__keyValue">
+          <!-- <div class="keyValue__key">Custom attribute</div> -->
+          <div class="w-100">
+            <!-- <ng-container
+              *ngIf="!isAddingAttribute[SECTION_KEYS.UTILITY_INFO]; else utilAddAttrForm"
+            >
+              <button
+                class="edit-button sm-inner-section-btn"
+                type="button"
+                (click)="startAddAttribute(SECTION_KEYS.UTILITY_INFO)"
+              >
+                <i class="fa fa-plus"></i> Add attribute
+              </button>
+            </ng-container> -->
+            <ng-template #utilAddAttrForm>
+              <div class="d-flex gap-2 align-items-center">
+                <input
+                  type="text"
+                  class="keyValue__value ms-0"
+                  placeholder="Enter label (e.g. attr-x)"
+                  [(ngModel)]="newAttributeLabel[SECTION_KEYS.UTILITY_INFO]"
+                />
+                <button
+                  class="save-button_ sm-inner-section-btn mt-0"
+                  type="button"
+                  (click)="saveNewAttributeMeta(SECTION_KEYS.UTILITY_INFO)"
+                  [disabled]="
+                    isSavingNewAttributeMeta[SECTION_KEYS.UTILITY_INFO] ||
+                    !newAttributeLabel[SECTION_KEYS.UTILITY_INFO].trim()
+                  "
+                >
+                  <i class="fa fa-save"></i>
+                  {{ isSavingNewAttributeMeta[SECTION_KEYS.UTILITY_INFO] ? 'Saving...' : 'Save' }}
+                </button>
+                <button
+                  class="edit-button-inverse sm-inner-section-btn mt-0"
+                  type="button"
+                  (click)="cancelAddAttribute(SECTION_KEYS.UTILITY_INFO)"
+                >
+                  Cancel
+                </button>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+      <!-- End Dynamic attributes - Utility Information -->
+
+      <div class="d-flex gap-2 justify-content-end">
+        <button
+          class="edit-button sm-inner-section-btn"
+          *ngIf="!isUtilityInfoEditMode"
+          (click)="isUtilityInfoEditMode = true"
+        >
+          <i class="fa-solid fa-pencil"></i> Edit
+        </button>
+
+        <button
+          class="edit-button-inverse sm-inner-section-btn"
+          *ngIf="isUtilityInfoEditMode"
+          (click)="isUtilityInfoEditMode = false"
+        >
+          <i class="fa-solid fa-pencil"></i> Cancel
+        </button>
+
+        <button
+          *ngIf="isUtilityInfoEditMode"
+          class="save-button_ sm-inner-section-btn"
+          (click)="saveData('lt_util_info'); isUtilityInfoEditMode = false"
+        >
+          <i class="fa fa-save"></i> Save
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- **********************************Tax and Assessment********************************************* -->
+
+  <div class="main-collapsible-container">
+    <!-- Main Collapsible Container -->
+    <button
+      class="toggle-button"
+      (click)="toggleCollapse('tax_and_assessment_is_collapsed')"
+      [ngClass]="{ active: !tax_and_assessment_is_collapsed }"
+    >
+      Tax and Assessment
+      <span class="arrow" [ngClass]="{ rotated: !tax_and_assessment_is_collapsed }">&#9660;</span>
+    </button>
+    <div class="main-content" *ngIf="!tax_and_assessment_is_collapsed">
+      <!-- Assessment Section -->
+      <div class="collapsible-container-sub">
+        <button
+          class="sub-toggle"
+          (click)="toggleCollapse('assessment_is_collapsed')"
+          [ngClass]="{ active: !assessment_is_collapsed }"
+        >
+          Assessment Information
+          <span class="arrow" [ngClass]="{ rotated: !assessment_is_collapsed }">&#9660;</span>
+        </button>
+        <app-loader [isLoading]="is_loading_toast_tax_assessment"></app-loader>
+        <div class="keyValueList" *ngIf="!assessment_is_collapsed">
+          <div class="keyValueWrapper" *ngIf="canViewTaxandAsses(24)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Assessment Number</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                placeholder="Enter assessment number"
+                [(ngModel)]="lt_asses_and_tax.assessment_no"
+                [readonly]="!canEditTaxandAsses(24) || !isTaxAssesmentInfoEditMode"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewTaxandAsses(25)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Assessment Name</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                placeholder="Enter property type"
+                [readonly]="!canEditTaxandAsses(25) || !isTaxAssesmentInfoEditMode"
+                [(ngModel)]="lt_asses_and_tax.assessment_name"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewTaxandAsses(26)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Annual Value (Rs)</div>
+              <input
+                type="number"
+                class="keyValue__value"
+                placeholder="Enter annual value"
+                [(ngModel)]="lt_asses_and_tax.assessment_annual_value"
+                [readonly]="!canEditTaxandAsses(26) || !isTaxAssesmentInfoEditMode"
+                (ngModelChange)="
+                  calculatePercentageValue(
+                    lt_asses_and_tax.assessment_annual_value,
+                    lt_asses_and_tax.assessment_percentage,
+                    'asses_information'
+                  )
+                "
+              />
+            </div>
+          </div>
+
+          <div class="keyValueWrapper" *ngIf="canViewTaxandAsses(27)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Percentage (%)</div>
+              <input
+                type="number"
+                class="keyValue__value"
+                [readonly]="!canEditTaxandAsses(27) || !isTaxAssesmentInfoEditMode"
+                placeholder="Enter percentage"
+                [(ngModel)]="lt_asses_and_tax.assessment_percentage"
+                (ngModelChange)="
+                  calculatePercentageValue(
+                    lt_asses_and_tax.assessment_annual_value,
+                    lt_asses_and_tax.assessment_percentage,
+                    'asses_information'
+                  )
+                "
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewTaxandAsses(28)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Annual Fee (Rs)</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                readonly
+                [(ngModel)]="anual_fee_of_assement"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewTaxandAsses(29)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Outstanding (Rs)</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                readonly
+                [(ngModel)]="lt_asses_and_tax.outstanding_balance"
+              />
+            </div>
+          </div>
+
+          <div class="keyValueWrapper" *ngIf="canViewTaxandAsses(30)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Date of Valuation</div>
+              <input
+                type="date"
+                class="keyValue__value"
+                [readonly]="!canEditTaxandAsses(30) || !isTaxAssesmentInfoEditMode"
+                placeholder="Enter date of valuation"
+                [(ngModel)]="lt_asses_and_tax.date_of_valuation"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewTaxandAsses(31)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Year of Assessment</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [readonly]="!canEditTaxandAsses(31) || !isTaxAssesmentInfoEditMode"
+                placeholder="Enter year of assessment"
+                [(ngModel)]="lt_asses_and_tax.year_of_assessment"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewTaxandAsses(32)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Property Type</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [readonly]="!canEditTaxandAsses(32) || !isTaxAssesmentInfoEditMode"
+                placeholder="Enter property type"
+                [(ngModel)]="lt_asses_and_tax.property_type"
+              />
+            </div>
+          </div>
+          <!-- Save Button for Assessment & Tax Section (or you can add one for Utility as needed) -->
+          <!-- <button class="save-button" (click)="saveData('lt_asses')">Save</button> -->
+          <div class="d-flex gap-2 justify-content-end">
+            <button
+              class="edit-button sm-inner-section-btn"
+              *ngIf="!isTaxAssesmentInfoEditMode"
+              (click)="isTaxAssesmentInfoEditMode = true"
+            >
+              <i class="fa-solid fa-pencil"></i> Edit
+            </button>
+
+            <button
+              class="edit-button-inverse sm-inner-section-btn"
+              *ngIf="isTaxAssesmentInfoEditMode"
+              (click)="isTaxAssesmentInfoEditMode = false"
+            >
+              <i class="fa-solid fa-pencil"></i> Cancel
+            </button>
+
+            <button
+              *ngIf="isTaxAssesmentInfoEditMode"
+              class="save-button_ sm-inner-section-btn"
+              (click)="saveData('lt_asses'); isTaxAssesmentInfoEditMode = false"
+            >
+              <i class="fa fa-save"></i> Save
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tax Informations -->
+      <div class="collapsible-container-sub">
+        <button
+          class="sub-toggle"
+          (click)="toggleCollapse('tax_information_is_collapsed')"
+          [ngClass]="{ active: !tax_information_is_collapsed }"
+        >
+          Tax Information
+          <span class="arrow" [ngClass]="{ rotated: !tax_information_is_collapsed }">&#9660;</span>
+        </button>
+        <div class="keyValueList" *ngIf="!tax_information_is_collapsed">
+          <div class="keyValueWrapper" *ngIf="canViewTaxInformation(33)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Annual Value (Rs)</div>
+              <input
+                type="number"
+                class="keyValue__value"
+                placeholder="Enter property type"
+                [(ngModel)]="lt_asses_and_tax.tax_annual_value"
+                [readonly]="!canEditTaxInformation(33) || !isTaxInfoEditMode"
+                (ngModelChange)="
+                  calculatePercentageValue(
+                    lt_asses_and_tax.tax_annual_value,
+                    lt_asses_and_tax.tax_percentage,
+                    'tax_information'
+                  )
+                "
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewTaxInformation(34)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Percentage (%)</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                placeholder="Enter  Percentage"
+                [(ngModel)]="lt_asses_and_tax.tax_percentage"
+                [readonly]="!canEditTaxInformation(34) || !isTaxInfoEditMode"
+                (ngModelChange)="
+                  calculatePercentageValue(
+                    lt_asses_and_tax.tax_annual_value,
+                    lt_asses_and_tax.tax_percentage,
+                    'tax_information'
+                  )
+                "
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewTaxInformation(35)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Annual Fee (Rs)</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                readonly
+                placeholder="Enter tax type"
+                [(ngModel)]="anual_fee_of_tax"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewTaxInformation(36)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Tax Date</div>
+              <input
+                type="date"
+                class="keyValue__value"
+                [readonly]="!canEditTaxInformation(36) || !isTaxInfoEditMode"
+                placeholder="Enter property type"
+                [(ngModel)]="lt_asses_and_tax.tax_date"
+              />
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewTaxInformation(37)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Tax Type</div>
+              <input
+                type="text"
+                class="keyValue__value"
+                [readonly]="!canEditTaxInformation(37) || !isTaxInfoEditMode"
+                placeholder="Enter tax type"
+                [(ngModel)]="lt_asses_and_tax.tax_type"
+              />
+            </div>
+          </div>
+
+          <!-- Save Button for Assessment & Tax Section (or you can add one for Utility as needed) -->
+          <!-- <button class="save-button" (click)="saveData('tax_info')">Save</button> -->
+
+          <div class="d-flex gap-2 justify-content-end">
+            <button
+              class="edit-button sm-inner-section-btn"
+              *ngIf="!isTaxInfoEditMode"
+              (click)="isTaxInfoEditMode = true"
+            >
+              <i class="fa-solid fa-pencil"></i> Edit
+            </button>
+
+            <button
+              class="edit-button-inverse sm-inner-section-btn"
+              *ngIf="isTaxInfoEditMode"
+              (click)="isTaxInfoEditMode = false"
+            >
+              <i class="fa-solid fa-pencil"></i> Cancel
+            </button>
+
+            <button
+              *ngIf="isTaxInfoEditMode"
+              class="save-button_ sm-inner-section-btn"
+              (click)="saveData('tax_info'); isTaxInfoEditMode = false"
+            >
+              <i class="fa fa-save"></i> Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- **********************************land tenure********************************************* -->
+  <!-- <div class="main-collapsible-container">
+    <button class="toggle-button" (click)="toggleCollapse('main_collapsedland_tenur')">
+      Land Tenure
+      <span class="arrow" [ngClass]="{ 'rotated': !mainCollapsedland_Tenur }">&#9660;</span>
+    </button>
+    <div class="main-content" *ngIf="!mainCollapsedland_Tenur">
+      <div class="collapsible-container-sub">
+        <button class="sub-toggle" (click)="toggleCollapse('land_tenure_is_collapsed')">
+          Ownership Information
+          <span class="arrow" [ngClass]="{ 'rotated': !land_tenure_is_collapsed }">&#9660;</span>
+        </button>
+        <div class="keyValueList" *ngIf="!land_tenure_is_collapsed">
+          <app-loader [isLoading]="is_loading_toast"></app-loader>
+          <div class="keyValueWrapper" *ngIf="canViewLandTnure(25)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Right Type</div>
+              <input type="text" class="keyValue__value" readonly [(ngModel)]="land_tenure.right_type">
+            </div>
+          </div>
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue" *ngIf="canViewLandTnure(26)">
+              <div class="keyValue__key">Duration</div>
+              <input type="text" class="keyValue__value" readonly [(ngModel)]="land_tenure.time_spec">
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewLandTnure(27)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Share</div>
+              <input type="text" class="keyValue__value" readonly [(ngModel)]="land_tenure.share">
+            </div>
+          </div>
+          <hr class="divider" />
+          <label>Party </label>
+          <div class="keyValueWrapper" *ngIf="canViewLandTnure(28)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key"> Type</div>
+              <input type="text" class="keyValue__value" readonly [(ngModel)]="land_tenure.la_party_type">
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewLandTnure(29)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Role</div>
+              <input type="text" class="keyValue__value" readonly [(ngModel)]="land_tenure.sl_party_type">
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewLandTnure(30)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Name</div>
+              <input type="text" class="keyValue__value" readonly [(ngModel)]="land_tenure.party_name">
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewLandTnure(15)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Registration</div>
+              <input type="text" class="keyValue__value" readonly [(ngModel)]="land_tenure.ext_pid_type">
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewLandTnure(31)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">NIC/BR No.</div>
+              <input type="number" class="keyValue__value" readonly [(ngModel)]="land_tenure.ext_pid">
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewLandTnure(32)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Telephone</div>
+              <textarea name="" class="keyValue__value" readonly rows="4" type="number" class="keyValue__value" readonly
+                [(ngModel)]="land_tenure.tp"></textarea>
+            </div>
+          </div>
+          <div class="keyValueWrapper" *ngIf="canViewLandTnure(33)">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Address</div>
+              <textarea name="" class="keyValue__value" rows="4" readonly type="text" class="keyValue__value" readonly
+                [(ngModel)]="land_tenure.pmt_address"></textarea>
+            </div>
+          </div>
+          <button class="rrr-button" *ngIf="canViewLandTnure(34)" (click)="openRRRDialog()">RRR Panel</button>
+        </div>
+      </div>
+
+      <div class="collapsible-container-sub">
+        <button class="sub-toggle" (click)="toggleCollapse('administrative_sources_is_collapsed')">
+          Legal Document
+          <span class="arrow" [ngClass]="{ 'rotated': !administrative_sources_is_collapsed }">&#9660;</span>
+        </button>
+        <div class="keyValueList" *ngIf="!administrative_sources_is_collapsed">
+
+          <div class="keyValueWrapper">
+            <div class="keyValueWrapper__keyValue">
+              <div class="keyValue__key">Ref No</div>
+              <input type="text" class="keyValue__value" [(ngModel)]="land_tenure.reference_no">
+            </div>
+          </div>
+          <button class="rrr-button" (click)="ViewDOC()">
+            <i class="fa fa-eye"></i> &nbsp;View DOC
+          </button>
+          <button class="rrr-button" (click)="ViewDOC()">
+            <i class="fa fa-eye"></i> Spatial Surce
+          </button>
+        </div>
+      </div>
+    </div>
+  </div> -->
+  <!-- <div class="main-collapsible-container buttons-in-row">
+    <button class="card-bottom-buttons" buttonIcon="perm_identity"
+      (click)="saveData('administrative_sources')">INQUIRIES</button>
+    <button class="card-bottom-buttons" buttonIcon="event"
+      (click)="saveData('administrative_sources')">REMINDERS</button>
+    <button class="card-bottom-buttons" buttonIcon="link" (click)="saveData('administrative_sources')">COMBINE</button>
+  </div> -->
+</div>

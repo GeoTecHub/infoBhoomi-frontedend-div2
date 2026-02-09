@@ -1,0 +1,80 @@
+.side-panel-space-1 {
+  padding: 5px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+.side-panel-button {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  padding: 10px;
+  border-radius: 10px;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+}
+
+.side-panel-button:hover {
+  background-color: var(--color-secondary-l2);
+}
+
+.button-label {
+  margin-left: 5px;
+  font-size: 0.95rem;
+}
+
+.side-panel-button mat-icon {
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+}
+
+@media screen and (max-height: 650px) {
+  .side-panel-button {
+    padding: 5px;
+    border-radius: 5px;
+  }
+}
+
+.highlight-btn {
+  font-weight: bold;
+}
+.icon-highlight {
+  color: #f00;
+}
+
+.buttons-in-row {
+  display: flex;
+  justify-content: space-between;
+  /* Ensures equal spacing */
+  gap: 5px;
+  /* Adjust spacing between buttons */
+}
+
+.card-bottom-buttons {
+  background-color: #779ab8;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+  border-radius: 5px;
+  width: 50%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.card-bottom-buttons {
+  flex: 1;
+  /* Makes buttons evenly distributed */
+  padding: 5px 10px;
+  /* Reduces button size */
+  font-size: 12px;
+  /* Smaller font */
+  min-width: 0;
+  /* Prevents auto-resizing */
+  white-space: nowrap;
+  /* Keeps text in one line */
+}

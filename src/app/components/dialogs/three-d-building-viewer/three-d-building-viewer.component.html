@@ -1,0 +1,40 @@
+<mat-dialog-content>
+  <!-- 3D MODE -->
+  <ng-container *ngIf="mode === '3d'">
+    <ng-container *ngIf="isLoading">
+      <p>Loading 3D view...</p>
+    </ng-container>
+
+    <ng-container *ngIf="!isLoading">
+      <ng-container *ngIf="has3DData; else noDataTemplate">
+        <!-- Pass selection event from 3D viewer -->
+        <app-viewer
+          [cityjson]="buildingData"
+          (surfaceSelected)="onSurfaceSelected($event)"
+        ></app-viewer>
+
+        <p class="hint-3d">Click on a floor/surface to open its 2D plan.</p>
+      </ng-container>
+
+      <ng-template #noDataTemplate>
+        <p class="no-data-msg">No 3D view available for this building.</p>
+      </ng-template>
+    </ng-container>
+  </ng-container>
+
+  <!-- 2D MODE -->
+  <ng-container *ngIf="mode === '2d'">
+    <div class="top-bar-2d">
+      <button class="back-btn" (click)="backTo3D()">← Back to 3D view</button>
+      <div class="floor-info" *ngIf="currentFloorPlan">
+        <span class="floor-name">{{ currentFloorPlan.name }}</span>
+        <span class="floor-id">({{ currentFloorPlan.id }})</span>
+      </div>
+    </div>
+
+    <app-floor-plan-viewer
+      *ngIf="currentFloorPlan"
+      [plan]="currentFloorPlan"
+    ></app-floor-plan-viewer>
+  </ng-container>
+</mat-dialog-content>
