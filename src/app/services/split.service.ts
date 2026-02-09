@@ -77,12 +77,7 @@ export class SplitService {
         return null;
       }
 
-      // Check for odd number of intersections (might indicate tangent touches)
-      if (intersections.features.length % 2 !== 0) {
-        return null;
-      }
-
-      // Get intersection points and ensure they're properly ordered along the cutting line
+      // Get intersection points ordered along the cutting line
       const intersectionPoints = intersections.features.map((f) => f.geometry.coordinates);
       const sortedPoints = this.sortPointsAlongLine(intersectionPoints, cutterLine);
 
@@ -90,10 +85,18 @@ export class SplitService {
         return null;
       }
 
-      const startPoint = sortedPoints[0];
-      const endPoint = sortedPoints[sortedPoints.length - 1];
+      // Select the correct pair of intersection points for splitting.
+      // The cutting line may extend beyond the polygon (the caller extends it
+      // for robustness), producing 4+ intersections (enter/exit/enter/exit).
+      // We pick the consecutive pair whose midpoint lies inside the polygon,
+      // i.e. the segment that truly crosses the polygon interior.
+      const splitPair = this.selectSplitPair(sortedPoints, targetPolygon);
+      if (!splitPair) {
+        return null;
+      }
+      const { startPoint, endPoint } = splitPair;
 
-      // 2. Get the cutting segment between intersection points
+      // 2. Get the cutting segment between the selected intersection points
       const cutterSegment = turf.lineSlice(
         turf.point(startPoint),
         turf.point(endPoint),
@@ -240,6 +243,40 @@ export class SplitService {
       const distB = turf.distance(turf.point(line.geometry.coordinates[0]), turf.point(b));
       return distA - distB;
     });
+  }
+
+  /**
+   * From a sorted list of intersection points, selects the consecutive pair
+   * whose midpoint lies inside the polygon. This correctly handles extended
+   * cutting lines that overshoot the polygon and produce 4+ intersections.
+   *
+   * For a line that enters and exits a convex polygon once, there are 2
+   * intersections and one valid pair. For extended lines the pattern is
+   * enter/exit/enter/exit — we need the pair whose segment is interior.
+   */
+  private selectSplitPair(
+    sortedPoints: Position[],
+    polygon: ReturnType<typeof turf.polygon>,
+  ): { startPoint: Position; endPoint: Position } | null {
+    // For exactly 2 intersections, the choice is trivial.
+    if (sortedPoints.length === 2) {
+      return { startPoint: sortedPoints[0], endPoint: sortedPoints[1] };
+    }
+
+    // For 4+ intersections, check consecutive pairs and pick the one whose
+    // midpoint is inside the polygon — that's the true interior crossing.
+    for (let i = 0; i < sortedPoints.length - 1; i++) {
+      const a = sortedPoints[i];
+      const b = sortedPoints[i + 1];
+      const mid = turf.point([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]);
+
+      if (turf.booleanPointInPolygon(mid, polygon)) {
+        return { startPoint: a, endPoint: b };
+      }
+    }
+
+    // Fallback: no interior pair found (shouldn't happen for a valid split)
+    return null;
   }
 
   /**
