@@ -7,14 +7,15 @@ import LineString from 'ol/geom/LineString';
 import { BehaviorSubject } from 'rxjs';
 import { NotificationService } from './notifications.service';
 
-// Unified tolerance for coordinate comparison in EPSG:4326 degrees.
-// ~1e-8 degrees is approximately 1mm at the equator — suitable for
-// deduplication, point equality, and point-on-line checks.
-const COORD_TOLERANCE = 1e-8;
+// Tolerance for coordinate comparison in EPSG:4326 degrees.
+// 1e-7 degrees ≈ 1.1 cm at the equator — tight enough for land parcels,
+// but loose enough to absorb floating-point drift from EPSG:3857→4326
+// projection transforms and Turf.js intersection computations.
+const COORD_TOLERANCE = 1e-7;
 
 // Tolerance for the triangle-inequality betweenness check (in kilometers),
 // matching the unit returned by turf.distance().
-const DISTANCE_TOLERANCE_KM = 1e-6;
+const DISTANCE_TOLERANCE_KM = 1e-4; // ~10 cm — absorbs FP error in distance sums
 
 interface SplitResult {
   poly1: Position[][];
@@ -247,36 +248,41 @@ export class SplitService {
 
   /**
    * From a sorted list of intersection points, selects the consecutive pair
-   * whose midpoint lies inside the polygon. This correctly handles extended
-   * cutting lines that overshoot the polygon and produce 4+ intersections.
+   * that represents the user's intended cut across the polygon interior.
    *
-   * For a line that enters and exits a convex polygon once, there are 2
-   * intersections and one valid pair. For extended lines the pattern is
-   * enter/exit/enter/exit — we need the pair whose segment is interior.
+   * The cutting line may be extended far beyond the polygon, producing 4+
+   * intersections where extension segments briefly cross the boundary.
+   * We collect ALL consecutive pairs whose midpoint is inside the polygon,
+   * then pick the one with the greatest distance between its two points —
+   * that is the real cut, not a short extension-boundary crossing.
    */
   private selectSplitPair(
     sortedPoints: Position[],
     polygon: ReturnType<typeof turf.polygon>,
   ): { startPoint: Position; endPoint: Position } | null {
-    // For exactly 2 intersections, the choice is trivial.
     if (sortedPoints.length === 2) {
       return { startPoint: sortedPoints[0], endPoint: sortedPoints[1] };
     }
 
-    // For 4+ intersections, check consecutive pairs and pick the one whose
-    // midpoint is inside the polygon — that's the true interior crossing.
+    // Collect all consecutive pairs whose midpoint lies inside the polygon.
+    let bestPair: { startPoint: Position; endPoint: Position } | null = null;
+    let bestDist = -1;
+
     for (let i = 0; i < sortedPoints.length - 1; i++) {
       const a = sortedPoints[i];
       const b = sortedPoints[i + 1];
       const mid = turf.point([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]);
 
       if (turf.booleanPointInPolygon(mid, polygon)) {
-        return { startPoint: a, endPoint: b };
+        const dist = turf.distance(turf.point(a), turf.point(b));
+        if (dist > bestDist) {
+          bestDist = dist;
+          bestPair = { startPoint: a, endPoint: b };
+        }
       }
     }
 
-    // Fallback: no interior pair found (shouldn't happen for a valid split)
-    return null;
+    return bestPair;
   }
 
   /**
@@ -359,20 +365,38 @@ export class SplitService {
    * Finds the edge on which an intersection point lies and returns its
    * insertion index.
    *
-   * Uses turf.booleanPointOnLine for collinearity, then a triangle-inequality
-   * betweenness check in kilometers (matching turf.distance units).
+   * Strategy (in order):
+   *  1. Check if the point coincides with a ring vertex — if so, no
+   *     insertion is needed; return that vertex's preceding edge index.
+   *  2. Test each edge with booleanPointOnLine + triangle-inequality
+   *     betweenness check.
+   *  3. Fallback: find the edge closest to the point (handles FP drift
+   *     from projection transforms that pushes the point slightly off-edge).
    */
   private findInsertionPoint(ring: Position[], point: Position): InsertionPoint | null {
+    const pointFeature = turf.point(point);
+
+    // 1. Check if the point is at an existing ring vertex.
+    //    If so, return the index of the preceding edge so the point is
+    //    "already inserted" at that position in the ring.
+    for (let i = 0; i < ring.length - 1; i++) {
+      if (this.pointsEqual(ring[i], point)) {
+        // Point matches vertex i — use the edge ending at i (i.e. edge i-1),
+        // but since the point already exists, return index i with the exact
+        // vertex coords so the insertion becomes a no-op duplicate that
+        // cleanRing will remove.
+        return { index: Math.max(0, i - 1), point: ring[i] };
+      }
+    }
+
+    // 2. Standard edge check: booleanPointOnLine + betweenness.
     for (let i = 0; i < ring.length - 1; i++) {
       const p1 = ring[i];
       const p2 = ring[i + 1];
 
       const line = turf.lineString([p1, p2]);
-      const pointFeature = turf.point(point);
 
       if (turf.booleanPointOnLine(pointFeature, line, { epsilon: COORD_TOLERANCE })) {
-        // Betweenness check: sum of distances from endpoints to the point
-        // should equal the edge length (within a km-scale tolerance).
         const distP1ToPoint = turf.distance(turf.point(p1), pointFeature);
         const distP2ToPoint = turf.distance(turf.point(p2), pointFeature);
         const distP1ToP2 = turf.distance(turf.point(p1), turf.point(p2));
@@ -381,6 +405,26 @@ export class SplitService {
           return { index: i, point: point };
         }
       }
+    }
+
+    // 3. Fallback: find the nearest edge using point-to-line-segment distance.
+    //    This handles cases where FP drift from coordinate transforms pushes
+    //    the intersection point slightly off the exact edge.
+    let bestEdge = -1;
+    let bestDist = Infinity;
+
+    for (let i = 0; i < ring.length - 1; i++) {
+      const edgeLine = turf.lineString([ring[i], ring[i + 1]]);
+      const dist = turf.pointToLineDistance(pointFeature, edgeLine);
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestEdge = i;
+      }
+    }
+
+    // Accept the nearest edge if the point is within ~1 meter of it.
+    if (bestEdge !== -1 && bestDist < 0.001) {
+      return { index: bestEdge, point: point };
     }
 
     return null;
