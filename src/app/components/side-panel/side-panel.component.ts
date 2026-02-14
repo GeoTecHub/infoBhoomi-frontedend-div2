@@ -1,47 +1,25 @@
 import { CommonModule } from '@angular/common';
-import {
-  Component,
-  EventEmitter,
-  Output,
-  inject,
-  signal,
-  OnDestroy,
-  NgZone,
-} from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
+import { Component, EventEmitter, Output, inject, signal, OnDestroy, NgZone } from '@angular/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { DrawService, SelectedFeatureInfo } from '../../services/draw.service';
 import { MapService } from '../../services/map.service';
 import { NotificationService } from '../../services/notifications.service';
 import { SidebarControlService } from '../../services/sidebar-control.service';
-import { FeatureNotAvailableComponent } from '../dialogs/feature-not-available/feature-not-available.component';
-import { BuildingTabComponent } from './building-tab/building-tab.component';
-import { ExternalTabComponent } from './external-tab/external-tab.component';
-import { HomeTabComponent } from './home-tab/home-tab.component';
-import { LandTabComponent } from './land-tab/land-tab.component';
-import { LegalSpacesTabComponent } from './legal-spaces-tab/legal-spaces-tab.component';
+import { BuildingInfoPanelComponent } from './building-info-panel/building-info-panel.component';
+import { LandInfoPanelComponent } from './land-info-panel/land-info-panel.component';
 
-type SidebarTab = 'home' | 'land' | 'building' | 'legal' | 'external';
+type SidebarTab = 'land' | 'building';
 
 @Component({
   selector: 'app-side-panel',
   standalone: true,
-  imports: [
-    CommonModule,
-    BuildingTabComponent,
-    HomeTabComponent,
-    LandTabComponent,
-    LegalSpacesTabComponent,
-    ExternalTabComponent,
-  ],
+  imports: [CommonModule, BuildingInfoPanelComponent, LandInfoPanelComponent],
   templateUrl: './side-panel.component.html',
   styleUrl: './side-panel.component.css',
 })
 export class SidePanelComponent implements OnDestroy {
-  private dialog = inject(MatDialog);
   private ngZone = inject(NgZone);
-  private dialogRef: any;
 
   @Output() emitExtend = new EventEmitter<boolean>();
 
@@ -51,7 +29,7 @@ export class SidePanelComponent implements OnDestroy {
   selected_featureInfo: SelectedFeatureInfo | null = null;
 
   // Sidebar state (signals — matching 3D Cadastre pattern)
-  activeSidebarTab = signal<SidebarTab>('home');
+  activeSidebarTab = signal<SidebarTab>('land');
   isSidebarClosed = signal(false);
   sidebarWidth = signal(340);
   private _resizing = false;
@@ -68,7 +46,7 @@ export class SidePanelComponent implements OnDestroy {
     this.drawService.selectedFeatureInfo$.pipe(takeUntil(this.destroy$)).subscribe((info) => {
       if (!info || (Array.isArray(info) && info.length === 0) || info.length > 1) {
         this.selected_feature_ID = null;
-        this.activeSidebarTab.set('home');
+        this.activeSidebarTab.set('land');
         this.removeExtend();
         return;
       }
@@ -96,20 +74,16 @@ export class SidePanelComponent implements OnDestroy {
           this.activeSidebarTab.set('building');
           this.makeExtend();
           break;
-        case 7:
-          this.activeSidebarTab.set('legal');
-          this.makeExtend();
-          break;
         default:
-          this.activeSidebarTab.set('home');
-          this.removeExtend();
+          this.activeSidebarTab.set('land');
+          this.makeExtend();
       }
     });
 
     // Handle explicit deselection
     this.drawService.deselectedFeature$.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.selected_feature_ID = null;
-      this.activeSidebarTab.set('home');
+      this.activeSidebarTab.set('land');
       this.removeExtend();
     });
 
@@ -120,59 +94,18 @@ export class SidePanelComponent implements OnDestroy {
   }
 
   switchTab(tab: SidebarTab): void {
-    if (tab === 'legal' || tab === 'external') {
-      this.openProAlert();
-      return;
-    }
-
-    if (tab === 'home') {
-      this.activeSidebarTab.set(tab);
-      this.removeExtend();
-      return;
-    }
-
-    // Land/Building tabs require a feature selection
-    if (this.selected_feature_ID) {
-      this.activeSidebarTab.set(tab);
-      this.makeExtend();
-    } else {
-      this.notificationService.showError('Please select an item');
-    }
+    this.activeSidebarTab.set(tab);
+    this.makeExtend();
   }
 
   isTabEnabled(tab: SidebarTab): boolean {
     switch (tab) {
-      case 'home':
-        return true;
       case 'land':
-        return (
-          (this.selected_layer_ID === 1 || this.selected_layer_ID === 6) &&
-          !!this.selected_feature_ID
-        );
+        return true;
       case 'building':
-        return (
-          (this.selected_layer_ID === 3 || this.selected_layer_ID === 12) &&
-          !!this.selected_feature_ID
-        );
-      case 'legal':
-      case 'external':
-        return false;
+        return true;
       default:
         return false;
-    }
-  }
-
-  openProAlert(): void {
-    if (this.dialogRef) {
-      this.dialogRef.close();
-      this.dialogRef = null;
-    } else {
-      this.dialogRef = this.dialog.open(FeatureNotAvailableComponent, {
-        minWidth: '480px',
-      });
-      this.dialogRef.afterClosed().subscribe(() => {
-        this.dialogRef = null;
-      });
     }
   }
 

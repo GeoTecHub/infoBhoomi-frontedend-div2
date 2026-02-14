@@ -3,13 +3,24 @@
   <div class="resize-handle" (mousedown)="onResizeStart($event)"></div>
 
   <!-- Toggle Button -->
-  <button class="sidebar-toggle" (click)="toggleSidebar()" [attr.aria-label]="isSidebarClosed() ? 'Open sidebar' : 'Close sidebar'">
-    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-      fill="none" stroke="currentColor" stroke-width="2">
+  <button
+    class="sidebar-toggle"
+    (click)="toggleSidebar()"
+    [attr.aria-label]="isSidebarClosed() ? 'Open sidebar' : 'Close sidebar'"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="14"
+      height="14"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+    >
       @if (isSidebarClosed()) {
-        <polyline points="9 18 15 12 9 6"/>
+        <polyline points="9 18 15 12 9 6" />
       } @else {
-        <polyline points="15 18 9 12 15 6"/>
+        <polyline points="15 18 9 12 15 6" />
       }
     </svg>
   </button>
@@ -17,106 +28,63 @@
   @if (!isSidebarClosed()) {
     <!-- Tab Bar -->
     <div class="sidebar-tab-bar">
-      <!-- Home -->
-      <button class="sidebar-tab"
-        [class.active]="activeSidebarTab() === 'home'"
-        (click)="switchTab('home')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <polyline points="9 22 9 12 15 12 15 22"/>
-        </svg>
-        <span>Home</span>
-      </button>
-
       <!-- Land -->
-      <button class="sidebar-tab"
+      <button
+        class="sidebar-tab"
         [class.active]="activeSidebarTab() === 'land'"
-        [class.disabled]="!isTabEnabled('land')"
-        (click)="switchTab('land')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-          <circle cx="12" cy="10" r="3"/>
+        (click)="switchTab('land')"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+          <circle cx="12" cy="10" r="3" />
         </svg>
         <span>Land</span>
       </button>
 
-      <!-- Buildings -->
-      <button class="sidebar-tab"
+      <!-- Building -->
+      <button
+        class="sidebar-tab"
         [class.active]="activeSidebarTab() === 'building'"
-        [class.disabled]="!isTabEnabled('building')"
-        (click)="switchTab('building')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 21h18"/>
-          <path d="M5 21V7l7-4 7 4v14"/>
-          <rect x="9" y="9" width="2" height="2"/>
-          <rect x="13" y="9" width="2" height="2"/>
-          <rect x="9" y="13" width="2" height="2"/>
-          <rect x="13" y="13" width="2" height="2"/>
+        (click)="switchTab('building')"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M3 21h18" />
+          <path d="M5 21V7l7-4 7 4v14" />
+          <rect x="9" y="9" width="2" height="2" />
+          <rect x="13" y="9" width="2" height="2" />
+          <rect x="9" y="13" width="2" height="2" />
+          <rect x="13" y="13" width="2" height="2" />
         </svg>
-        <span>Buildings</span>
-      </button>
-
-      <!-- Legal Spaces -->
-      <button class="sidebar-tab"
-        [class.active]="activeSidebarTab() === 'legal'"
-        [class.disabled]="!isTabEnabled('legal')"
-        (click)="switchTab('legal')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="16" y1="13" x2="8" y2="13"/>
-          <line x1="16" y1="17" x2="8" y2="17"/>
-        </svg>
-        <span>Legal</span>
-      </button>
-
-      <!-- External -->
-      <button class="sidebar-tab"
-        [class.active]="activeSidebarTab() === 'external'"
-        [class.disabled]="!isTabEnabled('external')"
-        (click)="switchTab('external')">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
-          fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-          <polyline points="15 3 21 3 21 9"/>
-          <line x1="10" y1="14" x2="21" y2="3"/>
-        </svg>
-        <span>External</span>
+        <span>Building</span>
       </button>
     </div>
 
     <!-- Tab Content -->
-    @if (activeSidebarTab() === 'home') {
-      <div class="sidebar-tab-content">
-        <app-home-tab></app-home-tab>
-      </div>
-    }
-
     @if (activeSidebarTab() === 'land') {
       <div class="sidebar-tab-content">
-        <app-land-tab [selected_feature_ID]="selected_feature_ID"></app-land-tab>
+        <app-land-info-panel></app-land-info-panel>
       </div>
     }
 
     @if (activeSidebarTab() === 'building') {
       <div class="sidebar-tab-content">
-        <app-building-tab [selected_feature_ID]="selected_feature_ID"></app-building-tab>
-      </div>
-    }
-
-    @if (activeSidebarTab() === 'legal') {
-      <div class="sidebar-tab-content">
-        <app-legal-spaces-tab></app-legal-spaces-tab>
-      </div>
-    }
-
-    @if (activeSidebarTab() === 'external') {
-      <div class="sidebar-tab-content">
-        <app-external-tab></app-external-tab>
+        <app-building-info-panel></app-building-info-panel>
       </div>
     }
   }
