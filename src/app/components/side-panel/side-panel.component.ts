@@ -1,12 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-
-import { EventEmitter, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Output,
+  inject,
+  signal,
+  OnDestroy,
+  NgZone,
+} from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { DrawService, SelectedFeatureInfo } from '../../services/draw.service'; // Adjust path
+import { DrawService, SelectedFeatureInfo } from '../../services/draw.service';
 import { MapService } from '../../services/map.service';
 import { NotificationService } from '../../services/notifications.service';
 import { SidebarControlService } from '../../services/sidebar-control.service';
@@ -17,12 +22,13 @@ import { HomeTabComponent } from './home-tab/home-tab.component';
 import { LandTabComponent } from './land-tab/land-tab.component';
 import { LegalSpacesTabComponent } from './legal-spaces-tab/legal-spaces-tab.component';
 
+type SidebarTab = 'home' | 'land' | 'building' | 'legal' | 'external';
+
 @Component({
   selector: 'app-side-panel',
   standalone: true,
   imports: [
     CommonModule,
-    MatIconModule,
     BuildingTabComponent,
     HomeTabComponent,
     LandTabComponent,
@@ -32,8 +38,9 @@ import { LegalSpacesTabComponent } from './legal-spaces-tab/legal-spaces-tab.com
   templateUrl: './side-panel.component.html',
   styleUrl: './side-panel.component.css',
 })
-export class SidePanelComponent {
-  dialog = inject(MatDialog);
+export class SidePanelComponent implements OnDestroy {
+  private dialog = inject(MatDialog);
+  private ngZone = inject(NgZone);
   private dialogRef: any;
 
   @Output() emitExtend = new EventEmitter<boolean>();
@@ -41,10 +48,14 @@ export class SidePanelComponent {
   selected_feature_ID: any = '';
   selected_layer_ID: any = '';
   private destroy$ = new Subject<void>();
-  selected_featureInfo: SelectedFeatureInfo | null = null; // Initialize to null
+  selected_featureInfo: SelectedFeatureInfo | null = null;
 
-  activeTab: number = 1;
-  isSidebarClosed: boolean = false;
+  // Sidebar state (signals — matching 3D Cadastre pattern)
+  activeSidebarTab = signal<SidebarTab>('home');
+  isSidebarClosed = signal(false);
+  sidebarWidth = signal(340);
+  private _resizing = false;
+
   extendWidth = false;
 
   constructor(
@@ -56,14 +67,12 @@ export class SidePanelComponent {
     // Handle feature selection changes
     this.drawService.selectedFeatureInfo$.pipe(takeUntil(this.destroy$)).subscribe((info) => {
       if (!info || (Array.isArray(info) && info.length === 0) || info.length > 1) {
-        // Feature deselected
         this.selected_feature_ID = null;
-        this.activeTab = 1;
+        this.activeSidebarTab.set('home');
         this.removeExtend();
         return;
       }
 
-      // If info is an array, use the first element
       const featureInfo = Array.isArray(info) ? info[0] : info;
 
       if (typeof featureInfo.featureId !== 'number' || isNaN(featureInfo.featureId)) {
@@ -79,75 +88,134 @@ export class SidePanelComponent {
       switch (this.selected_layer_ID) {
         case 1:
         case 6:
-          this.activeTab = 2; // Land tab
+          this.activeSidebarTab.set('land');
           this.makeExtend();
           break;
         case 3:
         case 12:
-          this.activeTab = 3; // Building tab
+          this.activeSidebarTab.set('building');
           this.makeExtend();
           break;
         case 7:
-          this.activeTab = 4; // Legal spaces tab
+          this.activeSidebarTab.set('legal');
           this.makeExtend();
           break;
         default:
-          this.activeTab = 1; // Default to Home
+          this.activeSidebarTab.set('home');
           this.removeExtend();
       }
     });
 
-    // Handle explicit deselection (e.g., clicking on blank space)
+    // Handle explicit deselection
     this.drawService.deselectedFeature$.pipe(takeUntil(this.destroy$)).subscribe(() => {
       this.selected_feature_ID = null;
-      this.activeTab = 1;
+      this.activeSidebarTab.set('home');
       this.removeExtend();
     });
 
     // Handle sidebar open/close events
     this.sidebarService.isClosed$.pipe(takeUntil(this.destroy$)).subscribe((closed) => {
-      this.isSidebarClosed = closed;
+      this.isSidebarClosed.set(closed);
     });
   }
 
-  selectTab(tabIndex: number) {
-    if (this.selected_feature_ID || tabIndex === 1) {
-      this.activeTab = tabIndex;
+  switchTab(tab: SidebarTab): void {
+    if (tab === 'legal' || tab === 'external') {
+      this.openProAlert();
+      return;
+    }
+
+    if (tab === 'home') {
+      this.activeSidebarTab.set(tab);
+      this.removeExtend();
+      return;
+    }
+
+    // Land/Building tabs require a feature selection
+    if (this.selected_feature_ID) {
+      this.activeSidebarTab.set(tab);
+      this.makeExtend();
     } else {
       this.notificationService.showError('Please select an item');
     }
   }
 
-  openProAlert() {
+  isTabEnabled(tab: SidebarTab): boolean {
+    switch (tab) {
+      case 'home':
+        return true;
+      case 'land':
+        return (
+          (this.selected_layer_ID === 1 || this.selected_layer_ID === 6) &&
+          !!this.selected_feature_ID
+        );
+      case 'building':
+        return (
+          (this.selected_layer_ID === 3 || this.selected_layer_ID === 12) &&
+          !!this.selected_feature_ID
+        );
+      case 'legal':
+      case 'external':
+        return false;
+      default:
+        return false;
+    }
+  }
+
+  openProAlert(): void {
     if (this.dialogRef) {
-      // If dialog is already open, close it
       this.dialogRef.close();
-      this.dialogRef = null; // Reset the reference
+      this.dialogRef = null;
     } else {
-      // Open a new dialog if it's not already open
       this.dialogRef = this.dialog.open(FeatureNotAvailableComponent, {
         minWidth: '480px',
       });
-
-      // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
       });
     }
   }
 
-  toggleSidebar() {
+  toggleSidebar(): void {
     this.sidebarService.toggleSidebar();
   }
 
-  makeExtend() {
+  makeExtend(): void {
     this.extendWidth = true;
     this.emitExtend.emit(true);
   }
 
-  removeExtend() {
+  removeExtend(): void {
     this.extendWidth = false;
     this.emitExtend.emit(false);
+  }
+
+  // ─── Sidebar Resize (from 3D Cadastre) ─────────────────────
+  onResizeStart(event: MouseEvent): void {
+    event.preventDefault();
+    this._resizing = true;
+    const startX = event.clientX;
+    const startWidth = this.sidebarWidth();
+
+    const onMove = (e: MouseEvent) => {
+      if (!this._resizing) return;
+      const delta = startX - e.clientX;
+      const newWidth = Math.max(240, Math.min(600, startWidth + delta));
+      this.ngZone.run(() => this.sidebarWidth.set(newWidth));
+    };
+
+    const onUp = () => {
+      this._resizing = false;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
   }
 
   ngOnDestroy(): void {
