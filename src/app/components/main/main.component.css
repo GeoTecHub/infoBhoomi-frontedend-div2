@@ -223,10 +223,10 @@
 }
 
 .side-panel-container {
-  /* background-color: var(--color-neutral-d1); */
   overflow-x: hidden;
+  overflow-y: hidden;
   padding-bottom: 0;
-  width: 240px;
+  width: 340px;
   z-index: 2;
   flex-shrink: 0;
   transition: width 0.15s ease;
