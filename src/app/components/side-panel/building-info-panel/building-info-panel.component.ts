@@ -272,6 +272,7 @@ export class BuildingInfoPanelComponent {
     if (!info) return [];
     return info.rrr.entries.map((e) => ({
       ...e,
+      documents: [...(e.documents || []).map((d) => ({ ...d }))],
       restrictions: [...e.restrictions.map((r) => ({ ...r }))],
       responsibilities: [...e.responsibilities.map((r) => ({ ...r }))],
     }));
@@ -294,10 +295,16 @@ export class BuildingInfoPanelComponent {
       validFrom: new Date().toISOString().split('T')[0],
       validTo: '',
       documentRef: '',
+      documents: [],
       restrictions: [],
       responsibilities: [],
     });
     this.emitRRRUpdate(entries);
+  }
+
+  confirmRemoveRRREntry(index: number): void {
+    if (!confirm('Are you sure you want to delete this RRR entry?')) return;
+    this.removeRRREntry(index);
   }
 
   removeRRREntry(index: number): void {
@@ -442,6 +449,40 @@ export class BuildingInfoPanelComponent {
     this.emitRRRUpdate(entries);
   }
 
+  // ─── Document uploads ───────────────────────────────────────
+
+  onDocumentUpload(entryIndex: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const entries = this.cloneEntries();
+    if (!entries[entryIndex]) return;
+    if (!entries[entryIndex].documents) entries[entryIndex].documents = [];
+    for (let i = 0; i < input.files.length; i++) {
+      const f = input.files[i];
+      entries[entryIndex].documents.push({
+        name: f.name,
+        type: f.type,
+        size: f.size,
+        file: f,
+      });
+    }
+    this.emitRRRUpdate(entries);
+    input.value = '';
+  }
+
+  removeDocument(entryIndex: number, docIndex: number): void {
+    const entries = this.cloneEntries();
+    if (!entries[entryIndex]?.documents?.[docIndex]) return;
+    entries[entryIndex].documents.splice(docIndex, 1);
+    this.emitRRRUpdate(entries);
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  }
+
   // ─── Unit Editing ──────────────────────────────────────────
 
   toggleUnitExpand(unitId: string): void {
@@ -529,6 +570,7 @@ export class BuildingInfoPanelComponent {
       validFrom: new Date().toISOString().split('T')[0],
       validTo: '',
       documentRef: '',
+      documents: [],
       restrictions: [],
       responsibilities: [],
     });

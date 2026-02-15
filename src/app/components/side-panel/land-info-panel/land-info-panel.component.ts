@@ -187,11 +187,53 @@ export class LandInfoPanelComponent {
         validFrom: new Date().toISOString().split('T')[0],
         validTo: '',
         documentRef: '',
+        documents: [],
         restrictions: [],
         responsibilities: [],
       },
     ];
     this.rrrChanged.emit({ entries });
+  }
+
+  // --- Document uploads ---
+
+  onDocumentUpload(entryIndex: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const info = this.parcelInfo();
+    if (!info) return;
+    const entries = info.rrr.entries.map((e, i) => {
+      if (i !== entryIndex) return e;
+      const docs = [...(e.documents || [])];
+      for (let fi = 0; fi < input.files!.length; fi++) {
+        const f = input.files![fi];
+        docs.push({ name: f.name, type: f.type, size: f.size, file: f });
+      }
+      return { ...e, documents: docs };
+    });
+    this.rrrChanged.emit({ entries });
+    input.value = '';
+  }
+
+  removeDocument(entryIndex: number, docIndex: number): void {
+    const info = this.parcelInfo();
+    if (!info) return;
+    const entries = info.rrr.entries.map((e, i) => {
+      if (i !== entryIndex) return e;
+      return { ...e, documents: (e.documents || []).filter((_, di) => di !== docIndex) };
+    });
+    this.rrrChanged.emit({ entries });
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  }
+
+  confirmRemoveRRREntry(index: number): void {
+    if (!confirm('Are you sure you want to delete this RRR entry?')) return;
+    this.removeRRREntry(index);
   }
 
   removeRRREntry(index: number): void {
@@ -312,7 +354,9 @@ export class LandInfoPanelComponent {
 
   formatArea(value: number | undefined): string {
     if (!value) return '0 m²';
-    return value >= 10000 ? `${(value / 10000).toFixed(2)} ha` : `${value.toLocaleString()} m²`;
+    const sqm = value.toLocaleString();
+    const acres = (value * 0.000247105).toFixed(4);
+    return `${sqm} m² (${acres} ac)`;
   }
 
   formatCurrency(value: number | undefined): string {
