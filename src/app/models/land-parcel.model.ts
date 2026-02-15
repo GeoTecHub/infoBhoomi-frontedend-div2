@@ -14,7 +14,7 @@ import {
   SURVEY_METHOD_DISPLAY,
 } from './building-info.model';
 
-import type { RRREntry, RRRInfo } from './building-info.model';
+import type { RRRDocument, RRREntry, RRRInfo } from './building-info.model';
 
 // Re-export shared types for convenience
 export {
@@ -30,7 +30,7 @@ export {
   SURVEY_METHOD_DISPLAY,
 };
 
-export type { RRREntry, RRRInfo };
+export type { RRRDocument, RRREntry, RRRInfo };
 
 /**
  * Land Use Classification (LADM LA_LandUseClassification)
@@ -343,6 +343,7 @@ export function createDefaultLandParcel(parcelId?: string): LandParcelInfo {
           validFrom: new Date().toISOString().split('T')[0],
           validTo: '',
           documentRef: '',
+          documents: [],
           restrictions: [],
           responsibilities: [],
         },

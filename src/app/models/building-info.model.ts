@@ -302,6 +302,13 @@ export interface RRRResponsibility {
   validTo: string; // ISO 8601
 }
 
+export interface RRRDocument {
+  name: string;
+  type: string; // MIME type
+  size: number; // bytes
+  file?: File; // client-side only, not serialised
+}
+
 export interface RRREntry {
   rrrId: string;
   type: RightType;
@@ -310,6 +317,7 @@ export interface RRREntry {
   validFrom: string;
   validTo: string;
   documentRef: string;
+  documents: RRRDocument[];
   restrictions: RRRRestriction[];
   responsibilities: RRRResponsibility[];
 }
@@ -469,6 +477,7 @@ export function extractBuildingInfo(cityjson: any, objectId?: string): BuildingI
               validFrom: attrs.registrationDate || '2023-01-01',
               validTo: '',
               documentRef: '',
+              documents: [],
               restrictions: [],
               responsibilities: [],
             },
@@ -528,6 +537,7 @@ export function extractBuildingInfo(cityjson: any, objectId?: string): BuildingI
           validFrom: attributes.registrationDate || '2023-01-01',
           validTo: '',
           documentRef: attributes.documentRef || '',
+          documents: [],
           restrictions: [
             {
               type: RestrictionType.RES_HGT,

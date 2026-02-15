@@ -361,14 +361,13 @@
                 <tbody>
                   @if (info.rrr.entries.length) {
                     @for (entry of info.rrr.entries; track entry.rrrId; let i = $index) {
-                      <tr class="rrr-data-row" (click)="toggleRRRExpand(entry.rrrId)">
+                      <tr class="rrr-data-row">
                         <td>
                           <input
                             type="text"
                             class="field-input rrr-cell-input"
                             [ngModel]="entry.holder"
                             (ngModelChange)="onRRRFieldChange(i, 'holder', $event)"
-                            (click)="$event.stopPropagation()"
                             placeholder="Name"
                           />
                         </td>
@@ -377,7 +376,6 @@
                             class="field-select rrr-cell-select"
                             [ngModel]="entry.type"
                             (ngModelChange)="onRRRFieldChange(i, 'type', $event)"
-                            (click)="$event.stopPropagation()"
                           >
                             @for (opt of rightTypeOptions; track opt) {
                               <option [value]="opt">{{ rightTypeDisplayMap[opt] }}</option>
@@ -390,15 +388,32 @@
                             class="field-input rrr-cell-input rrr-share-input"
                             [ngModel]="entry.share"
                             (ngModelChange)="onRRRFieldChange(i, 'share', $event)"
-                            (click)="$event.stopPropagation()"
                             min="0"
                             max="100"
                           />
                         </td>
-                        <td>
+                        <td class="rrr-actions-cell">
+                          <button
+                            class="rrr-expand-btn"
+                            [class.expanded]="expandedRRRId() === entry.rrrId"
+                            (click)="toggleRRRExpand(entry.rrrId)"
+                            title="Show details"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              stroke-width="2"
+                            >
+                              <polyline points="6 9 12 15 18 9" />
+                            </svg>
+                          </button>
                           <button
                             class="rrr-remove-btn"
-                            (click)="removeRRREntry(i); $event.stopPropagation()"
+                            (click)="confirmRemoveRRREntry(i)"
                             title="Delete"
                           >
                             &times;
@@ -435,7 +450,7 @@
                                 />
                               </div>
                               <div class="rrr-inline-field">
-                                <span class="label">Document:</span
+                                <span class="label">Document Ref:</span
                                 ><input
                                   type="text"
                                   class="field-input"
@@ -445,6 +460,52 @@
                                 />
                               </div>
                             </div>
+                            <div class="rrr-documents-section">
+                              <div class="rrr-sub-header">
+                                <span class="rrr-sub-title">Documents</span>
+                                <label class="rrr-upload-btn">
+                                  + Upload
+                                  <input
+                                    type="file"
+                                    accept=".pdf,.docx,.doc"
+                                    multiple
+                                    hidden
+                                    (change)="onDocumentUpload(i, $event)"
+                                  />
+                                </label>
+                              </div>
+                              @if (entry.documents?.length) {
+                                @for (doc of entry.documents; track di; let di = $index) {
+                                  <div class="rrr-doc-chip">
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      width="12"
+                                      height="12"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      stroke-width="2"
+                                    >
+                                      <path
+                                        d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                                      />
+                                      <polyline points="14 2 14 8 20 8" />
+                                    </svg>
+                                    <span class="doc-name">{{ doc.name }}</span>
+                                    <span class="doc-size">({{ formatFileSize(doc.size) }})</span>
+                                    <button
+                                      class="rrr-remove-btn"
+                                      (click)="removeDocument(i, di)"
+                                      title="Remove"
+                                    >
+                                      &times;
+                                    </button>
+                                  </div>
+                                }
+                              } @else {
+                                <p class="empty-message">No documents attached</p>
+                              }
+                            </div>
                             <div class="rrr-sub-section">
                               <div class="rrr-sub-header">
                                 <span class="rrr-sub-title">Restrictions</span
@@ -453,7 +514,7 @@
                                 </button>
                               </div>
                               @if (entry.restrictions.length) {
-                                @for (r of entry.restrictions; track r.type; let ri = $index) {
+                                @for (r of entry.restrictions; track ri; let ri = $index) {
                                   <div class="rrr-sub-row">
                                     <select
                                       class="field-select rrr-mini-select"
@@ -515,11 +576,7 @@
                                 </button>
                               </div>
                               @if (entry.responsibilities.length) {
-                                @for (
-                                  resp of entry.responsibilities;
-                                  track resp.type;
-                                  let rsi = $index
-                                ) {
+                                @for (resp of entry.responsibilities; track rsi; let rsi = $index) {
                                   <div class="rrr-sub-row">
                                     <select
                                       class="field-select rrr-mini-select"
