@@ -28,6 +28,27 @@
   @if (!isSidebarClosed()) {
     <!-- Tab Bar -->
     <div class="sidebar-tab-bar">
+      <!-- Home -->
+      <button
+        class="sidebar-tab"
+        [class.active]="activeSidebarTab() === 'home'"
+        (click)="switchTab('home')"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M3 12l9-9 9 9" />
+          <path d="M5 10v10a1 1 0 0 0 1 1h3v-6h6v6h3a1 1 0 0 0 1-1V10" />
+        </svg>
+        <span>Home</span>
+      </button>
+
       <!-- Land -->
       <button
         class="sidebar-tab"
@@ -76,6 +97,12 @@
     </div>
 
     <!-- Tab Content -->
+    @if (activeSidebarTab() === 'home') {
+      <div class="sidebar-tab-content">
+        <app-home-tab></app-home-tab>
+      </div>
+    }
+
     @if (activeSidebarTab() === 'land') {
       <div class="sidebar-tab-content">
         <app-land-info-panel [parcelInfo]="currentLandParcelInfo()"></app-land-info-panel>

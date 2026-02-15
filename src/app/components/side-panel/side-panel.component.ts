@@ -36,14 +36,15 @@ import { MapService } from '../../services/map.service';
 import { NotificationService } from '../../services/notifications.service';
 import { SidebarControlService } from '../../services/sidebar-control.service';
 import { BuildingInfoPanelComponent } from './building-info-panel/building-info-panel.component';
+import { HomeTabComponent } from './home-tab/home-tab.component';
 import { LandInfoPanelComponent } from './land-info-panel/land-info-panel.component';
 
-type SidebarTab = 'land' | 'building';
+type SidebarTab = 'home' | 'land' | 'building';
 
 @Component({
   selector: 'app-side-panel',
   standalone: true,
-  imports: [CommonModule, BuildingInfoPanelComponent, LandInfoPanelComponent],
+  imports: [CommonModule, BuildingInfoPanelComponent, HomeTabComponent, LandInfoPanelComponent],
   templateUrl: './side-panel.component.html',
   styleUrl: './side-panel.component.css',
 })
@@ -58,7 +59,7 @@ export class SidePanelComponent implements OnDestroy {
   selected_featureInfo: SelectedFeatureInfo | null = null;
 
   // Sidebar state (signals — matching 3D Cadastre pattern)
-  activeSidebarTab = signal<SidebarTab>('land');
+  activeSidebarTab = signal<SidebarTab>('home');
   isSidebarClosed = signal(false);
   sidebarWidth = signal(340);
   private _resizing = false;
@@ -83,7 +84,7 @@ export class SidePanelComponent implements OnDestroy {
         this.currentLandParcelInfo.set(null);
         this.currentBuildingInfo.set(null);
         this.buildingModelLoaded.set(false);
-        this.activeSidebarTab.set('land');
+        this.activeSidebarTab.set('home');
         this.removeExtend();
         return;
       }
@@ -132,7 +133,7 @@ export class SidePanelComponent implements OnDestroy {
       this.currentLandParcelInfo.set(null);
       this.currentBuildingInfo.set(null);
       this.buildingModelLoaded.set(false);
-      this.activeSidebarTab.set('land');
+      this.activeSidebarTab.set('home');
       this.removeExtend();
     });
 
@@ -149,6 +150,8 @@ export class SidePanelComponent implements OnDestroy {
 
   isTabEnabled(tab: SidebarTab): boolean {
     switch (tab) {
+      case 'home':
+        return true;
       case 'land':
         return true;
       case 'building':
