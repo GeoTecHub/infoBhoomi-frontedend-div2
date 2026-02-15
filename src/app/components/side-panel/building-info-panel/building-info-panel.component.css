@@ -664,6 +664,29 @@
   padding: 0.2rem 0.3rem;
 }
 
+.rrr-validity-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+  padding-left: 0.25rem;
+}
+
+.rrr-validity-row .label {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.rrr-validity-row input[type='date'] {
+  max-width: 120px;
+}
+
+.rrr-validity-row span:not(.label) {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
 .rrr-remove-btn {
   display: flex;
   align-items: center;
