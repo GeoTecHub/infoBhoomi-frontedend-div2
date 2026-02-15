@@ -78,13 +78,16 @@
     <!-- Tab Content -->
     @if (activeSidebarTab() === 'land') {
       <div class="sidebar-tab-content">
-        <app-land-info-panel></app-land-info-panel>
+        <app-land-info-panel [parcelInfo]="currentLandParcelInfo()"></app-land-info-panel>
       </div>
     }
 
     @if (activeSidebarTab() === 'building') {
       <div class="sidebar-tab-content">
-        <app-building-info-panel></app-building-info-panel>
+        <app-building-info-panel
+          [buildingInfo]="currentBuildingInfo()"
+          [modelLoaded]="buildingModelLoaded()"
+        ></app-building-info-panel>
       </div>
     }
   }
