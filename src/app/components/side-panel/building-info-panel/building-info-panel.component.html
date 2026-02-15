@@ -1736,29 +1736,29 @@
             <table class="info-table">
               <tr>
                 <td class="label">Assessed Value</td>
-                <td class="value">{{ formatCurrency(info.taxValuation?.assessedValue) }}</td>
+                <td class="value">{{ formatCurrency(info.taxValuation.assessedValue) }}</td>
               </tr>
               <tr>
                 <td class="label">Market Value</td>
-                <td class="value">{{ formatCurrency(info.taxValuation?.marketValue) }}</td>
+                <td class="value">{{ formatCurrency(info.taxValuation.marketValue) }}</td>
               </tr>
               <tr>
                 <td class="label">Annual Tax</td>
-                <td class="value">{{ formatCurrency(info.taxValuation?.annualTax) }}</td>
+                <td class="value">{{ formatCurrency(info.taxValuation.annualTax) }}</td>
               </tr>
               <tr>
                 <td class="label">Last Assessment</td>
-                <td class="value">{{ info.taxValuation?.lastAssessmentDate }}</td>
+                <td class="value">{{ info.taxValuation.lastAssessmentDate }}</td>
               </tr>
               <tr>
                 <td class="label">Tax Status</td>
                 <td class="value">
                   <span
                     class="badge"
-                    [class.badge-success]="info.taxValuation?.taxStatus === 'paid'"
-                    [class.badge-warning]="info.taxValuation?.taxStatus === 'pending'"
-                    [class.badge-error]="info.taxValuation?.taxStatus === 'overdue'"
-                    >{{ info.taxValuation?.taxStatus }}</span
+                    [class.badge-success]="info.taxValuation.taxStatus === 'paid'"
+                    [class.badge-warning]="info.taxValuation.taxStatus === 'pending'"
+                    [class.badge-error]="info.taxValuation.taxStatus === 'overdue'"
+                    >{{ info.taxValuation.taxStatus }}</span
                   >
                 </td>
               </tr>
