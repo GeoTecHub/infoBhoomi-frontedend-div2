@@ -291,11 +291,15 @@ export interface SpatialInfo {
 export interface RRRRestriction {
   type: RestrictionType;
   description: string;
+  validFrom: string; // ISO 8601
+  validTo: string; // ISO 8601
 }
 
 export interface RRRResponsibility {
   type: ResponsibilityType;
   description: string;
+  validFrom: string; // ISO 8601
+  validTo: string; // ISO 8601
 }
 
 export interface RRREntry {
@@ -524,10 +528,27 @@ export function extractBuildingInfo(cityjson: any, objectId?: string): BuildingI
           validFrom: attributes.registrationDate || '2023-01-01',
           validTo: '',
           documentRef: attributes.documentRef || '',
-          restrictions: [{ type: RestrictionType.RES_HGT, description: 'Max 40m building height' }],
+          restrictions: [
+            {
+              type: RestrictionType.RES_HGT,
+              description: 'Max 40m building height',
+              validFrom: '',
+              validTo: '',
+            },
+          ],
           responsibilities: [
-            { type: ResponsibilityType.RSP_TAX, description: 'Annual property tax' },
-            { type: ResponsibilityType.RSP_INS, description: 'Building insurance required' },
+            {
+              type: ResponsibilityType.RSP_TAX,
+              description: 'Annual property tax',
+              validFrom: '',
+              validTo: '',
+            },
+            {
+              type: ResponsibilityType.RSP_INS,
+              description: 'Building insurance required',
+              validFrom: '',
+              validTo: '',
+            },
           ],
         },
       ],

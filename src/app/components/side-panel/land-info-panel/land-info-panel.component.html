@@ -203,28 +203,12 @@
             <table class="info-table editable-table">
               <tr>
                 <td class="label">Area</td>
-                <td class="value">
-                  <input
-                    type="number"
-                    class="field-input"
-                    [ngModel]="parcelInfo()!.spatial.area"
-                    (ngModelChange)="onSpatialFieldChange('area', $event)"
-                    min="0"
-                  />
-                  m²
-                </td>
+                <td class="value read-only">{{ formatArea(parcelInfo()!.spatial.area) }}</td>
               </tr>
               <tr>
                 <td class="label">Perimeter</td>
-                <td class="value">
-                  <input
-                    type="number"
-                    class="field-input"
-                    [ngModel]="parcelInfo()!.spatial.perimeter"
-                    (ngModelChange)="onSpatialFieldChange('perimeter', $event)"
-                    min="0"
-                  />
-                  m
+                <td class="value read-only">
+                  {{ parcelInfo()!.spatial.perimeter | number: '1.2-2' }} m
                 </td>
               </tr>
               <tr>
@@ -735,6 +719,26 @@
                                       &times;
                                     </button>
                                   </div>
+                                  <div class="rrr-validity-row">
+                                    <span class="label">Valid:</span>
+                                    <input
+                                      type="date"
+                                      class="field-input rrr-mini-input"
+                                      [ngModel]="r.validFrom"
+                                      (ngModelChange)="
+                                        onRestrictionChange(i, ri, 'validFrom', $event)
+                                      "
+                                    />
+                                    <span>&ndash;</span>
+                                    <input
+                                      type="date"
+                                      class="field-input rrr-mini-input"
+                                      [ngModel]="r.validTo"
+                                      (ngModelChange)="
+                                        onRestrictionChange(i, ri, 'validTo', $event)
+                                      "
+                                    />
+                                  </div>
                                 }
                               } @else {
                                 <p class="empty-message">No restrictions</p>
@@ -782,6 +786,26 @@
                                     >
                                       &times;
                                     </button>
+                                  </div>
+                                  <div class="rrr-validity-row">
+                                    <span class="label">Valid:</span>
+                                    <input
+                                      type="date"
+                                      class="field-input rrr-mini-input"
+                                      [ngModel]="resp.validFrom"
+                                      (ngModelChange)="
+                                        onResponsibilityChange(i, rsi, 'validFrom', $event)
+                                      "
+                                    />
+                                    <span>&ndash;</span>
+                                    <input
+                                      type="date"
+                                      class="field-input rrr-mini-input"
+                                      [ngModel]="resp.validTo"
+                                      (ngModelChange)="
+                                        onResponsibilityChange(i, rsi, 'validTo', $event)
+                                      "
+                                    />
                                   </div>
                                 }
                               } @else {

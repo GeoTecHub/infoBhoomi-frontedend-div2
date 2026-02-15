@@ -226,7 +226,10 @@ export class LandInfoPanelComponent {
       if (i !== entryIndex) return e;
       return {
         ...e,
-        restrictions: [...e.restrictions, { type: RestrictionType.RES_EAS, description: '' }],
+        restrictions: [
+          ...e.restrictions,
+          { type: RestrictionType.RES_EAS, description: '', validFrom: '', validTo: '' },
+        ],
       };
     });
     this.rrrChanged.emit({ entries });
@@ -269,7 +272,7 @@ export class LandInfoPanelComponent {
         ...e,
         responsibilities: [
           ...e.responsibilities,
-          { type: ResponsibilityType.RSP_MAINT, description: '' },
+          { type: ResponsibilityType.RSP_MAINT, description: '', validFrom: '', validTo: '' },
         ],
       };
     });

@@ -332,7 +332,12 @@ export class BuildingInfoPanelComponent {
   addStandaloneRestriction(): void {
     const entries = this.cloneEntries();
     if (entries.length === 0) return;
-    entries[0].restrictions.push({ type: RestrictionType.RES_EAS, description: '' });
+    entries[0].restrictions.push({
+      type: RestrictionType.RES_EAS,
+      description: '',
+      validFrom: '',
+      validTo: '',
+    });
     this.emitRRRUpdate(entries);
   }
 
@@ -366,14 +371,24 @@ export class BuildingInfoPanelComponent {
   addStandaloneResponsibility(): void {
     const entries = this.cloneEntries();
     if (entries.length === 0) return;
-    entries[0].responsibilities.push({ type: ResponsibilityType.RSP_MAINT, description: '' });
+    entries[0].responsibilities.push({
+      type: ResponsibilityType.RSP_MAINT,
+      description: '',
+      validFrom: '',
+      validTo: '',
+    });
     this.emitRRRUpdate(entries);
   }
 
   addRestriction(entryIndex: number): void {
     const entries = this.cloneEntries();
     if (!entries[entryIndex]) return;
-    entries[entryIndex].restrictions.push({ type: RestrictionType.RES_EAS, description: '' });
+    entries[entryIndex].restrictions.push({
+      type: RestrictionType.RES_EAS,
+      description: '',
+      validFrom: '',
+      validTo: '',
+    });
     this.emitRRRUpdate(entries);
   }
 
@@ -402,6 +417,8 @@ export class BuildingInfoPanelComponent {
     entries[entryIndex].responsibilities.push({
       type: ResponsibilityType.RSP_MAINT,
       description: '',
+      validFrom: '',
+      validTo: '',
     });
     this.emitRRRUpdate(entries);
   }
@@ -543,6 +560,8 @@ export class BuildingInfoPanelComponent {
     units[unitIndex].rrr.entries[entryIndex].restrictions.push({
       type: RestrictionType.RES_EAS,
       description: '',
+      validFrom: '',
+      validTo: '',
     });
     this.emitUnitsUpdate(units);
   }
@@ -573,6 +592,8 @@ export class BuildingInfoPanelComponent {
     units[unitIndex].rrr.entries[entryIndex].responsibilities.push({
       type: ResponsibilityType.RSP_MAINT,
       description: '',
+      validFrom: '',
+      validTo: '',
     });
     this.emitUnitsUpdate(units);
   }
