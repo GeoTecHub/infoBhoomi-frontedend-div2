@@ -1,54 +1,75 @@
-/* Add Right Holder Dialog — arh prefix */
+/* Add Right Holder Dialog — arh prefix — Dark-ash theme */
+
+:host {
+  display: block;
+}
 
 .arh-dialog {
-  min-width: 420px;
-  max-width: 520px;
+  min-width: 560px;
+  max-width: 680px;
 }
 
 .arh-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #779ab8;
-  color: white;
-  padding: 12px 16px;
-  border-radius: 5px 5px 0 0;
+  background: rgba(30, 41, 59, 0.95);
+  color: #e2e8f0;
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
   margin: -24px -24px 0;
 }
 
 .arh-title {
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
+  color: #e2e8f0;
 }
 
 .arh-close-btn {
   background: none;
   border: none;
-  color: white;
+  color: #94a3b8;
   cursor: pointer;
   display: flex;
   align-items: center;
   padding: 4px;
   border-radius: 50%;
-  transition: background 0.2s;
+  transition: all 0.2s;
 }
 
 .arh-close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  color: #e2e8f0;
+  background: rgba(148, 163, 184, 0.15);
 }
 
 .arh-content {
-  padding: 16px 0 0 !important;
-  max-height: 60vh;
+  padding: 16px 4px 0 !important;
+  max-height: 75vh;
   overflow-y: auto;
+}
+
+/* Custom Scrollbar — matches side panel */
+.arh-content::-webkit-scrollbar {
+  width: 5px;
+}
+
+.arh-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.arh-content::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 3px;
 }
 
 /* Step Instruction */
 .arh-instruction {
   margin: 0 0 16px;
-  font-size: 14px;
-  color: #555;
+  font-size: 13px;
+  color: #94a3b8;
 }
 
 /* ═══ Party Type Grid (Step 1) ═══ */
@@ -63,32 +84,32 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 20px 12px;
-  border: 2px solid #e2e8f0;
+  padding: 22px 14px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
   border-radius: 12px;
-  background: #f8fafc;
+  background: rgba(30, 41, 59, 0.6);
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .arh-type-card:hover {
-  border-color: #779ab8;
-  background: #eff6ff;
+  border-color: rgba(52, 211, 153, 0.5);
+  background: rgba(52, 211, 153, 0.08);
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(119, 154, 184, 0.2);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 .arh-type-icon {
   font-size: 32px !important;
   width: 32px !important;
   height: 32px !important;
-  color: #779ab8;
+  color: #34d399;
 }
 
 .arh-type-label {
   font-size: 13px;
   font-weight: 600;
-  color: #334155;
+  color: #cbd5e1;
   text-align: center;
 }
 
@@ -99,7 +120,7 @@
   gap: 4px;
   background: none;
   border: none;
-  color: #779ab8;
+  color: #94a3b8;
   font-size: 13px;
   cursor: pointer;
   padding: 4px 8px 4px 0;
@@ -114,7 +135,7 @@
 }
 
 .arh-back-btn:hover {
-  color: #5a7d99;
+  color: #e2e8f0;
 }
 
 /* Selected type badge */
@@ -123,12 +144,12 @@
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
+  background: rgba(52, 211, 153, 0.1);
+  border: 1px solid rgba(52, 211, 153, 0.3);
   border-radius: 20px;
   font-size: 13px;
   font-weight: 500;
-  color: #1e40af;
+  color: #34d399;
   margin-bottom: 16px;
 }
 
@@ -147,38 +168,47 @@
   display: block;
   font-size: 12px;
   font-weight: 600;
-  color: #475569;
+  color: #94a3b8;
   margin-bottom: 4px;
 }
 
 .arh-required {
-  color: #ef4444;
+  color: #f87171;
 }
 
 .arh-input,
 .arh-select {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 6px;
   font-size: 13px;
-  color: #1e293b;
-  background: #fff;
+  color: #e2e8f0;
+  background: rgba(15, 23, 42, 0.6);
   transition: border-color 0.2s;
   box-sizing: border-box;
+}
+
+.arh-input::placeholder {
+  color: rgba(148, 163, 184, 0.4);
 }
 
 .arh-input:focus,
 .arh-select:focus {
   outline: none;
-  border-color: #779ab8;
-  box-shadow: 0 0 0 2px rgba(119, 154, 184, 0.15);
+  border-color: rgba(52, 211, 153, 0.5);
+  box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.1);
+}
+
+.arh-select option {
+  background: #1e293b;
+  color: #e2e8f0;
 }
 
 .arh-error {
   display: block;
   font-size: 11px;
-  color: #ef4444;
+  color: #f87171;
   margin-top: 4px;
 }
 
@@ -189,7 +219,7 @@
   gap: 8px;
   margin-top: 16px;
   padding-top: 12px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
 }
 
 .arh-search-btn,
@@ -201,46 +231,49 @@
   padding: 8px 20px;
   border: none;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .arh-search-btn {
-  background: #779ab8;
-  color: white;
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
 }
 
 .arh-search-btn:hover:not(:disabled) {
-  background: #5a7d99;
+  background: rgba(52, 211, 153, 0.25);
 }
 
 .arh-search-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .arh-select-party-btn {
-  background: #16a34a;
-  color: white;
+  background: rgba(52, 211, 153, 0.2);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.4);
 }
 
 .arh-select-party-btn:hover {
-  background: #15803d;
+  background: rgba(52, 211, 153, 0.3);
 }
 
 .arh-save-btn {
-  background: #779ab8;
-  color: white;
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
 }
 
 .arh-save-btn:hover:not(:disabled) {
-  background: #5a7d99;
+  background: rgba(52, 211, 153, 0.25);
 }
 
 .arh-save-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
@@ -249,8 +282,8 @@
   display: inline-block;
   width: 16px;
   height: 16px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border: 2px solid rgba(52, 211, 153, 0.3);
+  border-top-color: #34d399;
   border-radius: 50%;
   animation: arh-spin 0.6s linear infinite;
 }
@@ -263,9 +296,9 @@
 
 /* ═══ Search Result Card (Step 3) ═══ */
 .arh-result-card {
-  border: 1px solid #bbf7d0;
+  border: 1px solid rgba(52, 211, 153, 0.25);
   border-radius: 10px;
-  background: #f0fdf4;
+  background: rgba(52, 211, 153, 0.05);
   overflow: hidden;
 }
 
@@ -274,8 +307,8 @@
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  background: #dcfce7;
-  color: #166534;
+  background: rgba(52, 211, 153, 0.1);
+  color: #34d399;
   font-size: 13px;
   font-weight: 600;
 }
@@ -284,7 +317,7 @@
   font-size: 18px;
   width: 18px;
   height: 18px;
-  color: #16a34a;
+  color: #34d399;
 }
 
 .arh-result-details {
@@ -295,8 +328,8 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding: 5px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
 }
 
 .arh-result-row:last-child {
@@ -306,13 +339,13 @@
 .arh-result-label {
   font-size: 12px;
   font-weight: 500;
-  color: #6b7280;
-  min-width: 90px;
+  color: #94a3b8;
+  min-width: 100px;
 }
 
 .arh-result-value {
   font-size: 13px;
-  color: #1e293b;
+  color: #e2e8f0;
   text-align: right;
   flex: 1;
 }
@@ -323,11 +356,11 @@
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  background: #fffbeb;
-  border: 1px solid #fde68a;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
   border-radius: 8px;
   font-size: 13px;
-  color: #92400e;
+  color: #fbbf24;
   margin-bottom: 16px;
 }
 
