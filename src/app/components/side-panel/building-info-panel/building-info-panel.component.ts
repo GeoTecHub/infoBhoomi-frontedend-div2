@@ -134,6 +134,9 @@ export class BuildingInfoPanelComponent {
 
   private dialog = inject(MatDialog);
 
+  // Local RRR state (avoids parent round-trip delay)
+  rrrEntries = signal<RRREntry[]>([]);
+
   // Local state
   expandedSections = signal<Set<CollapsibleSection>>(new Set(['summary', 'units']));
   activeRRRTab = signal<RRRTab>('ownership');
@@ -177,6 +180,17 @@ export class BuildingInfoPanelComponent {
         this.editMode.set(false);
       }
     });
+    // Sync local RRR entries from the input signal whenever it changes
+    effect(() => {
+      const info = this.buildingInfo();
+      this.rrrEntries.set(info ? [...info.rrr.entries] : []);
+    });
+  }
+
+  /** Update local RRR state immediately and notify parent */
+  private updateRRR(entries: RRREntry[]): void {
+    this.rrrEntries.set(entries);
+    this.rrrChanged.emit({ entries });
   }
 
   toggleSection(section: CollapsibleSection): void {
@@ -273,14 +287,8 @@ export class BuildingInfoPanelComponent {
     this.expandedRRRId.set(this.expandedRRRId() === rrrId ? null : rrrId);
   }
 
-  private emitRRRUpdate(entries: RRREntry[]): void {
-    this.rrrChanged.emit({ entries });
-  }
-
   private cloneEntries(): RRREntry[] {
-    const info = this.buildingInfo();
-    if (!info) return [];
-    return info.rrr.entries.map((e) => ({
+    return this.rrrEntries().map((e) => ({
       ...e,
       documents: [...(e.documents || []).map((d) => ({ ...d }))],
       restrictions: [...e.restrictions.map((r) => ({ ...r }))],
@@ -292,7 +300,7 @@ export class BuildingInfoPanelComponent {
     const entries = this.cloneEntries();
     if (!entries[index]) return;
     (entries[index] as any)[field] = value;
-    this.emitRRRUpdate(entries);
+    this.updateRRR(entries);
   }
 
   addRRREntry(): void {
@@ -324,7 +332,7 @@ export class BuildingInfoPanelComponent {
         restrictions: [],
         responsibilities: [],
       });
-      this.emitRRRUpdate(entries);
+      this.updateRRR(entries);
       // Auto-expand the newly added entry so user can fill in details
       this.expandedRRRId.set(newRrrId);
     });
@@ -339,7 +347,7 @@ export class BuildingInfoPanelComponent {
     const entries = this.cloneEntries();
     if (!entries[index]) return;
     entries.splice(index, 1);
-    this.emitRRRUpdate(entries);
+    this.updateRRR(entries);
   }
 
   getAllRestrictions(): {
@@ -348,15 +356,13 @@ export class BuildingInfoPanelComponent {
     holder: string;
     restriction: RRRRestriction;
   }[] {
-    const info = this.buildingInfo();
-    if (!info) return [];
     const result: {
       entryIndex: number;
       restrictionIndex: number;
       holder: string;
       restriction: RRRRestriction;
     }[] = [];
-    info.rrr.entries.forEach((entry, ei) => {
+    this.rrrEntries().forEach((entry, ei) => {
       entry.restrictions.forEach((r, ri) => {
         result.push({ entryIndex: ei, restrictionIndex: ri, holder: entry.holder, restriction: r });
       });
@@ -373,7 +379,7 @@ export class BuildingInfoPanelComponent {
       validFrom: '',
       validTo: '',
     });
-    this.emitRRRUpdate(entries);
+    this.updateRRR(entries);
   }
 
   getAllResponsibilities(): {
@@ -382,15 +388,13 @@ export class BuildingInfoPanelComponent {
     holder: string;
     responsibility: RRRResponsibility;
   }[] {
-    const info = this.buildingInfo();
-    if (!info) return [];
     const result: {
       entryIndex: number;
       responsibilityIndex: number;
       holder: string;
       responsibility: RRRResponsibility;
     }[] = [];
-    info.rrr.entries.forEach((entry, ei) => {
+    this.rrrEntries().forEach((entry, ei) => {
       entry.responsibilities.forEach((r, ri) => {
         result.push({
           entryIndex: ei,
@@ -412,7 +416,7 @@ export class BuildingInfoPanelComponent {
       validFrom: '',
       validTo: '',
     });
-    this.emitRRRUpdate(entries);
+    this.updateRRR(entries);
   }
 
   addRestriction(entryIndex: number): void {
@@ -424,14 +428,14 @@ export class BuildingInfoPanelComponent {
       validFrom: '',
       validTo: '',
     });
-    this.emitRRRUpdate(entries);
+    this.updateRRR(entries);
   }
 
   removeRestriction(entryIndex: number, restrictionIndex: number): void {
     const entries = this.cloneEntries();
     if (!entries[entryIndex]) return;
     entries[entryIndex].restrictions.splice(restrictionIndex, 1);
-    this.emitRRRUpdate(entries);
+    this.updateRRR(entries);
   }
 
   onRestrictionChange(
@@ -443,7 +447,7 @@ export class BuildingInfoPanelComponent {
     const entries = this.cloneEntries();
     if (!entries[entryIndex]?.restrictions[restrictionIndex]) return;
     (entries[entryIndex].restrictions[restrictionIndex] as any)[field] = value;
-    this.emitRRRUpdate(entries);
+    this.updateRRR(entries);
   }
 
   addResponsibility(entryIndex: number): void {
@@ -455,14 +459,14 @@ export class BuildingInfoPanelComponent {
       validFrom: '',
       validTo: '',
     });
-    this.emitRRRUpdate(entries);
+    this.updateRRR(entries);
   }
 
   removeResponsibility(entryIndex: number, responsibilityIndex: number): void {
     const entries = this.cloneEntries();
     if (!entries[entryIndex]) return;
     entries[entryIndex].responsibilities.splice(responsibilityIndex, 1);
-    this.emitRRRUpdate(entries);
+    this.updateRRR(entries);
   }
 
   onResponsibilityChange(
@@ -474,7 +478,7 @@ export class BuildingInfoPanelComponent {
     const entries = this.cloneEntries();
     if (!entries[entryIndex]?.responsibilities[responsibilityIndex]) return;
     (entries[entryIndex].responsibilities[responsibilityIndex] as any)[field] = value;
-    this.emitRRRUpdate(entries);
+    this.updateRRR(entries);
   }
 
   // ─── Document uploads ───────────────────────────────────────
@@ -494,7 +498,7 @@ export class BuildingInfoPanelComponent {
         file: f,
       });
     }
-    this.emitRRRUpdate(entries);
+    this.updateRRR(entries);
     input.value = '';
   }
 
@@ -502,7 +506,7 @@ export class BuildingInfoPanelComponent {
     const entries = this.cloneEntries();
     if (!entries[entryIndex]?.documents?.[docIndex]) return;
     entries[entryIndex].documents.splice(docIndex, 1);
-    this.emitRRRUpdate(entries);
+    this.updateRRR(entries);
   }
 
   formatFileSize(bytes: number): string {

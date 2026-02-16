@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -39,6 +39,7 @@ import {
   ParcelValuation,
   ParcelRelationships,
   ParcelMetadata,
+  RRREntry,
   RRRInfo,
 } from '../../../models/land-parcel.model';
 import {
@@ -98,6 +99,23 @@ export class LandInfoPanelComponent {
   responsibilityTypeDisplayMap = RESPONSIBILITY_TYPE_DISPLAY;
   accuracyLevelDisplayMap = ACCURACY_LEVEL_DISPLAY;
   surveyMethodDisplayMap = SURVEY_METHOD_DISPLAY;
+
+  // --- Local RRR State (avoids parent round-trip delay) ---
+  rrrEntries = signal<RRREntry[]>([]);
+
+  constructor() {
+    // Sync local RRR entries from the input signal whenever it changes
+    effect(() => {
+      const info = this.parcelInfo();
+      this.rrrEntries.set(info ? [...info.rrr.entries] : []);
+    });
+  }
+
+  /** Update local RRR state immediately and notify parent */
+  private updateRRR(entries: RRREntry[]): void {
+    this.rrrEntries.set(entries);
+    this.rrrChanged.emit({ entries });
+  }
 
   // --- UI State ---
   expandedSections = signal<Set<string>>(new Set(['identification']));
@@ -174,17 +192,14 @@ export class LandInfoPanelComponent {
   // --- RRR Handlers ---
 
   onRRRFieldChange(entryIndex: number, field: string, value: any): void {
-    const info = this.parcelInfo();
-    if (!info) return;
-    const entries = info.rrr.entries.map((e, i) =>
+    const entries = this.rrrEntries().map((e, i) =>
       i === entryIndex ? { ...e, [field]: value } : e,
     );
-    this.rrrChanged.emit({ entries });
+    this.updateRRR(entries);
   }
 
   addRRREntry(): void {
-    const info = this.parcelInfo();
-    if (!info) return;
+    if (!this.parcelInfo()) return;
 
     const dialogRef = this.dialog.open(AddRightHolderComponent, {
       width: '680px',
@@ -196,11 +211,9 @@ export class LandInfoPanelComponent {
 
     dialogRef.afterClosed().subscribe((result: AddRightHolderResult | null) => {
       if (!result) return;
-      const latestInfo = this.parcelInfo();
-      if (!latestInfo) return;
       const newRrrId = `LRRR-${Date.now()}`;
       const entries = [
-        ...latestInfo.rrr.entries,
+        ...this.rrrEntries(),
         {
           rrrId: newRrrId,
           type: RightType.OWN_FREE,
@@ -218,7 +231,7 @@ export class LandInfoPanelComponent {
           responsibilities: [],
         },
       ];
-      this.rrrChanged.emit({ entries });
+      this.updateRRR(entries);
       // Auto-expand the newly added entry so user can fill in details
       this.expandedRRRId.set(newRrrId);
     });
@@ -227,9 +240,7 @@ export class LandInfoPanelComponent {
   // --- Share Validation ---
 
   getTotalShare(): number {
-    const info = this.parcelInfo();
-    if (!info) return 0;
-    return info.rrr.entries.reduce((sum, e) => sum + (e.share || 0), 0);
+    return this.rrrEntries().reduce((sum, e) => sum + (e.share || 0), 0);
   }
 
   getShareWarning(): string {
@@ -266,9 +277,7 @@ export class LandInfoPanelComponent {
   onDocumentUpload(entryIndex: number, event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
-    const info = this.parcelInfo();
-    if (!info) return;
-    const entries = info.rrr.entries.map((e, i) => {
+    const entries = this.rrrEntries().map((e, i) => {
       if (i !== entryIndex) return e;
       const docs = [...(e.documents || [])];
       for (let fi = 0; fi < input.files!.length; fi++) {
@@ -277,18 +286,16 @@ export class LandInfoPanelComponent {
       }
       return { ...e, documents: docs };
     });
-    this.rrrChanged.emit({ entries });
+    this.updateRRR(entries);
     input.value = '';
   }
 
   removeDocument(entryIndex: number, docIndex: number): void {
-    const info = this.parcelInfo();
-    if (!info) return;
-    const entries = info.rrr.entries.map((e, i) => {
+    const entries = this.rrrEntries().map((e, i) => {
       if (i !== entryIndex) return e;
       return { ...e, documents: (e.documents || []).filter((_, di) => di !== docIndex) };
     });
-    this.rrrChanged.emit({ entries });
+    this.updateRRR(entries);
   }
 
   formatFileSize(bytes: number): string {
@@ -303,10 +310,8 @@ export class LandInfoPanelComponent {
   }
 
   removeRRREntry(index: number): void {
-    const info = this.parcelInfo();
-    if (!info) return;
-    const entries = info.rrr.entries.filter((_, i) => i !== index);
-    this.rrrChanged.emit({ entries });
+    const entries = this.rrrEntries().filter((_, i) => i !== index);
+    this.updateRRR(entries);
   }
 
   onRestrictionChange(
@@ -315,22 +320,18 @@ export class LandInfoPanelComponent {
     field: string,
     value: any,
   ): void {
-    const info = this.parcelInfo();
-    if (!info) return;
-    const entries = info.rrr.entries.map((e, i) => {
+    const entries = this.rrrEntries().map((e, i) => {
       if (i !== entryIndex) return e;
       const restrictions = e.restrictions.map((r, ri) =>
         ri === restrictionIndex ? { ...r, [field]: value } : r,
       );
       return { ...e, restrictions };
     });
-    this.rrrChanged.emit({ entries });
+    this.updateRRR(entries);
   }
 
   addRestriction(entryIndex: number): void {
-    const info = this.parcelInfo();
-    if (!info) return;
-    const entries = info.rrr.entries.map((e, i) => {
+    const entries = this.rrrEntries().map((e, i) => {
       if (i !== entryIndex) return e;
       return {
         ...e,
@@ -340,17 +341,15 @@ export class LandInfoPanelComponent {
         ],
       };
     });
-    this.rrrChanged.emit({ entries });
+    this.updateRRR(entries);
   }
 
   removeRestriction(entryIndex: number, restrictionIndex: number): void {
-    const info = this.parcelInfo();
-    if (!info) return;
-    const entries = info.rrr.entries.map((e, i) => {
+    const entries = this.rrrEntries().map((e, i) => {
       if (i !== entryIndex) return e;
       return { ...e, restrictions: e.restrictions.filter((_, ri) => ri !== restrictionIndex) };
     });
-    this.rrrChanged.emit({ entries });
+    this.updateRRR(entries);
   }
 
   onResponsibilityChange(
@@ -359,22 +358,18 @@ export class LandInfoPanelComponent {
     field: string,
     value: any,
   ): void {
-    const info = this.parcelInfo();
-    if (!info) return;
-    const entries = info.rrr.entries.map((e, i) => {
+    const entries = this.rrrEntries().map((e, i) => {
       if (i !== entryIndex) return e;
       const responsibilities = e.responsibilities.map((r, ri) =>
         ri === responsibilityIndex ? { ...r, [field]: value } : r,
       );
       return { ...e, responsibilities };
     });
-    this.rrrChanged.emit({ entries });
+    this.updateRRR(entries);
   }
 
   addResponsibility(entryIndex: number): void {
-    const info = this.parcelInfo();
-    if (!info) return;
-    const entries = info.rrr.entries.map((e, i) => {
+    const entries = this.rrrEntries().map((e, i) => {
       if (i !== entryIndex) return e;
       return {
         ...e,
@@ -384,20 +379,18 @@ export class LandInfoPanelComponent {
         ],
       };
     });
-    this.rrrChanged.emit({ entries });
+    this.updateRRR(entries);
   }
 
   removeResponsibility(entryIndex: number, responsibilityIndex: number): void {
-    const info = this.parcelInfo();
-    if (!info) return;
-    const entries = info.rrr.entries.map((e, i) => {
+    const entries = this.rrrEntries().map((e, i) => {
       if (i !== entryIndex) return e;
       return {
         ...e,
         responsibilities: e.responsibilities.filter((_, ri) => ri !== responsibilityIndex),
       };
     });
-    this.rrrChanged.emit({ entries });
+    this.updateRRR(entries);
   }
 
   // --- Actions ---

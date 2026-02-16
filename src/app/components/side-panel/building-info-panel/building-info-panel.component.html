@@ -359,8 +359,8 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @if (info.rrr.entries.length) {
-                    @for (entry of info.rrr.entries; track entry.rrrId; let i = $index) {
+                  @if (rrrEntries().length) {
+                    @for (entry of rrrEntries(); track entry.rrrId; let i = $index) {
                       <tr class="rrr-data-row">
                         <td>
                           <div
