@@ -363,28 +363,20 @@
                     @for (entry of info.rrr.entries; track entry.rrrId; let i = $index) {
                       <tr class="rrr-data-row">
                         <td>
-                          @if (entry.holderId) {
-                            <div
-                              class="rrr-holder-linked"
-                              (click)="openHolderDetails(entry)"
-                              title="Click to view party details"
-                            >
-                              <span class="rrr-holder-name">{{ entry.holder }}</span>
-                              @if (entry.holderType) {
-                                <span class="rrr-holder-badge">{{
-                                  getHolderDisplayLabel(entry)
-                                }}</span>
-                              }
-                            </div>
-                          } @else {
-                            <input
-                              type="text"
-                              class="field-input rrr-cell-input"
-                              [ngModel]="entry.holder"
-                              (ngModelChange)="onRRRFieldChange(i, 'holder', $event)"
-                              placeholder="Name"
-                            />
-                          }
+                          <div
+                            class="rrr-holder-linked"
+                            (click)="openHolderDetails(entry)"
+                            title="Click to view party details"
+                          >
+                            <span class="rrr-holder-name">{{
+                              entry.holder || 'Unknown holder'
+                            }}</span>
+                            @if (entry.holderType) {
+                              <span class="rrr-holder-badge">{{
+                                getHolderDisplayLabel(entry)
+                              }}</span>
+                            }
+                          </div>
                         </td>
                         <td>
                           <select
@@ -1046,31 +1038,20 @@
                                       (click)="toggleUnitRRRExpand(entry.rrrId)"
                                     >
                                       <td>
-                                        @if (entry.holderId) {
-                                          <div
-                                            class="rrr-holder-linked"
-                                            (click)="$event.stopPropagation()"
-                                            title="Linked party"
-                                          >
-                                            <span class="rrr-holder-name">{{ entry.holder }}</span>
-                                            @if (entry.holderType) {
-                                              <span class="rrr-holder-badge">{{
-                                                getHolderDisplayLabel(entry)
-                                              }}</span>
-                                            }
-                                          </div>
-                                        } @else {
-                                          <input
-                                            type="text"
-                                            class="field-input rrr-cell-input"
-                                            [ngModel]="entry.holder"
-                                            (ngModelChange)="
-                                              onUnitRRRFieldChange(ui, ei, 'holder', $event)
-                                            "
-                                            (click)="$event.stopPropagation()"
-                                            placeholder="Name"
-                                          />
-                                        }
+                                        <div
+                                          class="rrr-holder-linked"
+                                          (click)="$event.stopPropagation()"
+                                          title="Linked party"
+                                        >
+                                          <span class="rrr-holder-name">{{
+                                            entry.holder || 'Unknown holder'
+                                          }}</span>
+                                          @if (entry.holderType) {
+                                            <span class="rrr-holder-badge">{{
+                                              getHolderDisplayLabel(entry)
+                                            }}</span>
+                                          }
+                                        </div>
                                       </td>
                                       <td>
                                         <select
