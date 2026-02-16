@@ -514,6 +514,59 @@
   font-size: 0.75rem;
 }
 
+/* Linked holder display */
+.rrr-holder-linked {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.rrr-holder-linked:hover {
+  background: rgba(79, 70, 229, 0.1);
+}
+
+.rrr-holder-name {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #a5b4fc;
+  text-decoration: underline;
+  text-decoration-color: rgba(165, 180, 252, 0.3);
+}
+
+.rrr-holder-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  padding: 1px 6px;
+  border-radius: 8px;
+  background: rgba(79, 70, 229, 0.15);
+  color: #818cf8;
+  font-weight: 500;
+  width: fit-content;
+}
+
+/* Share warning banner */
+.rrr-share-warning {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  margin-top: 0.5rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fbbf24;
+}
+
+.rrr-share-warning svg {
+  flex-shrink: 0;
+}
+
 .rrr-add-entry-btn {
   display: block;
   width: 100%;

@@ -1,0 +1,357 @@
+/* Add Right Holder Dialog — arh prefix */
+
+.arh-dialog {
+  min-width: 420px;
+  max-width: 520px;
+}
+
+.arh-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #779ab8;
+  color: white;
+  padding: 12px 16px;
+  border-radius: 5px 5px 0 0;
+  margin: -24px -24px 0;
+}
+
+.arh-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.arh-close-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.arh-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.arh-content {
+  padding: 16px 0 0 !important;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Step Instruction */
+.arh-instruction {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: #555;
+}
+
+/* ═══ Party Type Grid (Step 1) ═══ */
+.arh-type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.arh-type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.arh-type-card:hover {
+  border-color: #779ab8;
+  background: #eff6ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(119, 154, 184, 0.2);
+}
+
+.arh-type-icon {
+  font-size: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+  color: #779ab8;
+}
+
+.arh-type-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  text-align: center;
+}
+
+/* ═══ Back Button ═══ */
+.arh-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: #779ab8;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px 4px 0;
+  margin-bottom: 12px;
+  transition: color 0.2s;
+}
+
+.arh-back-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.arh-back-btn:hover {
+  color: #5a7d99;
+}
+
+/* Selected type badge */
+.arh-selected-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1e40af;
+  margin-bottom: 16px;
+}
+
+.arh-selected-type mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* ═══ Form Fields ═══ */
+.arh-field-group {
+  margin-bottom: 12px;
+}
+
+.arh-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  margin-bottom: 4px;
+}
+
+.arh-required {
+  color: #ef4444;
+}
+
+.arh-input,
+.arh-select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1e293b;
+  background: #fff;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.arh-input:focus,
+.arh-select:focus {
+  outline: none;
+  border-color: #779ab8;
+  box-shadow: 0 0 0 2px rgba(119, 154, 184, 0.15);
+}
+
+.arh-error {
+  display: block;
+  font-size: 11px;
+  color: #ef4444;
+  margin-top: 4px;
+}
+
+/* ═══ Actions ═══ */
+.arh-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.arh-search-btn,
+.arh-select-party-btn,
+.arh-save-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.arh-search-btn {
+  background: #779ab8;
+  color: white;
+}
+
+.arh-search-btn:hover:not(:disabled) {
+  background: #5a7d99;
+}
+
+.arh-search-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.arh-select-party-btn {
+  background: #16a34a;
+  color: white;
+}
+
+.arh-select-party-btn:hover {
+  background: #15803d;
+}
+
+.arh-save-btn {
+  background: #779ab8;
+  color: white;
+}
+
+.arh-save-btn:hover:not(:disabled) {
+  background: #5a7d99;
+}
+
+.arh-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ═══ Spinner ═══ */
+.arh-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: arh-spin 0.6s linear infinite;
+}
+
+@keyframes arh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ═══ Search Result Card (Step 3) ═══ */
+.arh-result-card {
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  background: #f0fdf4;
+  overflow: hidden;
+}
+
+.arh-result-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.arh-result-badge mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #16a34a;
+}
+
+.arh-result-details {
+  padding: 12px 14px;
+}
+
+.arh-result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 5px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.arh-result-row:last-child {
+  border-bottom: none;
+}
+
+.arh-result-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  min-width: 90px;
+}
+
+.arh-result-value {
+  font-size: 13px;
+  color: #1e293b;
+  text-align: right;
+  flex: 1;
+}
+
+/* ═══ New Party Info Banner (Step 4) ═══ */
+.arh-new-party-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  font-size: 13px;
+  color: #92400e;
+  margin-bottom: 16px;
+}
+
+.arh-new-party-info mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: #f59e0b;
+}
+
+/* ═══ Form Grid (Step 4) ═══ */
+.arh-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 480px) {
+  .arh-dialog {
+    min-width: 320px;
+  }
+
+  .arh-type-grid,
+  .arh-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

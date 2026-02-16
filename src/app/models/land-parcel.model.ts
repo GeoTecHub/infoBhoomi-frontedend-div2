@@ -12,6 +12,8 @@ import {
   ACCURACY_LEVEL_DISPLAY,
   SurveyMethod,
   SURVEY_METHOD_DISPLAY,
+  PartyType,
+  PARTY_TYPE_DISPLAY,
 } from './building-info.model';
 
 import type { RRRDocument, RRREntry, RRRInfo } from './building-info.model';
@@ -28,6 +30,8 @@ export {
   ACCURACY_LEVEL_DISPLAY,
   SurveyMethod,
   SURVEY_METHOD_DISPLAY,
+  PartyType,
+  PARTY_TYPE_DISPLAY,
 };
 
 export type { RRRDocument, RRREntry, RRRInfo };

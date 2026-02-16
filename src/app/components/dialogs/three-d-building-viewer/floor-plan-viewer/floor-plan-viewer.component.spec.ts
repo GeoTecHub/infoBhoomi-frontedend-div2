@@ -8,9 +8,8 @@ describe('FloorPlanViewerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FloorPlanViewerComponent]
-    })
-    .compileComponents();
+      imports: [FloorPlanViewerComponent],
+    }).compileComponents();
 
     fixture = TestBed.createComponent(FloorPlanViewerComponent);
     component = fixture.componentInstance;
