@@ -1,6 +1,7 @@
-import { Component, input, output, signal, computed, effect } from '@angular/core';
+import { Component, inject, input, output, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 import {
   BuildingInfo,
   BuildingSummary,
@@ -30,6 +31,7 @@ import {
   TopologyStatus,
   AccuracyLevel,
   SurveyMethod,
+  PartyType,
   LEGAL_STATUS_DISPLAY,
   PRIMARY_USE_DISPLAY,
   RIGHT_TYPE_DISPLAY,
@@ -46,7 +48,12 @@ import {
   TOPOLOGY_STATUS_DISPLAY,
   ACCURACY_LEVEL_DISPLAY,
   SURVEY_METHOD_DISPLAY,
+  PARTY_TYPE_DISPLAY,
 } from '../../../models/building-info.model';
+import {
+  AddRightHolderComponent,
+  AddRightHolderResult,
+} from '../../dialogs/add-right-holder/add-right-holder.component';
 
 type RRRTab = 'overview' | 'ownership';
 type CollapsibleSection =
@@ -123,6 +130,9 @@ export class BuildingInfoPanelComponent {
   readonly topologyStatusDisplayMap = TOPOLOGY_STATUS_DISPLAY;
   readonly accuracyLevelDisplayMap = ACCURACY_LEVEL_DISPLAY;
   readonly surveyMethodDisplayMap = SURVEY_METHOD_DISPLAY;
+  readonly partyTypeDisplayMap = PARTY_TYPE_DISPLAY;
+
+  private dialog = inject(MatDialog);
 
   // Local state
   expandedSections = signal<Set<CollapsibleSection>>(new Set(['summary', 'units']));
@@ -286,20 +296,33 @@ export class BuildingInfoPanelComponent {
   }
 
   addRRREntry(): void {
-    const entries = this.cloneEntries();
-    entries.push({
-      rrrId: `RRR-${Date.now().toString(36).toUpperCase()}`,
-      type: RightType.OWN_FREE,
-      holder: '',
-      share: 0,
-      validFrom: new Date().toISOString().split('T')[0],
-      validTo: '',
-      documentRef: '',
-      documents: [],
-      restrictions: [],
-      responsibilities: [],
+    const dialogRef = this.dialog.open(AddRightHolderComponent, {
+      width: '520px',
+      data: { context: 'building' },
+      autoFocus: false,
     });
-    this.emitRRRUpdate(entries);
+
+    dialogRef.afterClosed().subscribe((result: AddRightHolderResult | null) => {
+      if (!result) return;
+      const entries = this.cloneEntries();
+      entries.push({
+        rrrId: `RRR-${Date.now().toString(36).toUpperCase()}`,
+        type: RightType.OWN_FREE,
+        holder: result.partyFullName || result.partyName,
+        holderId: result.partyId,
+        holderType: result.partyType,
+        holderRegType: result.regType,
+        holderRegNumber: result.regNumber,
+        share: 0,
+        validFrom: new Date().toISOString().split('T')[0],
+        validTo: '',
+        documentRef: '',
+        documents: [],
+        restrictions: [],
+        responsibilities: [],
+      });
+      this.emitRRRUpdate(entries);
+    });
   }
 
   confirmRemoveRRREntry(index: number): void {
@@ -560,21 +583,34 @@ export class BuildingInfoPanelComponent {
   // ─── Unit-level RRR editing ────────────────────────────────
 
   addUnitRRREntry(unitIndex: number): void {
-    const units = this.cloneUnits();
-    if (!units[unitIndex]) return;
-    units[unitIndex].rrr.entries.push({
-      rrrId: `URRR-${Date.now().toString(36).toUpperCase()}`,
-      type: RightType.OWN_STR,
-      holder: '',
-      share: 0,
-      validFrom: new Date().toISOString().split('T')[0],
-      validTo: '',
-      documentRef: '',
-      documents: [],
-      restrictions: [],
-      responsibilities: [],
+    const dialogRef = this.dialog.open(AddRightHolderComponent, {
+      width: '520px',
+      data: { context: 'building-unit' },
+      autoFocus: false,
     });
-    this.emitUnitsUpdate(units);
+
+    dialogRef.afterClosed().subscribe((result: AddRightHolderResult | null) => {
+      if (!result) return;
+      const units = this.cloneUnits();
+      if (!units[unitIndex]) return;
+      units[unitIndex].rrr.entries.push({
+        rrrId: `URRR-${Date.now().toString(36).toUpperCase()}`,
+        type: RightType.OWN_STR,
+        holder: result.partyFullName || result.partyName,
+        holderId: result.partyId,
+        holderType: result.partyType,
+        holderRegType: result.regType,
+        holderRegNumber: result.regNumber,
+        share: 0,
+        validFrom: new Date().toISOString().split('T')[0],
+        validTo: '',
+        documentRef: '',
+        documents: [],
+        restrictions: [],
+        responsibilities: [],
+      });
+      this.emitUnitsUpdate(units);
+    });
   }
 
   removeUnitRRREntry(unitIndex: number, entryIndex: number): void {
@@ -756,5 +792,51 @@ export class BuildingInfoPanelComponent {
     this.selectedUnit.set(unit);
     this.unitSelected.emit(unit.unitId);
     this.highlightRooms.emit(unit.rooms);
+  }
+
+  // ─── Share Validation ──────────────────────────────────────
+
+  getTotalShare(): number {
+    const info = this.buildingInfo();
+    if (!info) return 0;
+    return info.rrr.entries.reduce((sum, e) => sum + (e.share || 0), 0);
+  }
+
+  getShareWarning(): string {
+    const total = this.getTotalShare();
+    if (total === 0 || total === 100) return '';
+    if (total > 100) return `Total share is ${total}% (exceeds 100%)`;
+    return `Total share is ${total}% (${100 - total}% unallocated)`;
+  }
+
+  getUnitTotalShare(unitIndex: number): number {
+    const info = this.buildingInfo();
+    if (!info?.units[unitIndex]) return 0;
+    return info.units[unitIndex].rrr.entries.reduce((sum, e) => sum + (e.share || 0), 0);
+  }
+
+  getUnitShareWarning(unitIndex: number): string {
+    const total = this.getUnitTotalShare(unitIndex);
+    if (total === 0 || total === 100) return '';
+    if (total > 100) return `Total share is ${total}% (exceeds 100%)`;
+    return `Total share is ${total}% (${100 - total}% unallocated)`;
+  }
+
+  // ─── Holder Display ────────────────────────────────────────
+
+  getHolderDisplayLabel(entry: RRREntry): string {
+    if (entry.holderType) {
+      return PARTY_TYPE_DISPLAY[entry.holderType as PartyType] || entry.holderType;
+    }
+    return '';
+  }
+
+  openHolderDetails(entry: RRREntry): void {
+    if (!entry.holderId && !entry.holderRegNumber) return;
+    this.dialog.open(AddRightHolderComponent, {
+      width: '520px',
+      data: { context: 'building', viewOnly: true },
+      autoFocus: false,
+    });
   }
 }

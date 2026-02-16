@@ -286,6 +286,23 @@ export interface SpatialInfo {
 }
 
 /**
+ * LADM Party Types (LA_PartyType)
+ */
+export enum PartyType {
+  CIVILIAN = 'Civilian',
+  COMPANY = 'Company',
+  LEGAL_FIRM = 'LegalFirm',
+  GROUP = 'Group',
+}
+
+export const PARTY_TYPE_DISPLAY: Record<PartyType, string> = {
+  [PartyType.CIVILIAN]: 'Civilian (Individual)',
+  [PartyType.COMPANY]: 'Company',
+  [PartyType.LEGAL_FIRM]: 'Legal Firm',
+  [PartyType.GROUP]: 'Group',
+};
+
+/**
  * Rights, Restrictions & Responsibilities (RRR)
  */
 export interface RRRRestriction {
@@ -313,6 +330,10 @@ export interface RRREntry {
   rrrId: string;
   type: RightType;
   holder: string;
+  holderId?: string; // Party PID from backend
+  holderType?: PartyType; // LADM party type
+  holderRegType?: string; // Registration type (nic, ps, dl, br, lfr)
+  holderRegNumber?: string; // Registration number used to identify
   share: number;
   validFrom: string;
   validTo: string;

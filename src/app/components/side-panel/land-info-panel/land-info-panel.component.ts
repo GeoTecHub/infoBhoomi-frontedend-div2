@@ -1,6 +1,7 @@
-import { Component, input, output, signal } from '@angular/core';
+import { Component, inject, input, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
 
 import {
   LandParcelInfo,
@@ -29,6 +30,8 @@ import {
   ACCURACY_LEVEL_DISPLAY,
   SurveyMethod,
   SURVEY_METHOD_DISPLAY,
+  PartyType,
+  PARTY_TYPE_DISPLAY,
   ParcelIdentification,
   ParcelSpatial,
   ParcelPhysical,
@@ -38,6 +41,10 @@ import {
   ParcelMetadata,
   RRRInfo,
 } from '../../../models/land-parcel.model';
+import {
+  AddRightHolderComponent,
+  AddRightHolderResult,
+} from '../../dialogs/add-right-holder/add-right-holder.component';
 
 @Component({
   selector: 'app-land-info-panel',
@@ -47,6 +54,7 @@ import {
   styleUrls: ['./land-info-panel.component.css'],
 })
 export class LandInfoPanelComponent {
+  private dialog = inject(MatDialog);
   // --- Inputs ---
   parcelInfo = input<LandParcelInfo | null>(null);
 
@@ -177,22 +185,75 @@ export class LandInfoPanelComponent {
   addRRREntry(): void {
     const info = this.parcelInfo();
     if (!info) return;
-    const entries = [
-      ...info.rrr.entries,
-      {
-        rrrId: `LRRR-${Date.now()}`,
-        type: RightType.OWN_FREE,
-        holder: '',
-        share: 0,
-        validFrom: new Date().toISOString().split('T')[0],
-        validTo: '',
-        documentRef: '',
-        documents: [],
-        restrictions: [],
-        responsibilities: [],
-      },
-    ];
-    this.rrrChanged.emit({ entries });
+
+    const dialogRef = this.dialog.open(AddRightHolderComponent, {
+      width: '520px',
+      data: { context: 'land' },
+      autoFocus: false,
+    });
+
+    dialogRef.afterClosed().subscribe((result: AddRightHolderResult | null) => {
+      if (!result) return;
+      const latestInfo = this.parcelInfo();
+      if (!latestInfo) return;
+      const entries = [
+        ...latestInfo.rrr.entries,
+        {
+          rrrId: `LRRR-${Date.now()}`,
+          type: RightType.OWN_FREE,
+          holder: result.partyFullName || result.partyName,
+          holderId: result.partyId,
+          holderType: result.partyType,
+          holderRegType: result.regType,
+          holderRegNumber: result.regNumber,
+          share: 0,
+          validFrom: new Date().toISOString().split('T')[0],
+          validTo: '',
+          documentRef: '',
+          documents: [],
+          restrictions: [],
+          responsibilities: [],
+        },
+      ];
+      this.rrrChanged.emit({ entries });
+    });
+  }
+
+  // --- Share Validation ---
+
+  getTotalShare(): number {
+    const info = this.parcelInfo();
+    if (!info) return 0;
+    return info.rrr.entries.reduce((sum, e) => sum + (e.share || 0), 0);
+  }
+
+  getShareWarning(): string {
+    const total = this.getTotalShare();
+    if (total === 0 || total === 100) return '';
+    if (total > 100) return `Total share is ${total}% (exceeds 100%)`;
+    return `Total share is ${total}% (${100 - total}% unallocated)`;
+  }
+
+  // --- Holder Display ---
+
+  partyTypeDisplayMap = PARTY_TYPE_DISPLAY;
+
+  getHolderDisplayLabel(entry: any): string {
+    if (entry.holderType) {
+      return PARTY_TYPE_DISPLAY[entry.holderType as PartyType] || entry.holderType;
+    }
+    return '';
+  }
+
+  openHolderDetails(entry: any): void {
+    if (!entry.holderId && !entry.holderRegNumber) return;
+    // Re-open the dialog in search-result mode showing the party
+    const dialogRef = this.dialog.open(AddRightHolderComponent, {
+      width: '520px',
+      data: { context: 'land', viewOnly: true },
+      autoFocus: false,
+    });
+    // The dialog opens in select-type mode; the user can search again if needed
   }
 
   // --- Document uploads ---
