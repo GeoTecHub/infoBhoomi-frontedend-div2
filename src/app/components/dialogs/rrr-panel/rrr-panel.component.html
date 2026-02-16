@@ -165,7 +165,7 @@
       </div>
     </mat-tab>
 
-    <mat-tab label="Add New" *ngIf="canAddRRR(38)">
+    <mat-tab label="Add Right/Tenure" *ngIf="canAddRRR(38)">
       <mat-card class="custom-card custom-style-card">
         <mat-card-content *ngIf="canAddRRR(38)">
           <div class="row justify-content-md-center">
@@ -308,34 +308,6 @@
 
         <mat-card-content *ngIf="show_party_add">
           <div class="custom-card">
-            <div class="row">
-              <div class="col-9">
-                <div class="keyValueWrapper">
-                  <div class="keyValueWrapper__keyValue align-items-center">
-                    <div class="keyValue__key">Party Type</div>
-                    <select
-                      class="keyValue__value"
-                      [(ngModel)]="add_party.party_sub_type"
-                      style="margin-left: 45px; margin-top: -4px"
-                      (ngModelChange)="onPartySubTypeChange($event)"
-                    >
-                      <option value="" disabled selected>Select Party Type</option>
-                      <option *ngFor="let option of party_sub_types_array" [value]="option.name">
-                        {{ option.name }}
-                      </option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div class="col-3">
-                <button
-                  class="primary-sm-btn-select-custom"
-                  (click)="openPartyTypeDialog(card.party_sub_type)"
-                >
-                  Select
-                </button>
-              </div>
-            </div>
             <hr *ngIf="data_of_aded_party.party_name" class="divider" />
             <div class="row align-items-center" *ngIf="data_of_aded_party.party_name">
               <div class="col-3">
@@ -411,37 +383,97 @@
 
         <mat-card class="custom-card" *ngIf="adeded_party_cards.length > 0">
           <mat-card-content>
-            <table class="table">
-              <thead>
-                <tr>
-                  <th width="25%" style="font-size: 12px">Name</th>
-                  <th width="20%" style="font-size: 12px">Party Role</th>
-                  <th width="20%" style="font-size: 12px">Share Type</th>
-                  <th width="10%" style="text-align: center; font-size: 12px">Share (%)</th>
-                  <th width="20%" style="text-align: center; font-size: 12px">DOC Owner</th>
-                  <th width="5%" style="text-align: center"></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let card of adeded_party_cards; let i = index">
-                  <td style="font-size: 12px">{{ card.party_name }}</td>
-                  <td style="font-size: 12px">{{ card.party_role_type }}</td>
-                  <td style="font-size: 12px">{{ card.share_type }}</td>
-                  <td style="text-align: center; font-size: 12px">{{ card.share }}</td>
-                  <td style="text-align: center; font-size: 12px">
-                    <input
-                      type="checkbox"
-                      class="keyValue_value_checkbox"
-                      [checked]="doc_owner_pid === card.party"
-                      (change)="toggleSelection(card)"
-                    />
-                  </td>
-                  <td style="text-align: center">
-                    <i class="fa fa-trash text-danger" (click)="removeCard(i)"></i>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div class="holder-list">
+              <div class="holder-card" *ngFor="let card of adeded_party_cards; let i = index">
+                <div class="holder-summary">
+                  <button
+                    type="button"
+                    class="holder-expand-btn"
+                    (click)="toggleHolderDetails(card)"
+                    [attr.aria-expanded]="card.expanded"
+                  >
+                    <i class="fa" [ngClass]="card.expanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+                  </button>
+
+                  <div class="holder-name">{{ card.party_name }}</div>
+                  <div class="holder-chip">{{ card.right_type || '-' }}</div>
+                  <div class="holder-chip">{{ card.share | number: '1.2-2' }}%</div>
+
+                  <input
+                    type="checkbox"
+                    class="keyValue_value_checkbox holder-doc-owner"
+                    [checked]="doc_owner_pid === card.party"
+                    (change)="toggleSelection(card)"
+                  />
+
+                  <button type="button" class="holder-remove-btn" (click)="removeCard(i)">
+                    <i class="fa fa-trash text-danger"></i>
+                  </button>
+                </div>
+
+                <div class="holder-details" *ngIf="card.expanded">
+                  <div class="holder-grid">
+                    <div><strong>Party Role:</strong> {{ card.party_role_type || '-' }}</div>
+                    <div><strong>Share Type:</strong> {{ card.share_type || '-' }}</div>
+                    <div><strong>Start Date:</strong> {{ card.date_start || '-' }}</div>
+                    <div>
+                      <strong>Tenure:</strong>
+                      {{ card.life_time ? 'Life Time' : card.date_end || '-' }}
+                    </div>
+                  </div>
+
+                  <div class="holder-desc" *ngIf="card.description">
+                    <strong>Description:</strong> {{ card.description }}
+                  </div>
+
+                  <div class="ladm-section">
+                    <div class="ladm-title">Restrictions (LADM)</div>
+                    <div class="ladm-input-row">
+                      <input
+                        type="text"
+                        class="keyValue__value ms-0"
+                        [(ngModel)]="card.newRestriction"
+                        placeholder="Add restriction"
+                      />
+                      <button type="button" class="primary-sm-btn-select-custom" (click)="addRestriction(card)">
+                        + Add
+                      </button>
+                    </div>
+                    <div class="ladm-tags">
+                      <span class="ladm-tag" *ngFor="let item of card.restrictions; let idx = index">
+                        {{ item }}
+                        <button type="button" (click)="removeRestriction(card, idx)">x</button>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div class="ladm-section">
+                    <div class="ladm-title">Responsibilities (LADM)</div>
+                    <div class="ladm-input-row">
+                      <input
+                        type="text"
+                        class="keyValue__value ms-0"
+                        [(ngModel)]="card.newResponsibility"
+                        placeholder="Add responsibility"
+                      />
+                      <button
+                        type="button"
+                        class="primary-sm-btn-select-custom"
+                        (click)="addResponsibility(card)"
+                      >
+                        + Add
+                      </button>
+                    </div>
+                    <div class="ladm-tags">
+                      <span class="ladm-tag" *ngFor="let item of card.responsibilities; let idx = index">
+                        {{ item }}
+                        <button type="button" (click)="removeResponsibility(card, idx)">x</button>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </mat-card-content>
         </mat-card>
       </mat-card>
