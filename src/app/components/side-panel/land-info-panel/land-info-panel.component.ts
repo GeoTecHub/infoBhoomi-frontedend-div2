@@ -187,19 +187,22 @@ export class LandInfoPanelComponent {
     if (!info) return;
 
     const dialogRef = this.dialog.open(AddRightHolderComponent, {
-      width: '520px',
+      width: '680px',
+      maxWidth: '90vw',
       data: { context: 'land' },
       autoFocus: false,
+      panelClass: 'arh-dark-dialog',
     });
 
     dialogRef.afterClosed().subscribe((result: AddRightHolderResult | null) => {
       if (!result) return;
       const latestInfo = this.parcelInfo();
       if (!latestInfo) return;
+      const newRrrId = `LRRR-${Date.now()}`;
       const entries = [
         ...latestInfo.rrr.entries,
         {
-          rrrId: `LRRR-${Date.now()}`,
+          rrrId: newRrrId,
           type: RightType.OWN_FREE,
           holder: result.partyFullName || result.partyName,
           holderId: result.partyId,
@@ -216,6 +219,8 @@ export class LandInfoPanelComponent {
         },
       ];
       this.rrrChanged.emit({ entries });
+      // Auto-expand the newly added entry so user can fill in details
+      this.expandedRRRId.set(newRrrId);
     });
   }
 
@@ -247,13 +252,13 @@ export class LandInfoPanelComponent {
 
   openHolderDetails(entry: any): void {
     if (!entry.holderId && !entry.holderRegNumber) return;
-    // Re-open the dialog in search-result mode showing the party
-    const dialogRef = this.dialog.open(AddRightHolderComponent, {
-      width: '520px',
+    this.dialog.open(AddRightHolderComponent, {
+      width: '680px',
+      maxWidth: '90vw',
       data: { context: 'land', viewOnly: true },
       autoFocus: false,
+      panelClass: 'arh-dark-dialog',
     });
-    // The dialog opens in select-type mode; the user can search again if needed
   }
 
   // --- Document uploads ---

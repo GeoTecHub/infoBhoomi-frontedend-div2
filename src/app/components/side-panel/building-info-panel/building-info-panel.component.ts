@@ -297,16 +297,19 @@ export class BuildingInfoPanelComponent {
 
   addRRREntry(): void {
     const dialogRef = this.dialog.open(AddRightHolderComponent, {
-      width: '520px',
+      width: '680px',
+      maxWidth: '90vw',
       data: { context: 'building' },
       autoFocus: false,
+      panelClass: 'arh-dark-dialog',
     });
 
     dialogRef.afterClosed().subscribe((result: AddRightHolderResult | null) => {
       if (!result) return;
+      const newRrrId = `RRR-${Date.now().toString(36).toUpperCase()}`;
       const entries = this.cloneEntries();
       entries.push({
-        rrrId: `RRR-${Date.now().toString(36).toUpperCase()}`,
+        rrrId: newRrrId,
         type: RightType.OWN_FREE,
         holder: result.partyFullName || result.partyName,
         holderId: result.partyId,
@@ -322,6 +325,8 @@ export class BuildingInfoPanelComponent {
         responsibilities: [],
       });
       this.emitRRRUpdate(entries);
+      // Auto-expand the newly added entry so user can fill in details
+      this.expandedRRRId.set(newRrrId);
     });
   }
 
@@ -584,17 +589,20 @@ export class BuildingInfoPanelComponent {
 
   addUnitRRREntry(unitIndex: number): void {
     const dialogRef = this.dialog.open(AddRightHolderComponent, {
-      width: '520px',
+      width: '680px',
+      maxWidth: '90vw',
       data: { context: 'building-unit' },
       autoFocus: false,
+      panelClass: 'arh-dark-dialog',
     });
 
     dialogRef.afterClosed().subscribe((result: AddRightHolderResult | null) => {
       if (!result) return;
+      const newRrrId = `URRR-${Date.now().toString(36).toUpperCase()}`;
       const units = this.cloneUnits();
       if (!units[unitIndex]) return;
       units[unitIndex].rrr.entries.push({
-        rrrId: `URRR-${Date.now().toString(36).toUpperCase()}`,
+        rrrId: newRrrId,
         type: RightType.OWN_STR,
         holder: result.partyFullName || result.partyName,
         holderId: result.partyId,
@@ -610,6 +618,8 @@ export class BuildingInfoPanelComponent {
         responsibilities: [],
       });
       this.emitUnitsUpdate(units);
+      // Auto-expand the newly added unit-level entry
+      this.expandedUnitRRRId.set(newRrrId);
     });
   }
 
@@ -834,9 +844,11 @@ export class BuildingInfoPanelComponent {
   openHolderDetails(entry: RRREntry): void {
     if (!entry.holderId && !entry.holderRegNumber) return;
     this.dialog.open(AddRightHolderComponent, {
-      width: '520px',
+      width: '680px',
+      maxWidth: '90vw',
       data: { context: 'building', viewOnly: true },
       autoFocus: false,
+      panelClass: 'arh-dark-dialog',
     });
   }
 }

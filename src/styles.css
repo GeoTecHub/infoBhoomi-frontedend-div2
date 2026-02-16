@@ -477,3 +477,11 @@ td {
 .dropdown-dialog-panel .mat-mdc-dialog-surface {
   border-radius: 0 !important;
 }
+
+/* Dark-ash dialog panel for Add Right Holder and similar */
+.arh-dark-dialog .mat-mdc-dialog-surface {
+  background: #1e293b !important;
+  color: #e2e8f0 !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
