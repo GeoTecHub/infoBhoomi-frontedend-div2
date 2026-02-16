@@ -603,3 +603,117 @@ button.mat-dialog-close {
 .rrr-table {
   margin-bottom: 7px;
 }
+
+.holder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.holder-card {
+  border: 1px solid #dce4ea;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.holder-summary {
+  display: grid;
+  grid-template-columns: 34px 1fr 120px 90px 50px 34px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+}
+
+.holder-expand-btn,
+.holder-remove-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.holder-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2b3f4d;
+}
+
+.holder-chip {
+  font-size: 11px;
+  text-align: center;
+  border: 1px solid #cfd9e1;
+  border-radius: 999px;
+  padding: 3px 6px;
+  white-space: nowrap;
+}
+
+.holder-doc-owner {
+  min-width: auto;
+  width: 16px;
+  height: 16px;
+  margin: 0 auto;
+}
+
+.holder-details {
+  border-top: 1px solid #edf2f6;
+  padding: 10px;
+}
+
+.holder-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 12px;
+  font-size: 12px;
+}
+
+.holder-desc {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.ladm-section {
+  margin-top: 10px;
+}
+
+.ladm-title {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.ladm-input-row {
+  display: grid;
+  grid-template-columns: 1fr 90px;
+  gap: 8px;
+  align-items: center;
+}
+
+.ladm-input-row .primary-sm-btn-select-custom {
+  width: 100%;
+}
+
+.ladm-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.ladm-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid #d7e1e8;
+  background: #f8fbfd;
+  padding: 2px 8px;
+  font-size: 11px;
+}
+
+.ladm-tag button {
+  border: none;
+  background: transparent;
+  color: #8b2c2c;
+  cursor: pointer;
+  padding: 0;
+}

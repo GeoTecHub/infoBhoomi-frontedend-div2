@@ -4,29 +4,25 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
   Component,
-  forwardRef,
   Input,
   OnDestroy,
   OnInit,
   SimpleChanges,
-  ViewChild,
 } from '@angular/core';
-import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
-import { finalize, Subject, Subscription } from 'rxjs';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { finalize, Subject, takeUntil } from 'rxjs';
 import { APIsService } from '../../../services/api.service';
 import { DrawService } from '../../../services/draw.service';
 import { MapService } from '../../../services/map.service';
 import { NotificationService } from '../../../services/notifications.service';
-import { RrrPanalComponent } from '../../dialogs/rrr-panal/rrr-panal.component';
-import { KeyValueV2Component } from '../../shared/key-value-v2/key-value-v2.component';
-import { PanelImgComponent } from '../../shared/panel-img/panel-img.component';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { takeUntil } from 'rxjs';
 import { UserService } from '../../../services/user.service';
 import { FeatureNotAvailableComponent } from '../../dialogs/feature-not-available/feature-not-available.component';
+import { RrrPanalComponent } from '../../dialogs/rrr-panal/rrr-panal.component';
 import { RrrPanelComponent, RRRRow } from '../../dialogs/rrr-panel/rrr-panel.component';
 import { LoaderComponent } from '../loader/loader.component';
 
@@ -57,19 +53,12 @@ interface DynamicAttribute {
     ReactiveFormsModule,
     FormsModule,
     CommonModule,
-    LoaderComponent,
     MatIconModule,
     MatTooltipModule,
-  ],
+    MatButtonModule
+],
   templateUrl: './land-tab.component.html',
   styleUrl: './land-tab.component.css',
-  providers: [
-    {
-      provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => KeyValueV2Component),
-      multi: true,
-    },
-  ],
 })
 export class LandTabComponent implements OnInit, AfterViewInit, OnDestroy {
   // ================= DYNAMIC ATTRIBUTES =================
@@ -112,8 +101,6 @@ export class LandTabComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @Input({ required: true }) selected_feature_ID: string | number | null | undefined;
   private destroy$ = new Subject<void>();
-  private featureSub?: Subscription;
-  @ViewChild(PanelImgComponent) panelImgComponent!: PanelImgComponent;
   // ---------------------- temp variables -----------------
   selected_imag_file: File | null = null;
   // is_loading_toast = true;
@@ -1141,108 +1128,67 @@ export class LandTabComponent implements OnInit, AfterViewInit, OnDestroy {
   saveData(section: any): void {
     if (this.selected_feature_ID) {
       if (section == 'lt_admin_info') {
-        try {
-          this.apiService
-            .updateAdministrativeInfo(this.selected_feature_ID, this.adminInfo, 'LND')
-            .subscribe(
-              (lt_admin_info_res) => {
-                this.notificationService.showSuccess('Data saved successfully');
-                this.getSummaryDetailsMain();
-              },
-              (error) => {
-                // Asynchronous errors should be handled here
-                console.error('Error saving administrative info:', error);
-                this.notificationService.showError('Data not saved');
-              },
-            );
-        } catch (err) {
-          // This catches synchronous errors that might occur before the Observable is returned
-          console.error('Synchronous error occurred:', err);
-          this.notificationService.showError('A synchronous error occurred while saving data');
-        }
+        this.apiService
+          .updateAdministrativeInfo(this.selected_feature_ID, this.adminInfo, 'LND')
+          .subscribe({
+            next: () => {
+              this.notificationService.showSuccess('Data saved successfully');
+              this.getSummaryDetailsMain();
+            },
+            error: (error) => {
+              console.error('Error saving administrative info:', error);
+              this.notificationService.showError('Data not saved');
+            },
+          });
       }
       if (section == 'land_overview') {
-        try {
-          this.apiService
-            .updateLandOverviewInfo(this.selected_feature_ID, this.landInfo, 'LND')
-            .subscribe(
-              (lt_admin_info_res) => {
-                this.notificationService.showSuccess('Data saved successfully');
-              },
-              (error) => {
-                // Asynchronous errors should be handled here
-                console.error('Error saving administrative info:', error);
-                this.notificationService.showError('Data not saved');
-              },
-            );
-        } catch (err) {
-          // This catches synchronous errors that might occur before the Observable is returned
-          console.error('Synchronous error occurred:', err);
-          this.notificationService.showError('A synchronous error occurred while saving data');
-        }
+        this.apiService
+          .updateLandOverviewInfo(this.selected_feature_ID, this.landInfo, 'LND')
+          .subscribe({
+            next: () => {
+              this.notificationService.showSuccess('Data saved successfully');
+            },
+            error: (error) => {
+              console.error('Error saving land overview info:', error);
+              this.notificationService.showError('Data not saved');
+            },
+          });
       }
       if (section == 'lt_asses' || section == 'tax_info') {
-        try {
-          this.apiService
-            .updateTaxAndAssessmentInfo(this.selected_feature_ID, this.lt_asses_and_tax, 'LND')
-            .subscribe(
-              (lt_admin_info_res) => {
-                this.notificationService.showSuccess('Data saved successfully');
-              },
-              (error) => {
-                // Asynchronous errors should be handled here
-                console.error('Error saving administrative info:', error);
-                this.notificationService.showError('Data not saved');
-              },
-            );
-        } catch (err) {
-          // This catches synchronous errors that might occur before the Observable is returned
-          console.error('Synchronous error occurred:', err);
-          this.notificationService.showError('A synchronous error occurred while saving data');
-        }
+        this.apiService
+          .updateTaxAndAssessmentInfo(this.selected_feature_ID, this.lt_asses_and_tax, 'LND')
+          .subscribe({
+            next: () => this.notificationService.showSuccess('Data saved successfully'),
+            error: (error) => {
+              console.error('Error saving tax and assessment info:', error);
+              this.notificationService.showError('Data not saved');
+            },
+          });
       }
       if (section == 'lt_util_info') {
-        try {
-          this.apiService
-            .updateITUtilInfo(this.selected_feature_ID, this.lt_util_Info, 'LND')
-            .subscribe(
-              (lt_admin_info_res) => {
-                this.notificationService.showSuccess('Data saved successfully');
-              },
-              (error) => {
-                // Asynchronous errors should be handled here
-                console.error('Error saving administrative info:', error);
-                this.notificationService.showError('Data not saved');
-              },
-            );
-        } catch (err) {
-          // This catches synchronous errors that might occur before the Observable is returned
-          console.error('Synchronous error occurred:', err);
-          this.notificationService.showError('A synchronous error occurred while saving data');
-        }
+        this.apiService
+          .updateITUtilInfo(this.selected_feature_ID, this.lt_util_Info, 'LND')
+          .subscribe({
+            next: () => this.notificationService.showSuccess('Data saved successfully'),
+            error: (error) => {
+              console.error('Error saving utility info:', error);
+              this.notificationService.showError('Data not saved');
+            },
+          });
       }
       if (section == 'land_tenure' || section == 'administrative_sources') {
-        try {
-          this.apiService
-            .updateLandTenureInfo(this.selected_feature_ID, this.land_tenure, 'LND')
-            .subscribe(
-              (lt_admin_info_res) => {
-                this.notificationService.showSuccess('Data saved successfully');
-              },
-              (error) => {
-                // Asynchronous errors should be handled here
-                console.error('Error saving administrative info:', error);
-                this.notificationService.showError('Data not saved');
-              },
-            );
-        } catch (err) {
-          // This catches synchronous errors that might occur before the Observable is returned
-          console.error('Synchronous error occurred:', err);
-          this.notificationService.showError('A synchronous error occurred while saving data');
-        }
+        this.apiService
+          .updateLandTenureInfo(this.selected_feature_ID, this.land_tenure, 'LND')
+          .subscribe({
+            next: () => this.notificationService.showSuccess('Data saved successfully'),
+            error: (error) => {
+              console.error('Error saving land tenure info:', error);
+              this.notificationService.showError('Data not saved');
+            },
+          });
       }
     } else {
-      this.notificationService.showError('Please select item');
+      this.notificationService.showError('Please select an item');
     }
   }
 
@@ -1389,7 +1335,6 @@ export class LandTabComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.featureSub?.unsubscribe(); // Clean up feature subscription
     this.destroy$.next();
     this.destroy$.complete();
   }

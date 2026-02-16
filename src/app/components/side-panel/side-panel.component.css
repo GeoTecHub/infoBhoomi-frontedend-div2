@@ -11,6 +11,7 @@
   flex-direction: column;
   background: rgba(15, 23, 42, 0.7);
   border-right: 1px solid rgba(148, 163, 184, 0.1);
+  -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   transition: width 0.2s ease;
   overflow: hidden;

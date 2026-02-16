@@ -18,6 +18,7 @@ import { NotificationService } from '../../../services/notifications.service';
 import { CivilianComponent } from '../civilian/civilian.component';
 import { CompanyComponent } from '../company/company.component';
 import { LegalFirmComponent } from '../legal-firm/legal-firm.component';
+import { AddRightHolderComponent, AddRightHolderResult } from '../add-right-holder/add-right-holder.component';
 
 import { MatTooltipModule } from '@angular/material/tooltip';
 
@@ -38,6 +39,25 @@ export type RRRRow = {
 export type RRRGroup = {
   isCurrent: boolean; // first object = current owners
   rows: RRRRow[];
+};
+
+type LADMHolderCard = {
+  party_name: string;
+  party_role_type: string;
+  share_type: string;
+  share: number;
+  party: number | string;
+  party_type: string;
+  right_type: string;
+  date_start: string | null;
+  date_end: string | null;
+  life_time: boolean;
+  description: string | null;
+  restrictions: string[];
+  responsibilities: string[];
+  newRestriction: string;
+  newResponsibility: string;
+  expanded: boolean;
 };
 
 type RRRHistoryTable = {
@@ -123,7 +143,7 @@ export class RrrPanelComponent implements OnInit, AfterViewInit {
   right_party_role_types_array: any = [];
 
   party_cards: any[] = [];
-  adeded_party_cards: any[] = [];
+  adeded_party_cards: LADMHolderCard[] = [];
   show_presentage_inputs = false;
   data_of_aded_party: any = {};
   ba_unit: any;
@@ -285,7 +305,26 @@ export class RrrPanelComponent implements OnInit, AfterViewInit {
   }
 
   addNewPartyOneCard() {
-    this.show_party_add = true;
+    const dialogRef = this.dialog.open(AddRightHolderComponent, {
+      minWidth: '55vw',
+      maxWidth: '450px',
+      panelClass: 'rrr-centered-dialog',
+      data: {}, // No data needs to be passed in
+    });
+
+    dialogRef.afterClosed().subscribe((result: AddRightHolderResult | null) => {
+      if (result) {
+        this.data_of_aded_party = {
+          party_name: result.partyName,
+          pid: result.partyId,
+        };
+        this.add_party.party_sub_type = result.partyType; // <-- This is the fix
+
+        // This will show the inputs for share percentage etc.
+        this.show_presentage_inputs = true;
+        this.show_party_add = true; // Keep the section visible to enter share details
+      }
+    });
   }
 
   loadMortgageTypes() {
@@ -318,17 +357,19 @@ export class RrrPanelComponent implements OnInit, AfterViewInit {
       const sourceType = file?.admin_source_type ?? null;
       const fileUrl = file?.file_url ?? null; // from API
 
-      const rows: RRRRow[] = (unit.rrrs || []).map((r: any) => ({
-        party_name: r.party_name,
-        party_role_type: r.party_role_type,
-        sl_ba_unit_name: unit.sl_ba_unit_name,
-        sl_ba_unit_type: unit.sl_ba_unit_type,
-        ba_unit_id: unit.ba_unit_id,
-        share_type: r.share_type,
-        share: Number(r.share) || 0,
-        source_type: sourceType,
-        file_url: fileUrl,
-      }));
+      const rows: RRRRow[] = (unit.rrrs || [])
+        .map((r: any) => ({
+          party_name: r.party_name,
+          party_role_type: r.party_role_type,
+          sl_ba_unit_name: unit.sl_ba_unit_name,
+          sl_ba_unit_type: unit.sl_ba_unit_type,
+          ba_unit_id: unit.ba_unit_id,
+          share_type: r.share_type,
+          share: Number(r.share) || 0,
+          source_type: sourceType,
+          file_url: fileUrl,
+        }))
+        .filter((row: RRRRow) => !!row.party_name && row.party_name.trim() !== '');
 
       groups.push({
         isCurrent: markCurrentOwners && idx === 0, // only first group of CURRENT table
@@ -367,17 +408,23 @@ export class RrrPanelComponent implements OnInit, AfterViewInit {
       this.right_edit_view.description = null;
     }
 
-    const input_data = {
+    const input_data: LADMHolderCard = {
       party_name: this.data_of_aded_party.party_name,
       share: newShare,
       party_type: this.add_party.party_sub_type,
       date_start: this.right_edit_view.from,
       date_end: this.right_edit_view.to,
+      life_time: !!this.right_edit_view.life_time,
       description: this.right_edit_view.description,
       party: this.data_of_aded_party.pid,
-      right_type: this.ownership.ownership_type,
+      right_type: this.right_edit_view.right_type,
       share_type: this.add_party.share_type,
       party_role_type: this.add_party.party_role_type,
+      restrictions: [],
+      responsibilities: [],
+      newRestriction: '',
+      newResponsibility: '',
+      expanded: false,
     };
 
     this.adeded_party_cards.push(input_data);
@@ -419,64 +466,6 @@ export class RrrPanelComponent implements OnInit, AfterViewInit {
 
   toggleLifeTimeSelection() {}
 
-  // -------------------- PARTY DIALOGS -------------------- //
-
-  openPartyTypeDialog(partyType: string) {
-    if (this.add_party.party_sub_type) {
-      if (this.add_party.party_sub_type == 'Group') {
-        this.notificationService.showInfo('Group party type is under development.');
-        return;
-      }
-      if (this.add_party.party_sub_type == 'Company') {
-        const dialogRef = this.dialog.open(CompanyComponent, {
-          minWidth: '55vw',
-          maxWidth: '450px',
-          panelClass: 'rrr-centered-dialog',
-          data: { partyType: partyType, path: 'full' },
-        });
-
-        dialogRef.afterClosed().subscribe((result) => {
-          if (result) {
-            this.data_of_aded_party = result.data;
-            this.show_presentage_inputs = true;
-          }
-        });
-      }
-      if (this.add_party.party_sub_type == 'Ministry') {
-        const dialogRef = this.dialog.open(LegalFirmComponent, {
-          minWidth: '55vw',
-          maxWidth: '450px',
-          panelClass: 'rrr-centered-dialog',
-          data: { partyType: partyType },
-        });
-
-        dialogRef.afterClosed().subscribe((result) => {
-          if (result) {
-            console.log('Dialog result:', result);
-          }
-        });
-      }
-      if (this.add_party.party_sub_type == 'Civilian') {
-        const dialogRef = this.dialog.open(CivilianComponent, {
-          minWidth: '55vw',
-          maxWidth: '450px',
-          panelClass: 'rrr-centered-dialog',
-          data: { partyType: partyType, path: 'full' },
-        });
-
-        dialogRef.afterClosed().subscribe((result) => {
-          if (result) {
-            console.log('Dialog result:', result);
-            this.data_of_aded_party = result.data;
-            this.show_presentage_inputs = true;
-          }
-        });
-      }
-    } else {
-      this.notificationService.showError('Please select type');
-    }
-  }
-
   // -------------------- VIEW / EXISTING RRR -------------------- //
 
   getHistoryRowColor(historyIndex: number, groupIndex: number): string {
@@ -512,17 +501,19 @@ export class RrrPanelComponent implements OnInit, AfterViewInit {
       const sourceType = file?.admin_source_type ?? null;
       const fileUrl = file?.file_url ?? null; // from API
 
-      const rows: RRRRow[] = (unit.rrrs || []).map((r: any) => ({
-        party_name: r.party_name,
-        party_role_type: r.party_role_type,
-        sl_ba_unit_name: unit.sl_ba_unit_name,
-        sl_ba_unit_type: unit.sl_ba_unit_type,
-        ba_unit_id: unit.ba_unit_id,
-        share_type: r.share_type,
-        share: Number(r.share) || 0,
-        source_type: sourceType,
-        file_url: fileUrl, // store file_url
-      }));
+      const rows: RRRRow[] = (unit.rrrs || [])
+        .map((r: any) => ({
+          party_name: r.party_name,
+          party_role_type: r.party_role_type,
+          sl_ba_unit_name: unit.sl_ba_unit_name,
+          sl_ba_unit_type: unit.sl_ba_unit_type,
+          ba_unit_id: unit.ba_unit_id,
+          share_type: r.share_type,
+          share: Number(r.share) || 0,
+          source_type: sourceType,
+          file_url: fileUrl, // store file_url
+        }))
+        .filter((row: RRRRow) => !!row.party_name && row.party_name.trim() !== '');
 
       this.rrrGroups.push({
         isCurrent: globalIdx === 0, // only very first group is current
@@ -736,6 +727,32 @@ export class RrrPanelComponent implements OnInit, AfterViewInit {
 
   removeCard(index: number) {
     this.adeded_party_cards.splice(index, 1);
+  }
+
+  toggleHolderDetails(card: LADMHolderCard) {
+    card.expanded = !card.expanded;
+  }
+
+  addRestriction(card: LADMHolderCard) {
+    const value = (card.newRestriction || '').trim();
+    if (!value) return;
+    card.restrictions.push(value);
+    card.newRestriction = '';
+  }
+
+  removeRestriction(card: LADMHolderCard, idx: number) {
+    card.restrictions.splice(idx, 1);
+  }
+
+  addResponsibility(card: LADMHolderCard) {
+    const value = (card.newResponsibility || '').trim();
+    if (!value) return;
+    card.responsibilities.push(value);
+    card.newResponsibility = '';
+  }
+
+  removeResponsibility(card: LADMHolderCard, idx: number) {
+    card.responsibilities.splice(idx, 1);
   }
 
   closeDialog(): void {
