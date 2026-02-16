@@ -18,9 +18,23 @@ import {
   RightType,
   AccuracyLevel,
   SurveyMethod,
+  RRRInfo,
+  ParcelIdentification,
+  ParcelSpatial,
+  ParcelPhysical,
+  ParcelZoning,
+  ParcelValuation,
+  ParcelRelationships,
+  ParcelMetadata,
 } from '../../models/land-parcel.model';
 import {
   BuildingInfo,
+  BuildingSummary,
+  BuildingUnit,
+  SpatialInfo,
+  PhysicalAttributes,
+  RelationshipsTopology,
+  MetadataQuality,
   LegalStatus,
   PrimaryUse,
   LodLevel,
@@ -465,6 +479,98 @@ export class SidePanelComponent implements OnDestroy {
     const match = values.find((v) => v === upper);
     if (match) return match as T[keyof T];
     return defaultValue;
+  }
+
+  // ─── Land Panel Change Handlers ─────────────────────────
+  onLandRRRChanged(rrr: RRRInfo): void {
+    const current = this.currentLandParcelInfo();
+    if (!current) return;
+    this.currentLandParcelInfo.set({ ...current, rrr });
+  }
+
+  onLandIdentificationChanged(identification: ParcelIdentification): void {
+    const current = this.currentLandParcelInfo();
+    if (!current) return;
+    this.currentLandParcelInfo.set({ ...current, identification });
+  }
+
+  onLandSpatialChanged(spatial: ParcelSpatial): void {
+    const current = this.currentLandParcelInfo();
+    if (!current) return;
+    this.currentLandParcelInfo.set({ ...current, spatial });
+  }
+
+  onLandPhysicalChanged(physical: ParcelPhysical): void {
+    const current = this.currentLandParcelInfo();
+    if (!current) return;
+    this.currentLandParcelInfo.set({ ...current, physical });
+  }
+
+  onLandZoningChanged(zoning: ParcelZoning): void {
+    const current = this.currentLandParcelInfo();
+    if (!current) return;
+    this.currentLandParcelInfo.set({ ...current, zoning });
+  }
+
+  onLandValuationChanged(valuation: ParcelValuation): void {
+    const current = this.currentLandParcelInfo();
+    if (!current) return;
+    this.currentLandParcelInfo.set({ ...current, valuation });
+  }
+
+  onLandRelationshipsChanged(relationships: ParcelRelationships): void {
+    const current = this.currentLandParcelInfo();
+    if (!current) return;
+    this.currentLandParcelInfo.set({ ...current, relationships });
+  }
+
+  onLandMetadataChanged(metadata: ParcelMetadata): void {
+    const current = this.currentLandParcelInfo();
+    if (!current) return;
+    this.currentLandParcelInfo.set({ ...current, metadata });
+  }
+
+  // ─── Building Panel Change Handlers ────────────────────
+  onBuildingRRRChanged(rrr: RRRInfo): void {
+    const current = this.currentBuildingInfo();
+    if (!current) return;
+    this.currentBuildingInfo.set({ ...current, rrr });
+  }
+
+  onBuildingSummaryChanged(summary: BuildingSummary): void {
+    const current = this.currentBuildingInfo();
+    if (!current) return;
+    this.currentBuildingInfo.set({ ...current, summary });
+  }
+
+  onBuildingUnitsChanged(units: BuildingUnit[]): void {
+    const current = this.currentBuildingInfo();
+    if (!current) return;
+    this.currentBuildingInfo.set({ ...current, units });
+  }
+
+  onBuildingSpatialChanged(spatial: SpatialInfo): void {
+    const current = this.currentBuildingInfo();
+    if (!current) return;
+    this.currentBuildingInfo.set({ ...current, spatial });
+  }
+
+  onBuildingPhysicalChanged(physicalAttributes: PhysicalAttributes): void {
+    const current = this.currentBuildingInfo();
+    if (!current) return;
+    this.currentBuildingInfo.set({ ...current, physicalAttributes });
+  }
+
+  onBuildingRelationshipsChanged(relationshipsTopology: RelationshipsTopology): void {
+    const current = this.currentBuildingInfo();
+    if (!current) return;
+    this.currentBuildingInfo.set({ ...current, relationshipsTopology });
+  }
+
+  onBuildingMetadataChanged(metadataQuality: MetadataQuality): void {
+    const current = this.currentBuildingInfo();
+    if (!current) return;
+    this.currentBuildingInfo.set({ ...current, metadataQuality });
   }
 
   ngOnDestroy(): void {

@@ -105,7 +105,17 @@
 
     @if (activeSidebarTab() === 'land') {
       <div class="sidebar-tab-content">
-        <app-land-info-panel [parcelInfo]="currentLandParcelInfo()"></app-land-info-panel>
+        <app-land-info-panel
+          [parcelInfo]="currentLandParcelInfo()"
+          (rrrChanged)="onLandRRRChanged($event)"
+          (identificationChanged)="onLandIdentificationChanged($event)"
+          (spatialChanged)="onLandSpatialChanged($event)"
+          (physicalChanged)="onLandPhysicalChanged($event)"
+          (zoningChanged)="onLandZoningChanged($event)"
+          (valuationChanged)="onLandValuationChanged($event)"
+          (relationshipsChanged)="onLandRelationshipsChanged($event)"
+          (metadataChanged)="onLandMetadataChanged($event)"
+        ></app-land-info-panel>
       </div>
     }
 
@@ -114,6 +124,13 @@
         <app-building-info-panel
           [buildingInfo]="currentBuildingInfo()"
           [modelLoaded]="buildingModelLoaded()"
+          (rrrChanged)="onBuildingRRRChanged($event)"
+          (summaryChanged)="onBuildingSummaryChanged($event)"
+          (unitsChanged)="onBuildingUnitsChanged($event)"
+          (spatialChanged)="onBuildingSpatialChanged($event)"
+          (physicalChanged)="onBuildingPhysicalChanged($event)"
+          (relationshipsChanged)="onBuildingRelationshipsChanged($event)"
+          (metadataChanged)="onBuildingMetadataChanged($event)"
         ></app-building-info-panel>
       </div>
     }
