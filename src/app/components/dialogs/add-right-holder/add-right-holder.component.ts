@@ -33,6 +33,19 @@ export class AddRightHolderComponent implements OnInit, OnDestroy {
 
   // Steps
   currentStep: DialogStep = 'select-type';
+  stepLabels = ['Party Type', 'Identification', 'Confirm'];
+
+  getStepNumber(): number {
+    switch (this.currentStep) {
+      case 'select-type':
+        return 1;
+      case 'enter-id':
+        return 2;
+      case 'search-result':
+      case 'create-new':
+        return 3;
+    }
+  }
 
   // Step 1: Party type selection
   partyTypes = Object.values(PartyType);
