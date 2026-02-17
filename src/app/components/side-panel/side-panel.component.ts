@@ -405,20 +405,23 @@ export class SidePanelComponent implements OnDestroy {
         elevationRef: this.resolveEnum(props['elevation_ref'], ElevationRef, ElevationRef.GROUND),
       },
       rrr: {
-        entries: [
-          {
-            rrrId: `BRRR-${featureId}`,
-            type: RightType.OWN_FREE,
-            holder: props['owner'] || props['owner_name'] || '',
-            share: 100,
-            validFrom: props['registration_date'] || '',
-            validTo: '',
-            documentRef: props['deed_ref'] || props['document_ref'] || '',
-            documents: [],
-            restrictions: [],
-            responsibilities: [],
-          },
-        ],
+        entries:
+          props['owner'] || props['owner_name']
+            ? [
+                {
+                  rrrId: `BRRR-${featureId}`,
+                  type: RightType.OWN_FREE,
+                  holder: props['owner'] || props['owner_name'] || '',
+                  share: 100,
+                  validFrom: props['registration_date'] || '',
+                  validTo: '',
+                  documentRef: props['deed_ref'] || props['document_ref'] || '',
+                  documents: [],
+                  restrictions: [],
+                  responsibilities: [],
+                },
+              ]
+            : [],
       },
       units: [],
       physicalAttributes: {

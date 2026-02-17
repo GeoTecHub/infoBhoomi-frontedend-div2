@@ -228,7 +228,12 @@ export class BuildingInfoPanelComponent {
 
   formatArea(value: number | undefined): string {
     if (value === undefined || value === null || value === 0) return 'N/A';
-    return `${value.toLocaleString()} m²`;
+    const sqm = value.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    const acres = (value * 0.000247105).toFixed(4);
+    return `${sqm} m²  |  ${acres} acres`;
   }
 
   formatVolume(value: number | undefined): string {
