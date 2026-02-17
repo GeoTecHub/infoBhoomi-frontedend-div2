@@ -596,8 +596,8 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @if (parcelInfo()!.rrr.entries.length) {
-                    @for (entry of parcelInfo()!.rrr.entries; track entry.rrrId; let i = $index) {
+                  @if (rrrEntries().length) {
+                    @for (entry of rrrEntries(); track entry.rrrId; let i = $index) {
                       <tr class="rrr-data-row">
                         <td>
                           <div
