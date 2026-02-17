@@ -412,10 +412,26 @@ export class LandInfoPanelComponent {
   // --- Formatters ---
 
   formatArea(value: number | undefined): string {
-    if (!value) return '0 m²';
-    const sqm = value.toLocaleString();
+    if (!value) return '0.00 m²';
+    const sqm = value.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
     const acres = (value * 0.000247105).toFixed(4);
-    return `${sqm} m² (${acres} ac)`;
+    return `${sqm} m²  |  ${acres} acres`;
+  }
+
+  formatPerimeter(value: number | undefined): string {
+    if (!value) return '0.00 m';
+    const m = value.toLocaleString(undefined, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    });
+    if (value >= 1000) {
+      const km = (value / 1000).toFixed(3);
+      return `${m} m  |  ${km} km`;
+    }
+    return `${m} m`;
   }
 
   formatCurrency(value: number | undefined): string {

@@ -208,7 +208,7 @@
               <tr>
                 <td class="label">Perimeter</td>
                 <td class="value read-only">
-                  {{ parcelInfo()!.spatial.perimeter | number: '1.2-2' }} m
+                  {{ formatPerimeter(parcelInfo()!.spatial.perimeter) }}
                 </td>
               </tr>
               <tr>

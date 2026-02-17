@@ -22,9 +22,10 @@
 
 .arh-title {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #e2e8f0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: 0.2px;
 }
 
 .arh-close-btn {
@@ -83,31 +84,32 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 22px 14px;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 10px;
   border: 1px solid rgba(148, 163, 184, 0.15);
-  border-radius: 12px;
+  border-radius: 4px;
   background: rgba(30, 41, 59, 0.6);
   cursor: pointer;
   transition: all 0.2s ease;
+  aspect-ratio: 1;
 }
 
 .arh-type-card:hover {
   border-color: rgba(52, 211, 153, 0.5);
   background: rgba(52, 211, 153, 0.08);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .arh-type-icon {
-  font-size: 32px !important;
-  width: 32px !important;
-  height: 32px !important;
+  font-size: 22px !important;
+  width: 22px !important;
+  height: 22px !important;
   color: #34d399;
 }
 
 .arh-type-label {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: #cbd5e1;
   text-align: center;

@@ -338,20 +338,7 @@ export function createDefaultLandParcel(parcelId?: string): LandParcelInfo {
       specialOverlay: '',
     },
     rrr: {
-      entries: [
-        {
-          rrrId: `LRRR-${id}`,
-          type: RightType.OWN_FREE,
-          holder: '',
-          share: 100,
-          validFrom: new Date().toISOString().split('T')[0],
-          validTo: '',
-          documentRef: '',
-          documents: [],
-          restrictions: [],
-          responsibilities: [],
-        },
-      ],
+      entries: [],
     },
     valuation: {
       landValue: 0,
