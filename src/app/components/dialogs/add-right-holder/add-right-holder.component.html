@@ -1,281 +1,369 @@
 <div class="arh-dialog">
+  <!-- ═══ Header ═══ -->
   <div class="arh-header">
-    <h2 class="arh-title">
-      @if (currentStep === 'select-type') {
-        Select Party Type
-      } @else if (currentStep === 'enter-id') {
-        Enter Identification
-      } @else if (currentStep === 'search-result') {
-        Party Found
-      } @else {
-        Register New Party
-      }
-    </h2>
+    <div class="arh-header-text">
+      <h2 class="arh-title">Add Right Holder</h2>
+      <span class="arh-subtitle">
+        @if (currentStep === 'select-type') {
+          Select the type of party
+        } @else if (currentStep === 'enter-id') {
+          Enter identification details
+        } @else if (currentStep === 'search-result') {
+          Review and confirm party
+        } @else {
+          Register a new party record
+        }
+      </span>
+    </div>
     <button class="arh-close-btn" (click)="closeDialog()">
       <mat-icon>close</mat-icon>
     </button>
   </div>
 
+  <!-- ═══ Step Indicator ═══ -->
+  <div class="arh-stepper">
+    @for (label of stepLabels; track label; let i = $index) {
+      <div
+        class="arh-step"
+        [class.arh-step--active]="getStepNumber() === i + 1"
+        [class.arh-step--completed]="getStepNumber() > i + 1"
+      >
+        <div class="arh-step-circle">
+          @if (getStepNumber() > i + 1) {
+            <mat-icon class="arh-step-check">check</mat-icon>
+          } @else {
+            {{ i + 1 }}
+          }
+        </div>
+        <span class="arh-step-label">{{ label }}</span>
+      </div>
+      @if (i < stepLabels.length - 1) {
+        <div
+          class="arh-step-line"
+          [class.arh-step-line--done]="getStepNumber() > i + 1"
+        ></div>
+      }
+    }
+  </div>
+
   <mat-dialog-content class="arh-content">
     <!-- ═══ Step 1: Select Party Type ═══ -->
     @if (currentStep === 'select-type') {
-      <p class="arh-instruction">What type of right holder is this?</p>
-      <div class="arh-type-grid">
-        @for (type of partyTypes; track type) {
-          <button class="arh-type-card" (click)="selectPartyType(type)">
-            <mat-icon class="arh-type-icon">{{ getPartyTypeIcon(type) }}</mat-icon>
-            <span class="arh-type-label">{{ partyTypeDisplayMap[type] }}</span>
+      <div class="arh-step-body">
+        <div class="arh-type-grid">
+          <button class="arh-type-card" (click)="selectPartyType(partyTypes[0])">
+            <div class="arh-type-icon-wrap">
+              <mat-icon class="arh-type-icon">person</mat-icon>
+            </div>
+            <span class="arh-type-label">{{ partyTypeDisplayMap[partyTypes[0]] }}</span>
+            <span class="arh-type-desc">Individual person or citizen</span>
           </button>
-        }
+          <button class="arh-type-card" (click)="selectPartyType(partyTypes[1])">
+            <div class="arh-type-icon-wrap">
+              <mat-icon class="arh-type-icon">business</mat-icon>
+            </div>
+            <span class="arh-type-label">{{ partyTypeDisplayMap[partyTypes[1]] }}</span>
+            <span class="arh-type-desc">Registered business entity</span>
+          </button>
+          <button class="arh-type-card" (click)="selectPartyType(partyTypes[2])">
+            <div class="arh-type-icon-wrap">
+              <mat-icon class="arh-type-icon">gavel</mat-icon>
+            </div>
+            <span class="arh-type-label">{{ partyTypeDisplayMap[partyTypes[2]] }}</span>
+            <span class="arh-type-desc">Licensed legal practice</span>
+          </button>
+          <button class="arh-type-card" (click)="selectPartyType(partyTypes[3])">
+            <div class="arh-type-icon-wrap">
+              <mat-icon class="arh-type-icon">groups</mat-icon>
+            </div>
+            <span class="arh-type-label">{{ partyTypeDisplayMap[partyTypes[3]] }}</span>
+            <span class="arh-type-desc">Community or collective</span>
+          </button>
+        </div>
       </div>
     }
 
     <!-- ═══ Step 2: Enter ID & Search ═══ -->
     @if (currentStep === 'enter-id') {
-      <button class="arh-back-btn" (click)="goBackToTypeSelection()">
-        <mat-icon>arrow_back</mat-icon> Back
-      </button>
-      <div class="arh-selected-type">
-        <mat-icon>{{ getPartyTypeIcon(selectedPartyType!) }}</mat-icon>
-        <span>{{ partyTypeDisplayMap[selectedPartyType!] }}</span>
-      </div>
-
-      @if (selectedPartyType === 'LegalFirm' || selectedPartyType === 'Group') {
-        <!-- Group/Legal Firm: select from dropdown -->
-        <div class="arh-field-group">
-          <label class="arh-label">Select {{ partyTypeDisplayMap[selectedPartyType!] }}</label>
-          <select class="arh-select" [(ngModel)]="selectedGroupId">
-            <option value="" disabled>-- Select --</option>
-            @for (g of groupNames; track g.pid || g.id || g.name) {
-              <option [value]="g.pid || g.id">{{ g.party_name || g.name }}</option>
-            }
-          </select>
-        </div>
-      } @else {
-        <!-- Civilian / Company: registration type + number -->
-        @if (registrationTypeOptions.length > 1) {
-          <div class="arh-field-group">
-            <label class="arh-label">Registration Type</label>
-            <select class="arh-select" [(ngModel)]="registrationType">
-              @for (opt of registrationTypeOptions; track opt.value) {
-                <option [value]="opt.value">{{ opt.label }}</option>
-              }
-            </select>
-          </div>
-        }
-        <div class="arh-field-group">
-          <label class="arh-label">
-            @if (registrationType === 'nic') {
-              NIC Number
-            } @else if (registrationType === 'ps') {
-              Passport Number
-            } @else if (registrationType === 'dl') {
-              License Number
-            } @else if (registrationType === 'br') {
-              Business Registration Number
-            } @else {
-              Registration Number
-            }
-          </label>
-          <input
-            class="arh-input"
-            type="text"
-            [(ngModel)]="registrationNumber"
-            [placeholder]="
-              registrationType === 'nic'
-                ? 'e.g. 200012345678 or 901234567V'
-                : registrationType === 'ps'
-                  ? 'e.g. A1234567'
-                  : registrationType === 'dl'
-                    ? 'e.g. B12345678'
-                    : 'Enter number'
-            "
-          />
-          @if (idValidationError) {
-            <span class="arh-error">{{ idValidationError }}</span>
-          }
-        </div>
-      }
-
-      <div class="arh-actions">
-        <button class="arh-search-btn" (click)="searchParty()" [disabled]="isSearching">
-          @if (isSearching) {
-            <span class="arh-spinner"></span> Searching...
-          } @else {
-            <mat-icon>search</mat-icon> Search
-          }
+      <div class="arh-step-body">
+        <button class="arh-back-btn" (click)="goBackToTypeSelection()">
+          <mat-icon>arrow_back</mat-icon> Change type
         </button>
+
+        <div class="arh-selected-type">
+          <mat-icon>{{ getPartyTypeIcon(selectedPartyType!) }}</mat-icon>
+          <span>{{ partyTypeDisplayMap[selectedPartyType!] }}</span>
+        </div>
+
+        <div class="arh-id-section">
+          @if (selectedPartyType === 'LegalFirm' || selectedPartyType === 'Group') {
+            <div class="arh-field-group">
+              <label class="arh-label">Select {{ partyTypeDisplayMap[selectedPartyType!] }}</label>
+              <select class="arh-select" [(ngModel)]="selectedGroupId">
+                <option value="" disabled>-- Select --</option>
+                @for (g of groupNames; track g.pid || g.id || g.name) {
+                  <option [value]="g.pid || g.id">{{ g.party_name || g.name }}</option>
+                }
+              </select>
+            </div>
+          } @else {
+            @if (registrationTypeOptions.length > 1) {
+              <div class="arh-field-group">
+                <label class="arh-label">Registration Type</label>
+                <select class="arh-select" [(ngModel)]="registrationType">
+                  @for (opt of registrationTypeOptions; track opt.value) {
+                    <option [value]="opt.value">{{ opt.label }}</option>
+                  }
+                </select>
+              </div>
+            }
+            <div class="arh-field-group">
+              <label class="arh-label">
+                @if (registrationType === 'nic') {
+                  NIC Number
+                } @else if (registrationType === 'ps') {
+                  Passport Number
+                } @else if (registrationType === 'dl') {
+                  License Number
+                } @else if (registrationType === 'br') {
+                  Business Registration Number
+                } @else {
+                  Registration Number
+                }
+              </label>
+              <input
+                class="arh-input"
+                type="text"
+                [(ngModel)]="registrationNumber"
+                [placeholder]="
+                  registrationType === 'nic'
+                    ? 'e.g. 200012345678 or 901234567V'
+                    : registrationType === 'ps'
+                      ? 'e.g. A1234567'
+                      : registrationType === 'dl'
+                        ? 'e.g. B12345678'
+                        : 'Enter number'
+                "
+              />
+              @if (idValidationError) {
+                <span class="arh-error">{{ idValidationError }}</span>
+              }
+            </div>
+          }
+        </div>
+
+        <div class="arh-actions">
+          <button class="arh-btn arh-btn--primary" (click)="searchParty()" [disabled]="isSearching">
+            @if (isSearching) {
+              <span class="arh-spinner"></span> Searching...
+            } @else {
+              <mat-icon>search</mat-icon> Search Registry
+            }
+          </button>
+        </div>
       </div>
     }
 
     <!-- ═══ Step 3: Party Found ═══ -->
     @if (currentStep === 'search-result') {
-      <button class="arh-back-btn" (click)="goBackToSearch()">
-        <mat-icon>arrow_back</mat-icon> Back to Search
-      </button>
-      <div class="arh-result-card">
-        <div class="arh-result-badge">
-          <mat-icon>check_circle</mat-icon>
-          <span>Record Found</span>
-        </div>
-        <div class="arh-result-details">
-          <div class="arh-result-row">
-            <span class="arh-result-label">Name</span>
-            <span class="arh-result-value">{{
-              partyData?.party_full_name || partyData?.party_name || 'N/A'
-            }}</span>
-          </div>
-          <div class="arh-result-row">
-            <span class="arh-result-label">ID Type</span>
-            <span class="arh-result-value">
-              @if (partyData?.ext_pid_type === 'nic') {
-                National Identity Card
-              } @else if (partyData?.ext_pid_type === 'ps') {
-                Passport
-              } @else if (partyData?.ext_pid_type === 'dl') {
-                Driving License
-              } @else if (partyData?.ext_pid_type === 'br') {
-                Business Registration
-              } @else {
-                {{ partyData?.ext_pid_type || 'N/A' }}
-              }
-            </span>
-          </div>
-          <div class="arh-result-row">
-            <span class="arh-result-label">ID Number</span>
-            <span class="arh-result-value">{{ partyData?.ext_pid || 'N/A' }}</span>
-          </div>
-          @if (partyData?.specific_tp) {
-            <div class="arh-result-row">
-              <span class="arh-result-label">Telephone</span>
-              <span class="arh-result-value">{{ partyData.specific_tp }}</span>
-            </div>
-          }
-          @if (partyData?.pmt_address) {
-            <div class="arh-result-row">
-              <span class="arh-result-label">Address</span>
-              <span class="arh-result-value">{{ partyData.pmt_address }}</span>
-            </div>
-          }
-        </div>
-      </div>
-      <div class="arh-actions">
-        <button class="arh-select-party-btn" (click)="selectFoundParty()">
-          <mat-icon>person_add</mat-icon> Select this Party
+      <div class="arh-step-body">
+        <button class="arh-back-btn" (click)="goBackToSearch()">
+          <mat-icon>arrow_back</mat-icon> Back to search
         </button>
+
+        <div class="arh-result-card">
+          <div class="arh-result-header">
+            <div class="arh-result-avatar">
+              <mat-icon>{{ getPartyTypeIcon(selectedPartyType!) }}</mat-icon>
+            </div>
+            <div class="arh-result-header-text">
+              <span class="arh-result-name">{{
+                partyData?.party_full_name || partyData?.party_name || 'N/A'
+              }}</span>
+              <span class="arh-result-status">
+                <mat-icon>verified</mat-icon> Record Found
+              </span>
+            </div>
+          </div>
+          <div class="arh-result-details">
+            <div class="arh-result-row">
+              <span class="arh-result-label">ID Type</span>
+              <span class="arh-result-value">
+                @if (partyData?.ext_pid_type === 'nic') {
+                  National Identity Card
+                } @else if (partyData?.ext_pid_type === 'ps') {
+                  Passport
+                } @else if (partyData?.ext_pid_type === 'dl') {
+                  Driving License
+                } @else if (partyData?.ext_pid_type === 'br') {
+                  Business Registration
+                } @else {
+                  {{ partyData?.ext_pid_type || 'N/A' }}
+                }
+              </span>
+            </div>
+            <div class="arh-result-row">
+              <span class="arh-result-label">ID Number</span>
+              <span class="arh-result-value">{{ partyData?.ext_pid || 'N/A' }}</span>
+            </div>
+            @if (partyData?.specific_tp) {
+              <div class="arh-result-row">
+                <span class="arh-result-label">Telephone</span>
+                <span class="arh-result-value">{{ partyData.specific_tp }}</span>
+              </div>
+            }
+            @if (partyData?.pmt_address) {
+              <div class="arh-result-row">
+                <span class="arh-result-label">Address</span>
+                <span class="arh-result-value">{{ partyData.pmt_address }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="arh-actions">
+          <button class="arh-btn arh-btn--primary" (click)="selectFoundParty()">
+            <mat-icon>person_add</mat-icon> Select this Party
+          </button>
+        </div>
       </div>
     }
 
     <!-- ═══ Step 4: Create New Party ═══ -->
     @if (currentStep === 'create-new') {
-      <button class="arh-back-btn" (click)="goBackToSearch()">
-        <mat-icon>arrow_back</mat-icon> Back to Search
-      </button>
-      <div class="arh-new-party-info">
-        <mat-icon>info</mat-icon>
-        <span
-          >No record found for <strong>{{ registrationNumber }}</strong
-          >. Fill in the details below.</span
-        >
-      </div>
+      <div class="arh-step-body">
+        <button class="arh-back-btn" (click)="goBackToSearch()">
+          <mat-icon>arrow_back</mat-icon> Back to search
+        </button>
 
-      <div class="arh-form-grid">
-        <div class="arh-field-group">
-          <label class="arh-label">Name <span class="arh-required">*</span></label>
-          <input class="arh-input" type="text" [(ngModel)]="newParty.party_name" />
-        </div>
-        <div class="arh-field-group">
-          <label class="arh-label">Full Name</label>
-          <input class="arh-input" type="text" [(ngModel)]="newParty.party_full_name" />
-        </div>
-        <div class="arh-field-group">
-          <label class="arh-label">Telephone</label>
-          <input class="arh-input" type="tel" maxlength="10" [(ngModel)]="newParty.specific_tp" />
-        </div>
-        <div class="arh-field-group">
-          <label class="arh-label">Address</label>
-          <input class="arh-input" type="text" [(ngModel)]="newParty.pmt_address" />
-        </div>
-        <div class="arh-field-group">
-          <label class="arh-label">Email</label>
-          <input class="arh-input" type="email" [(ngModel)]="newParty.email" />
+        <div class="arh-info-banner">
+          <mat-icon>info</mat-icon>
+          <span
+            >No record found for <strong>{{ registrationNumber }}</strong
+            >. Fill in details below to register.</span
+          >
         </div>
 
+        <!-- Personal Info -->
+        <div class="arh-form-section">
+          <div class="arh-form-section-title">Personal Information</div>
+          <div class="arh-form-grid">
+            <div class="arh-field-group">
+              <label class="arh-label">Name <span class="arh-required">*</span></label>
+              <input class="arh-input" type="text" [(ngModel)]="newParty.party_name" placeholder="Enter name" />
+            </div>
+            <div class="arh-field-group">
+              <label class="arh-label">Full Name</label>
+              <input class="arh-input" type="text" [(ngModel)]="newParty.party_full_name" placeholder="Enter full name" />
+            </div>
+            @if (selectedPartyType === 'Civilian') {
+              <div class="arh-field-group">
+                <label class="arh-label">Date of Birth</label>
+                <input class="arh-input" type="date" [(ngModel)]="newParty.date_of_birth" />
+              </div>
+              <div class="arh-field-group">
+                <label class="arh-label">Gender</label>
+                <select class="arh-select" [(ngModel)]="newParty.gender">
+                  <option [ngValue]="null" disabled>Select</option>
+                  @for (opt of genderTypes; track opt.name) {
+                    <option [value]="opt.name">{{ opt.name }}</option>
+                  }
+                </select>
+              </div>
+              <div class="arh-field-group">
+                <label class="arh-label">Married Status</label>
+                <select class="arh-select" [(ngModel)]="newParty.married_status">
+                  <option [ngValue]="null" disabled>Select</option>
+                  @for (opt of marriedStatuses; track opt.name) {
+                    <option [value]="opt.name">{{ opt.name }}</option>
+                  }
+                </select>
+              </div>
+              <div class="arh-field-group">
+                <label class="arh-label">Education Level</label>
+                <select class="arh-select" [(ngModel)]="newParty.edu">
+                  <option [ngValue]="null" disabled>Select</option>
+                  @for (opt of educationLevels; track opt.name) {
+                    <option [value]="opt.name">{{ opt.name }}</option>
+                  }
+                </select>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="arh-form-section">
+          <div class="arh-form-section-title">Contact Details</div>
+          <div class="arh-form-grid">
+            <div class="arh-field-group">
+              <label class="arh-label">Telephone</label>
+              <input class="arh-input" type="tel" maxlength="10" [(ngModel)]="newParty.specific_tp" placeholder="e.g. 0771234567" />
+            </div>
+            <div class="arh-field-group">
+              <label class="arh-label">Email</label>
+              <input class="arh-input" type="email" [(ngModel)]="newParty.email" placeholder="email@example.com" />
+            </div>
+            <div class="arh-field-group arh-field-full">
+              <label class="arh-label">Address</label>
+              <input class="arh-input" type="text" [(ngModel)]="newParty.pmt_address" placeholder="Permanent address" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional (Civilian only) -->
         @if (selectedPartyType === 'Civilian') {
-          <div class="arh-field-group">
-            <label class="arh-label">Date of Birth</label>
-            <input class="arh-input" type="date" [(ngModel)]="newParty.date_of_birth" />
-          </div>
-          <div class="arh-field-group">
-            <label class="arh-label">Gender</label>
-            <select class="arh-select" [(ngModel)]="newParty.gender">
-              <option [ngValue]="null" disabled>Select</option>
-              @for (opt of genderTypes; track opt.name) {
-                <option [value]="opt.name">{{ opt.name }}</option>
-              }
-            </select>
-          </div>
-          <div class="arh-field-group">
-            <label class="arh-label">Education Level</label>
-            <select class="arh-select" [(ngModel)]="newParty.edu">
-              <option [ngValue]="null" disabled>Select</option>
-              @for (opt of educationLevels; track opt.name) {
-                <option [value]="opt.name">{{ opt.name }}</option>
-              }
-            </select>
-          </div>
-          <div class="arh-field-group">
-            <label class="arh-label">Married Status</label>
-            <select class="arh-select" [(ngModel)]="newParty.married_status">
-              <option [ngValue]="null" disabled>Select</option>
-              @for (opt of marriedStatuses; track opt.name) {
-                <option [value]="opt.name">{{ opt.name }}</option>
-              }
-            </select>
-          </div>
-          <div class="arh-field-group">
-            <label class="arh-label">Race</label>
-            <select class="arh-select" [(ngModel)]="newParty.race">
-              <option [ngValue]="null" disabled>Select</option>
-              @for (opt of raceTypes; track opt.name) {
-                <option [value]="opt.name">{{ opt.name }}</option>
-              }
-            </select>
-          </div>
-          <div class="arh-field-group">
-            <label class="arh-label">Religion</label>
-            <select class="arh-select" [(ngModel)]="newParty.religion">
-              <option value="" disabled>Select</option>
-              @for (opt of religionTypes; track opt.name) {
-                <option [value]="opt.name">{{ opt.name }}</option>
-              }
-            </select>
-          </div>
-          <div class="arh-field-group">
-            <label class="arh-label">Health Status</label>
-            <select class="arh-select" [(ngModel)]="newParty.health_status">
-              <option [ngValue]="null" disabled>Select</option>
-              @for (opt of healthStatuses; track opt.name) {
-                <option [value]="opt.name">{{ opt.name }}</option>
-              }
-            </select>
+          <div class="arh-form-section">
+            <div class="arh-form-section-title">Additional Details</div>
+            <div class="arh-form-grid">
+              <div class="arh-field-group">
+                <label class="arh-label">Race</label>
+                <select class="arh-select" [(ngModel)]="newParty.race">
+                  <option [ngValue]="null" disabled>Select</option>
+                  @for (opt of raceTypes; track opt.name) {
+                    <option [value]="opt.name">{{ opt.name }}</option>
+                  }
+                </select>
+              </div>
+              <div class="arh-field-group">
+                <label class="arh-label">Religion</label>
+                <select class="arh-select" [(ngModel)]="newParty.religion">
+                  <option value="" disabled>Select</option>
+                  @for (opt of religionTypes; track opt.name) {
+                    <option [value]="opt.name">{{ opt.name }}</option>
+                  }
+                </select>
+              </div>
+              <div class="arh-field-group">
+                <label class="arh-label">Health Status</label>
+                <select class="arh-select" [(ngModel)]="newParty.health_status">
+                  <option [ngValue]="null" disabled>Select</option>
+                  @for (opt of healthStatuses; track opt.name) {
+                    <option [value]="opt.name">{{ opt.name }}</option>
+                  }
+                </select>
+              </div>
+            </div>
           </div>
         }
-      </div>
 
-      <div class="arh-field-group" style="margin-top: 0.5rem">
-        <label class="arh-label">Remark</label>
-        <input class="arh-input" type="text" [(ngModel)]="newParty.remark" />
-      </div>
+        <!-- Remark -->
+        <div class="arh-form-section">
+          <div class="arh-field-group">
+            <label class="arh-label">Remark</label>
+            <input class="arh-input" type="text" [(ngModel)]="newParty.remark" placeholder="Optional notes" />
+          </div>
+        </div>
 
-      <div class="arh-actions">
-        <button class="arh-save-btn" (click)="saveNewParty()" [disabled]="isSaving">
-          @if (isSaving) {
-            <span class="arh-spinner"></span> Saving...
-          } @else {
-            <mat-icon>save</mat-icon> Save & Select
-          }
-        </button>
+        <div class="arh-actions">
+          <button class="arh-btn arh-btn--primary" (click)="saveNewParty()" [disabled]="isSaving">
+            @if (isSaving) {
+              <span class="arh-spinner"></span> Saving...
+            } @else {
+              <mat-icon>save</mat-icon> Save & Select
+            }
+          </button>
+        </div>
       </div>
     }
   </mat-dialog-content>
