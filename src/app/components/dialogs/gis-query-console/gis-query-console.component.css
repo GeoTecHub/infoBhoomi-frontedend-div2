@@ -1,0 +1,783 @@
+/* GIS Query Console — gqc prefix — Dark Navy GIS theme */
+
+:host {
+  display: block;
+}
+
+.gqc-dialog {
+  width: 92vw;
+  max-width: 1280px;
+  height: 82vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ═══ Header ═══ */
+
+.gqc-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #0a1628, #0f2035);
+  padding: 12px 20px;
+  border-bottom: 1px solid #1a2d4a;
+  margin: -24px -24px 0;
+  flex-shrink: 0;
+}
+
+.gqc-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gqc-logo {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #4a9eff, #1a6fb5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gqc-logo mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #fff;
+}
+
+.gqc-header-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.gqc-header-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #e8f0f8;
+  letter-spacing: -0.3px;
+}
+
+.gqc-header-sub {
+  font-size: 11px;
+  color: #4a7a9b;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+.gqc-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.gqc-badge {
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+.gqc-badge--green {
+  background: #0d2b1a;
+  border: 1px solid #1a5c35;
+  color: #2ecc71;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.gqc-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #2ecc71;
+  display: inline-block;
+}
+
+.gqc-badge--muted {
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+  color: #a8b4c8;
+}
+
+.gqc-close-btn {
+  background: none;
+  border: none;
+  color: #4a7a9b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s;
+  margin-left: 4px;
+}
+
+.gqc-close-btn:hover {
+  color: #e2e8f0;
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.gqc-close-btn mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+/* ═══ Content ═══ */
+
+.gqc-content {
+  flex: 1;
+  padding: 0 !important;
+  overflow: hidden !important;
+  margin: 0 -24px -24px !important;
+}
+
+.gqc-layout {
+  display: flex;
+  height: 100%;
+}
+
+/* ═══ Left Sidebar ═══ */
+
+.gqc-sidebar {
+  width: 200px;
+  min-width: 200px;
+  background: #0a1628;
+  border-right: 1px solid #1a2d4a;
+  padding: 14px 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.gqc-section-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 14px 10px;
+  font-size: 10px;
+  color: #3a6080;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+}
+
+.gqc-cat-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  color: #6a8aa8;
+  cursor: pointer;
+  font-size: 13px;
+  text-align: left;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.gqc-cat-btn:hover {
+  background: rgba(74, 158, 255, 0.05);
+  color: #8aaec4;
+}
+
+.gqc-cat-btn--active {
+  background: linear-gradient(90deg, rgba(74, 158, 255, 0.1), transparent);
+  color: #e8f0f8;
+  font-weight: 600;
+}
+
+.gqc-cat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  color: #6a8aa8;
+}
+
+.gqc-cat-btn--active .gqc-cat-icon {
+  color: inherit;
+}
+
+/* History */
+.gqc-history {
+  margin-top: auto;
+  border-top: 1px solid #1a2d4a;
+  padding: 12px 14px 0;
+}
+
+.gqc-history-item {
+  padding: 5px 0;
+  border-bottom: 1px solid #0f1e30;
+}
+
+.gqc-history-name {
+  font-size: 11px;
+  color: #6ba3d6;
+}
+
+.gqc-history-meta {
+  font-size: 10px;
+  color: #4a7a9b;
+  margin-top: 1px;
+}
+
+/* ═══ Query List ═══ */
+
+.gqc-query-list {
+  width: 260px;
+  min-width: 260px;
+  border-right: 1px solid #1a2d4a;
+  padding: 14px;
+  overflow-y: auto;
+  background: #0b1726;
+}
+
+.gqc-ql-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+}
+
+.gqc-query-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gqc-query-card {
+  display: flex;
+  flex-direction: column;
+  padding: 11px 13px;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  background: #0d1f33;
+  border: 1px solid #152a42;
+  transition: all 0.2s;
+}
+
+.gqc-query-card:hover {
+  border-color: #1e3a5f;
+  background: #0f2438;
+}
+
+.gqc-query-card--active {
+  background: rgba(74, 158, 255, 0.06);
+}
+
+.gqc-query-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8aaec4;
+  margin-bottom: 3px;
+}
+
+.gqc-query-card--active .gqc-query-name {
+  color: #e8f0f8;
+}
+
+.gqc-query-desc {
+  font-size: 11px;
+  color: #4a6a82;
+  line-height: 1.4;
+}
+
+/* ═══ Main Panel ═══ */
+
+.gqc-main-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* Parameter Section */
+.gqc-param-section {
+  padding: 18px 22px;
+  border-bottom: 1px solid #1a2d4a;
+  background: #0b1726;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+.gqc-param-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  gap: 16px;
+}
+
+.gqc-param-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #e8f0f8;
+  margin: 0;
+}
+
+.gqc-param-desc {
+  font-size: 12px;
+  color: #4a7a9b;
+  margin: 4px 0 0;
+}
+
+.gqc-param-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.gqc-sql-toggle {
+  padding: 7px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid #1e3a5f;
+  color: #6ba3d6;
+  font-size: 12px;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  transition: all 0.2s;
+}
+
+.gqc-sql-toggle:hover {
+  background: #1a2d4a;
+}
+
+.gqc-sql-toggle--on {
+  background: #1a2d4a;
+}
+
+.gqc-execute-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.gqc-execute-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.gqc-execute-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* Param Grid */
+.gqc-param-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.gqc-param-field {
+  min-width: 170px;
+  flex: 1 1 170px;
+}
+
+.gqc-param-label {
+  display: block;
+  font-size: 11px;
+  color: #4a7a9b;
+  margin-bottom: 5px;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.gqc-param-unit {
+  color: #3a5068;
+}
+
+.gqc-input {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: #0d1b2a;
+  border: 1px solid #1e3a5f;
+  color: #c8dae8;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.gqc-input:focus {
+  border-color: #4a9eff;
+  box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.1);
+}
+
+.gqc-input option {
+  background: #0d1b2a;
+  color: #c8dae8;
+}
+
+/* ═══ SQL Preview ═══ */
+
+.gqc-sql-preview {
+  margin-top: 16px;
+  background: #0d1b2a;
+  border-radius: 8px;
+  border: 1px solid #1a2d4a;
+  overflow: hidden;
+}
+
+.gqc-sql-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  font-size: 10px;
+  color: #3a6080;
+  border-bottom: 1px solid #1a2d4a;
+}
+
+.gqc-sql-header mat-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+}
+
+.gqc-sql-body {
+  padding: 10px 14px;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+  color: #a8c4d8;
+  overflow-x: auto;
+}
+
+/* SQL syntax highlight classes */
+:host ::ng-deep .sql-line {
+  display: flex;
+  gap: 12px;
+}
+
+:host ::ng-deep .sql-ln {
+  color: #3a5068;
+  min-width: 18px;
+  text-align: right;
+  user-select: none;
+}
+
+:host ::ng-deep .sql-kw {
+  color: #c792ea;
+  font-weight: 600;
+}
+
+:host ::ng-deep .sql-fn {
+  color: #82aaff;
+}
+
+:host ::ng-deep .sql-str {
+  color: #c3e88d;
+}
+
+:host ::ng-deep .sql-num {
+  color: #f78c6c;
+}
+
+/* ═══ Results Bar ═══ */
+
+.gqc-results-bar {
+  margin-top: 16px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(46, 204, 113, 0.08), transparent);
+  border: 1px solid rgba(46, 204, 113, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gqc-results-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #2ecc71;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  font-size: 12px;
+}
+
+.gqc-results-info mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.gqc-results-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.gqc-export-btn {
+  padding: 4px 12px;
+  border-radius: 4px;
+  background: transparent;
+  border: 1px solid #1e3a5f;
+  color: #6ba3d6;
+  font-size: 11px;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  transition: all 0.2s;
+}
+
+.gqc-export-btn:hover {
+  background: #1a2d4a;
+}
+
+/* ═══ Mini Map ═══ */
+
+.gqc-map-area {
+  flex: 1;
+  padding: 14px;
+  min-height: 0;
+}
+
+.gqc-minimap {
+  background: #0a1628;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+  height: 100%;
+  min-height: 200px;
+  border: 1px solid #1a2d4a;
+}
+
+.gqc-map-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0.08;
+}
+
+.gqc-map-parcels {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.gqc-parcel {
+  fill: #132744;
+  stroke: #1e3a5f;
+  stroke-width: 0.25;
+  opacity: 0.45;
+  transition: all 0.6s ease;
+}
+
+.gqc-map-scale {
+  position: absolute;
+  bottom: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.gqc-scale-bar {
+  width: 50px;
+  height: 3px;
+  background: #6ba3d6;
+  border-radius: 2px;
+  position: relative;
+}
+
+.gqc-scale-bar::before,
+.gqc-scale-bar::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  width: 1px;
+  height: 7px;
+  background: #6ba3d6;
+}
+
+.gqc-scale-bar::before {
+  left: 0;
+}
+
+.gqc-scale-bar::after {
+  right: 0;
+}
+
+.gqc-map-scale span {
+  color: #6ba3d6;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+.gqc-map-coords {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  color: #4a7a9b;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+}
+
+.gqc-map-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 22, 40, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(2px);
+}
+
+.gqc-map-overlay-text {
+  color: #4a9eff;
+  font-size: 13px;
+  font-family: 'JetBrains Mono', 'Consolas', monospace;
+  animation: gqc-pulse 1.5s ease infinite;
+}
+
+/* ═══ Empty State ═══ */
+
+.gqc-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #2a4a68;
+  text-align: center;
+  padding: 40px;
+}
+
+.gqc-empty-icon {
+  font-size: 48px !important;
+  width: 48px !important;
+  height: 48px !important;
+  opacity: 0.3;
+  color: #4a7a9b;
+  margin-bottom: 16px;
+}
+
+.gqc-empty-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #3a6080;
+  margin-bottom: 8px;
+}
+
+.gqc-empty-desc {
+  font-size: 13px;
+  color: #2a4a68;
+  max-width: 340px;
+  line-height: 1.6;
+}
+
+.gqc-empty-tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.gqc-tag {
+  padding: 5px 13px;
+  border-radius: 16px;
+  background: #0d1f33;
+  border: 1px solid #1a2d4a;
+  font-size: 12px;
+  color: #4a7a9b;
+}
+
+/* ═══ Spinner ═══ */
+
+.gqc-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: gqc-spin 0.6s linear infinite;
+}
+
+/* ═══ Scrollbar ═══ */
+
+.gqc-sidebar::-webkit-scrollbar,
+.gqc-query-list::-webkit-scrollbar,
+.gqc-param-section::-webkit-scrollbar {
+  width: 5px;
+}
+
+.gqc-sidebar::-webkit-scrollbar-track,
+.gqc-query-list::-webkit-scrollbar-track,
+.gqc-param-section::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.gqc-sidebar::-webkit-scrollbar-thumb,
+.gqc-query-list::-webkit-scrollbar-thumb,
+.gqc-param-section::-webkit-scrollbar-thumb {
+  background: #1e3a5f;
+  border-radius: 3px;
+}
+
+/* ═══ Animations ═══ */
+
+@keyframes gqc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes gqc-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* ═══ Responsive ═══ */
+
+@media (max-width: 900px) {
+  .gqc-sidebar {
+    width: 160px;
+    min-width: 160px;
+  }
+
+  .gqc-query-list {
+    width: 200px;
+    min-width: 200px;
+  }
+
+  .gqc-badge--muted {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .gqc-sidebar {
+    display: none;
+  }
+
+  .gqc-query-list {
+    width: 180px;
+    min-width: 180px;
+  }
+}

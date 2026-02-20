@@ -1,0 +1,256 @@
+<div class="gqc-dialog">
+  <!-- ═══ Header ═══ -->
+  <div class="gqc-header">
+    <div class="gqc-header-left">
+      <div class="gqc-logo">
+        <mat-icon>hexagon</mat-icon>
+      </div>
+      <div class="gqc-header-text">
+        <span class="gqc-header-title">Municipal GIS Query Console</span>
+        <span class="gqc-header-sub">Spatial Intelligence Platform</span>
+      </div>
+    </div>
+    <div class="gqc-header-right">
+      <span class="gqc-badge gqc-badge--green">
+        <span class="gqc-badge-dot"></span> PostGIS Connected
+      </span>
+      <span class="gqc-badge gqc-badge--muted">EPSG:5235</span>
+      <button class="gqc-close-btn" (click)="closeDialog()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ Main Layout ═══ -->
+  <mat-dialog-content class="gqc-content">
+    <div class="gqc-layout">
+      <!-- ─── Left Sidebar: Categories ─── -->
+      <nav class="gqc-sidebar">
+        <div class="gqc-section-label">Query Categories</div>
+        @for (key of categoryKeys; track key) {
+          <button
+            class="gqc-cat-btn"
+            [class.gqc-cat-btn--active]="activeCategory() === key"
+            [style.border-left-color]="activeCategory() === key ? categories[key].color : 'transparent'"
+            (click)="selectCategory(key)"
+          >
+            <mat-icon
+              class="gqc-cat-icon"
+              [style.color]="activeCategory() === key ? categories[key].color : ''"
+            >{{ categories[key].icon }}</mat-icon>
+            <span>{{ categories[key].label }}</span>
+          </button>
+        }
+
+        <!-- Recent Queries -->
+        @if (history().length) {
+          <div class="gqc-history">
+            <div class="gqc-section-label">Recent Queries</div>
+            @for (h of history().slice(0, 5); track h.time + h.query) {
+              <div class="gqc-history-item">
+                <div class="gqc-history-name">{{ h.query }}</div>
+                <div class="gqc-history-meta">{{ h.time }} — {{ h.count }} results</div>
+              </div>
+            }
+          </div>
+        }
+      </nav>
+
+      <!-- ─── Query List ─── -->
+      <div class="gqc-query-list">
+        <div class="gqc-section-label">
+          <mat-icon
+            class="gqc-ql-icon"
+            [style.color]="category.color"
+          >{{ category.icon }}</mat-icon>
+          {{ category.label }} Queries
+        </div>
+        <div class="gqc-query-items">
+          @for (q of category.queries; track q.id) {
+            <button
+              class="gqc-query-card"
+              [class.gqc-query-card--active]="activeQuery()?.id === q.id"
+              [style.border-color]="activeQuery()?.id === q.id ? category.color + '44' : ''"
+              (click)="selectQuery(q)"
+            >
+              <span class="gqc-query-name">{{ q.name }}</span>
+              <span class="gqc-query-desc">{{ q.description }}</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- ─── Parameter Panel + Map ─── -->
+      <div class="gqc-main-panel">
+        @if (activeQuery()) {
+          <!-- Parameters -->
+          <div class="gqc-param-section">
+            <div class="gqc-param-header">
+              <div>
+                <h3 class="gqc-param-title">{{ activeQuery()!.name }}</h3>
+                <p class="gqc-param-desc">{{ activeQuery()!.description }}</p>
+              </div>
+              <div class="gqc-param-actions">
+                <button class="gqc-sql-toggle" [class.gqc-sql-toggle--on]="showSQL()" (click)="toggleSQL()">
+                  {{ showSQL() ? '</> Hide SQL' : '</> Show SQL' }}
+                </button>
+                <button
+                  class="gqc-execute-btn"
+                  [style.background]="isRunning() ? '#1a2d4a' : 'linear-gradient(135deg, ' + category.color + ', ' + category.color + 'cc)'"
+                  [disabled]="isRunning()"
+                  (click)="runQuery()"
+                >
+                  @if (isRunning()) {
+                    <span class="gqc-spinner"></span> Running...
+                  } @else {
+                    <mat-icon>play_arrow</mat-icon> Execute Query
+                  }
+                </button>
+              </div>
+            </div>
+
+            <!-- Param Inputs -->
+            <div class="gqc-param-grid">
+              @for (p of activeQuery()!.params; track p.key) {
+                <div class="gqc-param-field">
+                  <label class="gqc-param-label">
+                    {{ p.label }}
+                    @if (p.unit) {
+                      <span class="gqc-param-unit">({{ p.unit }})</span>
+                    }
+                  </label>
+                  @if (p.type === 'select') {
+                    <select
+                      class="gqc-input"
+                      [ngModel]="params()[p.key]"
+                      (ngModelChange)="updateParam(p.key, $event, 'select')"
+                    >
+                      @for (opt of p.options; track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <input
+                      class="gqc-input"
+                      [type]="p.type"
+                      [ngModel]="params()[p.key]"
+                      (ngModelChange)="updateParam(p.key, $event, p.type)"
+                    />
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- SQL Preview -->
+            @if (showSQL()) {
+              <div class="gqc-sql-preview">
+                <div class="gqc-sql-header">
+                  <mat-icon>data_object</mat-icon> PostGIS / SQL Preview
+                </div>
+                <div class="gqc-sql-body" [innerHTML]="highlightSQL(generatedSQL)"></div>
+              </div>
+            }
+
+            <!-- Results Bar -->
+            @if (results() && !isRunning()) {
+              <div class="gqc-results-bar">
+                <div class="gqc-results-info">
+                  <mat-icon>check_circle</mat-icon>
+                  <span>
+                    Query returned <strong>{{ results()!.count }}</strong> features in {{ results()!.time }}s
+                  </span>
+                </div>
+                <div class="gqc-results-actions">
+                  <button class="gqc-export-btn">Export CSV</button>
+                  <button class="gqc-export-btn">Export SHP</button>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Mini Map -->
+          <div class="gqc-map-area">
+            <div class="gqc-minimap">
+              <!-- Grid overlay -->
+              <svg class="gqc-map-grid" width="100%" height="100%">
+                @for (i of [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]; track i) {
+                  <line [attr.x1]="0" [attr.y1]="i * 5 + '%'" x2="100%" [attr.y2]="i * 5 + '%'" stroke="#4a9eff" stroke-width="0.5" />
+                  <line [attr.x1]="i * 5 + '%'" [attr.y1]="0" [attr.x2]="i * 5 + '%'" y2="100%" stroke="#4a9eff" stroke-width="0.5" />
+                }
+              </svg>
+              <!-- Water + Roads -->
+              <svg class="gqc-map-parcels" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+                <path d="M 0 45 Q 25 38, 45 42 Q 65 46, 85 40 L 100 40 L 100 50 Q 80 52, 60 48 Q 35 44, 15 50 L 0 52 Z"
+                  fill="#0d3b66" opacity="0.5" />
+                <path d="M 0 45 Q 25 38, 45 42 Q 65 46, 85 40"
+                  fill="none" stroke="#1a6fb5" stroke-width="0.4" opacity="0.6" />
+                <line x1="5" y1="0" x2="5" y2="100" stroke="#1a2d4a" stroke-width="1.2" />
+                <line x1="50" y1="0" x2="50" y2="100" stroke="#1a2d4a" stroke-width="0.8" />
+                <line x1="0" y1="52" x2="100" y2="52" stroke="#1a2d4a" stroke-width="1" />
+                <!-- Mock parcels -->
+                <rect x="16" y="12" width="8" height="10" rx="0.5" class="gqc-parcel" />
+                <rect x="27" y="14" width="7" height="9" rx="0.5" class="gqc-parcel" />
+                <rect x="37" y="10" width="9" height="11" rx="0.5" class="gqc-parcel" />
+                <rect x="53" y="13" width="8" height="10" rx="0.5" class="gqc-parcel" />
+                <rect x="63" y="11" width="7" height="12" rx="0.5" class="gqc-parcel" />
+                <rect x="73" y="14" width="9" height="9" rx="0.5" class="gqc-parcel" />
+                <rect x="83" y="12" width="8" height="10" rx="0.5" class="gqc-parcel" />
+                <rect x="18" y="26" width="7" height="10" rx="0.5" class="gqc-parcel" />
+                <rect x="28" y="28" width="9" height="8" rx="0.5" class="gqc-parcel" />
+                <rect x="40" y="25" width="8" height="11" rx="0.5" class="gqc-parcel" />
+                <rect x="55" y="27" width="7" height="9" rx="0.5" class="gqc-parcel" />
+                <rect x="65" y="26" width="9" height="10" rx="0.5" class="gqc-parcel" />
+                <rect x="78" y="28" width="8" height="8" rx="0.5" class="gqc-parcel" />
+                <rect x="15" y="55" width="8" height="11" rx="0.5" class="gqc-parcel" />
+                <rect x="26" y="57" width="9" height="9" rx="0.5" class="gqc-parcel" />
+                <rect x="38" y="54" width="7" height="12" rx="0.5" class="gqc-parcel" />
+                <rect x="52" y="56" width="8" height="10" rx="0.5" class="gqc-parcel" />
+                <rect x="64" y="55" width="9" height="11" rx="0.5" class="gqc-parcel" />
+                <rect x="76" y="57" width="7" height="9" rx="0.5" class="gqc-parcel" />
+                <rect x="86" y="54" width="8" height="12" rx="0.5" class="gqc-parcel" />
+                <rect x="17" y="70" width="9" height="10" rx="0.5" class="gqc-parcel" />
+                <rect x="29" y="72" width="7" height="11" rx="0.5" class="gqc-parcel" />
+                <rect x="41" y="69" width="8" height="9" rx="0.5" class="gqc-parcel" />
+                <rect x="54" y="71" width="9" height="10" rx="0.5" class="gqc-parcel" />
+                <rect x="66" y="70" width="7" height="12" rx="0.5" class="gqc-parcel" />
+                <rect x="78" y="72" width="8" height="9" rx="0.5" class="gqc-parcel" />
+                <rect x="16" y="84" width="8" height="10" rx="0.5" class="gqc-parcel" />
+                <rect x="28" y="85" width="9" height="9" rx="0.5" class="gqc-parcel" />
+                <rect x="54" y="84" width="7" height="11" rx="0.5" class="gqc-parcel" />
+                <rect x="66" y="86" width="9" height="8" rx="0.5" class="gqc-parcel" />
+              </svg>
+              <!-- Scale bar -->
+              <div class="gqc-map-scale">
+                <div class="gqc-scale-bar"></div>
+                <span>500m</span>
+              </div>
+              <!-- Coords -->
+              <div class="gqc-map-coords">6.9271°N, 79.8612°E</div>
+              <!-- Processing overlay -->
+              @if (isRunning()) {
+                <div class="gqc-map-overlay">
+                  <span class="gqc-map-overlay-text">Processing spatial query...</span>
+                </div>
+              }
+            </div>
+          </div>
+        } @else {
+          <!-- Empty state -->
+          <div class="gqc-empty">
+            <mat-icon class="gqc-empty-icon">hexagon</mat-icon>
+            <span class="gqc-empty-title">Select a Query to Begin</span>
+            <span class="gqc-empty-desc">
+              Choose a category from the left panel and select a spatial or attribute query to configure and execute.
+            </span>
+            <div class="gqc-empty-tags">
+              <span class="gqc-tag">Flood Analysis</span>
+              <span class="gqc-tag">Land Search</span>
+              <span class="gqc-tag">Zoning Check</span>
+              <span class="gqc-tag">Revenue Report</span>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </mat-dialog-content>
+</div>
