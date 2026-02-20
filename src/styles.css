@@ -484,6 +484,15 @@ td {
   color: #e2e8f0 !important;
   border-radius: 12px !important;
   border: 1px solid rgba(148, 163, 184, 0.15);
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.arh-dark-dialog .mat-mdc-dialog-content {
+  max-height: 70vh !important;
+  padding: 0 16px !important;
+  margin: 0 !important;
+  color: inherit !important;
 }
 
 /* Dark navy dialog panel for GIS Query Console */
