@@ -5,12 +5,11 @@
 }
 
 .gqc-dialog {
-  width: 92vw;
-  max-width: 1280px;
-  height: 82vh;
   display: flex;
   flex-direction: column;
+  height: 82vh;
   overflow: hidden;
+  color: #c8dae8;
 }
 
 /* ═══ Header ═══ */
@@ -22,7 +21,6 @@
   background: linear-gradient(135deg, #0a1628, #0f2035);
   padding: 12px 20px;
   border-bottom: 1px solid #1a2d4a;
-  margin: -24px -24px 0;
   flex-shrink: 0;
 }
 
@@ -64,7 +62,7 @@
 
 .gqc-header-sub {
   font-size: 11px;
-  color: #4a7a9b;
+  color: #7a9ab8;
   font-family: 'JetBrains Mono', 'Consolas', monospace;
 }
 
@@ -107,7 +105,7 @@
 .gqc-close-btn {
   background: none;
   border: none;
-  color: #4a7a9b;
+  color: #7a9ab8;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -132,9 +130,7 @@
 
 .gqc-content {
   flex: 1;
-  padding: 0 !important;
-  overflow: hidden !important;
-  margin: 0 -24px -24px !important;
+  min-height: 0;
 }
 
 .gqc-layout {
@@ -161,7 +157,7 @@
   gap: 4px;
   padding: 0 14px 10px;
   font-size: 10px;
-  color: #3a6080;
+  color: #5a8aac;
   font-family: 'JetBrains Mono', 'Consolas', monospace;
   text-transform: uppercase;
   letter-spacing: 1.2px;
@@ -175,7 +171,7 @@
   background: transparent;
   border: none;
   border-left: 3px solid transparent;
-  color: #6a8aa8;
+  color: #8aaabe;
   cursor: pointer;
   font-size: 13px;
   text-align: left;
@@ -184,12 +180,12 @@
 }
 
 .gqc-cat-btn:hover {
-  background: rgba(74, 158, 255, 0.05);
-  color: #8aaec4;
+  background: rgba(74, 158, 255, 0.06);
+  color: #a8c4d8;
 }
 
 .gqc-cat-btn--active {
-  background: linear-gradient(90deg, rgba(74, 158, 255, 0.1), transparent);
+  background: linear-gradient(90deg, rgba(74, 158, 255, 0.12), transparent);
   color: #e8f0f8;
   font-weight: 600;
 }
@@ -198,7 +194,7 @@
   font-size: 18px;
   width: 18px;
   height: 18px;
-  color: #6a8aa8;
+  color: #8aaabe;
 }
 
 .gqc-cat-btn--active .gqc-cat-icon {
@@ -219,12 +215,12 @@
 
 .gqc-history-name {
   font-size: 11px;
-  color: #6ba3d6;
+  color: #8abbe6;
 }
 
 .gqc-history-meta {
   font-size: 10px;
-  color: #4a7a9b;
+  color: #6a9abc;
   margin-top: 1px;
 }
 
@@ -259,23 +255,25 @@
   text-align: left;
   cursor: pointer;
   background: #0d1f33;
-  border: 1px solid #152a42;
+  border: 1px solid #1a3050;
   transition: all 0.2s;
+  font-family: inherit;
 }
 
 .gqc-query-card:hover {
-  border-color: #1e3a5f;
-  background: #0f2438;
+  border-color: #2a4a6a;
+  background: #10283f;
 }
 
 .gqc-query-card--active {
-  background: rgba(74, 158, 255, 0.06);
+  background: rgba(74, 158, 255, 0.08);
+  border-color: rgba(74, 158, 255, 0.25);
 }
 
 .gqc-query-name {
   font-size: 13px;
   font-weight: 600;
-  color: #8aaec4;
+  color: #a0c4dd;
   margin-bottom: 3px;
 }
 
@@ -285,7 +283,7 @@
 
 .gqc-query-desc {
   font-size: 11px;
-  color: #4a6a82;
+  color: #6a8aa8;
   line-height: 1.4;
 }
 
@@ -325,7 +323,7 @@
 
 .gqc-param-desc {
   font-size: 12px;
-  color: #4a7a9b;
+  color: #7a9ab8;
   margin: 4px 0 0;
 }
 
@@ -333,18 +331,29 @@
   display: flex;
   gap: 8px;
   flex-shrink: 0;
+  align-items: center;
 }
 
 .gqc-sql-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 7px 14px;
   border-radius: 6px;
   cursor: pointer;
   background: transparent;
-  border: 1px solid #1e3a5f;
-  color: #6ba3d6;
+  border: 1px solid #2a4a6a;
+  color: #8abbe6;
   font-size: 12px;
   font-family: 'JetBrains Mono', 'Consolas', monospace;
   transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.gqc-sql-toggle mat-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
 }
 
 .gqc-sql-toggle:hover {
@@ -367,6 +376,7 @@
   font-size: 13px;
   font-weight: 600;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 
 .gqc-execute-btn:disabled {
@@ -395,7 +405,7 @@
 .gqc-param-label {
   display: block;
   font-size: 11px;
-  color: #4a7a9b;
+  color: #7a9ab8;
   margin-bottom: 5px;
   font-family: 'JetBrains Mono', 'Consolas', monospace;
   text-transform: uppercase;
@@ -403,7 +413,7 @@
 }
 
 .gqc-param-unit {
-  color: #3a5068;
+  color: #5a7a98;
 }
 
 .gqc-input {
@@ -411,22 +421,28 @@
   padding: 8px 12px;
   border-radius: 6px;
   background: #0d1b2a;
-  border: 1px solid #1e3a5f;
-  color: #c8dae8;
+  border: 1px solid #2a4a6a;
+  color: #d0e4f4;
   font-size: 13px;
   outline: none;
   transition: border-color 0.2s;
   box-sizing: border-box;
+  font-family: inherit;
 }
 
 .gqc-input:focus {
   border-color: #4a9eff;
-  box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.1);
+  box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.15);
+}
+
+select.gqc-input {
+  appearance: auto;
+  -webkit-appearance: auto;
 }
 
 .gqc-input option {
   background: #0d1b2a;
-  color: #c8dae8;
+  color: #d0e4f4;
 }
 
 /* ═══ SQL Preview ═══ */
@@ -445,7 +461,7 @@
   gap: 6px;
   padding: 8px 14px;
   font-size: 10px;
-  color: #3a6080;
+  color: #5a8aac;
   border-bottom: 1px solid #1a2d4a;
 }
 
@@ -460,18 +476,18 @@
   font-family: 'JetBrains Mono', 'Consolas', monospace;
   font-size: 12px;
   line-height: 1.7;
-  color: #a8c4d8;
+  color: #b8d4e8;
   overflow-x: auto;
 }
 
-/* SQL syntax highlight classes */
+/* SQL syntax highlight classes — ::ng-deep needed for [innerHTML] content */
 :host ::ng-deep .sql-line {
   display: flex;
   gap: 12px;
 }
 
 :host ::ng-deep .sql-ln {
-  color: #3a5068;
+  color: #4a6a88;
   min-width: 18px;
   text-align: right;
   user-select: none;
@@ -500,11 +516,13 @@
   margin-top: 16px;
   padding: 10px 16px;
   border-radius: 8px;
-  background: linear-gradient(135deg, rgba(46, 204, 113, 0.08), transparent);
-  border: 1px solid rgba(46, 204, 113, 0.2);
+  background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), transparent);
+  border: 1px solid rgba(46, 204, 113, 0.25);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .gqc-results-info {
@@ -531,8 +549,8 @@
   padding: 4px 12px;
   border-radius: 4px;
   background: transparent;
-  border: 1px solid #1e3a5f;
-  color: #6ba3d6;
+  border: 1px solid #2a4a6a;
+  color: #8abbe6;
   font-size: 11px;
   cursor: pointer;
   font-family: 'JetBrains Mono', 'Consolas', monospace;
@@ -557,7 +575,7 @@
   overflow: hidden;
   position: relative;
   height: 100%;
-  min-height: 200px;
+  min-height: 180px;
   border: 1px solid #1a2d4a;
 }
 
@@ -627,7 +645,7 @@
   position: absolute;
   bottom: 10px;
   right: 10px;
-  color: #4a7a9b;
+  color: #6a9abc;
   font-size: 10px;
   font-family: 'JetBrains Mono', 'Consolas', monospace;
 }
@@ -657,7 +675,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #2a4a68;
+  color: #4a7a9b;
   text-align: center;
   padding: 40px;
 }
@@ -666,21 +684,21 @@
   font-size: 48px !important;
   width: 48px !important;
   height: 48px !important;
-  opacity: 0.3;
-  color: #4a7a9b;
+  opacity: 0.4;
+  color: #6a9abc;
   margin-bottom: 16px;
 }
 
 .gqc-empty-title {
   font-size: 17px;
   font-weight: 600;
-  color: #3a6080;
+  color: #5a8aac;
   margin-bottom: 8px;
 }
 
 .gqc-empty-desc {
   font-size: 13px;
-  color: #2a4a68;
+  color: #4a7a9b;
   max-width: 340px;
   line-height: 1.6;
 }
@@ -699,7 +717,7 @@
   background: #0d1f33;
   border: 1px solid #1a2d4a;
   font-size: 12px;
-  color: #4a7a9b;
+  color: #6a9abc;
 }
 
 /* ═══ Spinner ═══ */
