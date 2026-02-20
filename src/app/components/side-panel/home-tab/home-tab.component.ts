@@ -76,9 +76,7 @@ export class HomeTabComponent implements AfterViewInit {
   openQueryBuilderPanel() {
     this.dialog.open(GisQueryConsoleComponent, {
       panelClass: 'gqc-dark-dialog',
-      width: '92vw',
-      maxWidth: '1280px',
-      height: '82vh',
+      maxWidth: '95vw',
     });
   }
 

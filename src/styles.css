@@ -493,4 +493,13 @@ td {
   border-radius: 12px !important;
   border: 1px solid #1a2d4a;
   overflow: hidden;
+  padding: 0 !important;
+}
+
+.gqc-dark-dialog .mat-mdc-dialog-content {
+  max-height: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
+  color: inherit !important;
 }
