@@ -503,3 +503,10 @@ td {
   overflow: hidden !important;
   color: inherit !important;
 }
+
+/* RRR centered dialog — used by RRR panel and its sub-dialogs */
+.rrr-centered-dialog .mat-mdc-dialog-surface {
+  padding: 0 !important;
+  border-radius: 10px !important;
+  overflow: hidden;
+}

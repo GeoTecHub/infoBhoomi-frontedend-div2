@@ -4,10 +4,9 @@
 
 .material-header {
   background-color: #779ab8;
-  /* Material primary color */
   color: white;
-  padding: 5px 15px;
-  border-radius: 5px;
+  padding: 12px 15px;
+  border-radius: 10px 10px 0 0;
 }
 
 .header-content {
@@ -372,17 +371,19 @@ button.mat-dialog-close {
 }
 
 .header-content-rrr .header-content-rrr-sub {
-  margin: -1px;
+  margin: 0;
   text-align: center;
+  font-size: 15px;
+  line-height: 1.3;
 }
 
 .header-content-rrr .header-content-id {
   font-size: 13px;
-  margin: 0px;
+  margin: 0;
   text-align: end;
   position: absolute;
-  bottom: 11px;
-  right: 11px;
+  bottom: 8px;
+  right: 8px;
 }
 
 .custom-style-card {
