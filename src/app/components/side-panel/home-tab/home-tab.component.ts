@@ -14,11 +14,9 @@ import { MapService } from '../../../services/map.service';
 import { UserService } from '../../../services/user.service';
 import { AboutComponent } from '../../dialogs/about/about.component';
 import { FeatureNotAvailableComponent } from '../../dialogs/feature-not-available/feature-not-available.component';
+import { GisQueryConsoleComponent } from '../../dialogs/gis-query-console/gis-query-console.component';
 import { VertextComponent } from '../../dialogs/vertext/vertext.component';
 import { ExportDataComponent } from '../../shared/popups/export-data/export-data.component';
-import { LoadTempDataComponent } from '../../shared/popups/load-temp-data/load-temp-data.component';
-import { PrintPanelComponent } from '../../shared/popups/print-panel/print-panel.component';
-import { QueryBuilderComponent } from '../../shared/popups/query-builder/query-builder.component';
 import { ImportDataComponent } from './../../shared/popups/import-data/import-data.component';
 
 @Component({
@@ -48,7 +46,7 @@ export class HomeTabComponent implements AfterViewInit {
     public mapService: MapService,
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private userService: UserService, // Assuming this is a service to check user login status
+    private userService: UserService,
   ) {}
 
   ngAfterViewInit(): void {
@@ -65,44 +63,34 @@ export class HomeTabComponent implements AfterViewInit {
     this.dialog.open(ImportDataComponent, {
       minWidth: '450px',
       maxWidth: '450px',
-      // hasBackdrop: false,
     });
   }
-  openLoadTempDataDialog() {
-    this.dialog.open(LoadTempDataComponent);
-  }
 
-  // RemoveTempData() {
-  //   this.mapService.removeTempLayer();
-  // }
   openExportPanel() {
     this.dialog.open(ExportDataComponent, {
       minWidth: '400px',
       maxWidth: '420px',
-      // hasBackdrop: false,
     });
   }
 
   openQueryBuilderPanel() {
-    this.dialog.open(QueryBuilderComponent);
-  }
-
-  openPrintanel() {
-    this.dialog.open(PrintPanelComponent);
+    this.dialog.open(GisQueryConsoleComponent, {
+      panelClass: 'gqc-dark-dialog',
+      width: '92vw',
+      maxWidth: '1280px',
+      height: '82vh',
+    });
   }
 
   openProAlert() {
     if (this.dialogRef) {
-      // If dialog is already open, close it
       this.dialogRef.close();
-      this.dialogRef = null; // Reset the reference
+      this.dialogRef = null;
     } else {
-      // Open a new dialog if it's not already open
       this.dialogRef = this.dialog.open(FeatureNotAvailableComponent, {
         minWidth: '480px',
       });
 
-      // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
       });
@@ -111,18 +99,15 @@ export class HomeTabComponent implements AfterViewInit {
 
   OpenVERTEXT() {
     if (this.dialogRef) {
-      // If dialog is already open, close it
       this.dialogRef.close();
-      this.dialogRef = null; // Reset the reference
+      this.dialogRef = null;
     } else {
-      // Open a new dialog if it's not already open
       this.dialogRef = this.dialog.open(VertextComponent, {
         minWidth: '420px',
         maxWidth: '420px',
-        hasBackdrop: true, // Optional: removes backdrop
+        hasBackdrop: true,
       });
 
-      // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
       });
@@ -131,18 +116,15 @@ export class HomeTabComponent implements AfterViewInit {
 
   OpenAbout() {
     if (this.dialogRef) {
-      // If dialog is already open, close it
       this.dialogRef.close();
-      this.dialogRef = null; // Reset the reference
+      this.dialogRef = null;
     } else {
-      // Open a new dialog if it's not already open
       this.dialogRef = this.dialog.open(AboutComponent, {
         minWidth: '520px',
         maxWidth: '520px',
-        hasBackdrop: true, // Optional: removes backdrop
+        hasBackdrop: true,
       });
 
-      // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
       });

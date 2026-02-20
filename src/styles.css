@@ -485,3 +485,12 @@ td {
   border-radius: 12px !important;
   border: 1px solid rgba(148, 163, 184, 0.15);
 }
+
+/* Dark navy dialog panel for GIS Query Console */
+.gqc-dark-dialog .mat-mdc-dialog-surface {
+  background: #070e1a !important;
+  color: #c8dae8 !important;
+  border-radius: 12px !important;
+  border: 1px solid #1a2d4a;
+  overflow: hidden;
+}
