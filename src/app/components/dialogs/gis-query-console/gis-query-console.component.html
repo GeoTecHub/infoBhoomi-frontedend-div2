@@ -92,7 +92,11 @@
               </div>
               <div class="gqc-param-actions">
                 <button class="gqc-sql-toggle" [class.gqc-sql-toggle--on]="showSQL()" (click)="toggleSQL()">
-                  {{ showSQL() ? '</> Hide SQL' : '</> Show SQL' }}
+                  @if (showSQL()) {
+                    <mat-icon>code_off</mat-icon> Hide SQL
+                  } @else {
+                    <mat-icon>code</mat-icon> Show SQL
+                  }
                 </button>
                 <button
                   class="gqc-execute-btn"
