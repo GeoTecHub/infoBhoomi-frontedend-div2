@@ -593,7 +593,7 @@ export class APIsService {
       'assessment_annual_value',
       'assessment_no',
       'assessment_percentage',
-      ' date_of_valuation',
+      'date_of_valuation',
       'outstanding_balance',
       'property_type',
       'tax_date',
@@ -666,6 +666,27 @@ export class APIsService {
       'Content-Type': 'application/json',
     });
     return this.http.get(`${this.baseUrl}ownership-rights-info/su_id=${su_id_value}/`, { headers });
+  }
+
+  // GET RRR DATA
+  getRRRData(su_id_value: any) {
+    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
+    return this.http.get(`${this.baseUrl}rrr_data_get/?su_id=${su_id_value}`, { headers });
+  }
+
+  // GET ZONING INFO
+  getZoningInfo(su_id_value: any) {
+    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
+    return this.http.get(`${this.baseUrl}lnd-zoning-info/su_id=${su_id_value}/`, { headers });
+  }
+
+  // UPDATE ZONING INFO
+  updateZoningInfo(su_id: any, data: any) {
+    const headers = new HttpHeaders({
+      Authorization: `Token ${this.token}`,
+      'Content-Type': 'application/json',
+    });
+    return this.http.patch(`${this.baseUrl}lnd-zoning-info/update/su_id=${su_id}/`, data, { headers });
   }
 
   // GET LAND TENURE PDF

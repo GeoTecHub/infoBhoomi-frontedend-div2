@@ -19,6 +19,7 @@ import {
   AccuracyLevel,
   SurveyMethod,
   RRRInfo,
+  RRREntry,
   ParcelIdentification,
   ParcelSpatial,
   ParcelPhysical,
@@ -72,6 +73,8 @@ export class SidePanelComponent implements OnDestroy {
   selected_layer_ID: any = '';
   private destroy$ = new Subject<void>();
   selected_featureInfo: SelectedFeatureInfo | null = null;
+
+  private fetchedRRRBaUnitIds = new Set<number>();
 
   // Sidebar state (signals — matching 3D Cadastre pattern)
   activeSidebarTab = signal<SidebarTab>('home');
@@ -542,9 +545,11 @@ export class SidePanelComponent implements OnDestroy {
       this.apiService.getAdministrativeInfo(su_id).pipe(catchError(() => of({}))),
       this.apiService.getLandOverViewInfo(su_id).pipe(catchError(() => of({}))),
       this.apiService.getltAssesAndTaxInfo(su_id).pipe(catchError(() => of({}))),
+      this.apiService.getRRRData(su_id).pipe(catchError(() => of(null))),
+      this.apiService.getZoningInfo(su_id).pipe(catchError(() => of(null))),
     ])
       .pipe(takeUntil(this.destroy$))
-      .subscribe(([adminData, overviewData, taxData]: [any, any, any]) => {
+      .subscribe(([adminData, overviewData, taxData, rrrData, zoningData]: [any, any, any, any, any]) => {
         console.log('[Fetch] adminData from backend:', adminData);
         const current = this.currentLandParcelInfo();
         if (!current) return;
@@ -583,7 +588,55 @@ export class SidePanelComponent implements OnDestroy {
           valuation.annualTax = Number(taxData.tax_annual_value);
         if (taxData.date_of_valuation) valuation.lastAssessmentDate = taxData.date_of_valuation;
 
-        this.currentLandParcelInfo.set({ ...current, identification, physical, spatial, valuation });
+        // Merge RRR data
+        this.fetchedRRRBaUnitIds.clear();
+        const rrrEntries: RRREntry[] = [];
+        const records = rrrData?.records || [];
+        for (const record of records) {
+          this.fetchedRRRBaUnitIds.add(record.ba_unit_id);
+          for (const rrr of record.rrrs || []) {
+            rrrEntries.push({
+              rrrId: `BU-${record.ba_unit_id}`,
+              type: (rrr.share_type as RightType) || RightType.OWN_FREE,
+              holder: rrr.party_name || '',
+              holderId: String(rrr.pid),
+              holderType: undefined,
+              share: rrr.share,
+              validFrom: rrr.time_begin || '',
+              validTo: rrr.time_end || '',
+              documentRef: record.sl_ba_unit_name || '',
+              documents: [],
+              restrictions: [],
+              responsibilities: [],
+            });
+          }
+        }
+        const rrr: RRRInfo = { entries: rrrEntries };
+
+        // Merge zoning data
+        const zoning = { ...current.zoning };
+        if (zoningData) {
+          if (zoningData.zoning_category)
+            zoning.zoningCategory = zoningData.zoning_category as ZoningCategory;
+          if (zoningData.max_building_height != null)
+            zoning.maxBuildingHeight = Number(zoningData.max_building_height);
+          if (zoningData.max_coverage != null) zoning.maxCoverage = Number(zoningData.max_coverage);
+          if (zoningData.max_far != null) zoning.maxFAR = Number(zoningData.max_far);
+          if (zoningData.setback_front != null) zoning.setbackFront = Number(zoningData.setback_front);
+          if (zoningData.setback_rear != null) zoning.setbackRear = Number(zoningData.setback_rear);
+          if (zoningData.setback_side != null) zoning.setbackSide = Number(zoningData.setback_side);
+          if (zoningData.special_overlay) zoning.specialOverlay = zoningData.special_overlay;
+        }
+
+        this.currentLandParcelInfo.set({
+          ...current,
+          identification,
+          physical,
+          spatial,
+          valuation,
+          rrr,
+          zoning,
+        });
       });
   }
 
@@ -617,10 +670,22 @@ export class SidePanelComponent implements OnDestroy {
       date_of_valuation: info.valuation.lastAssessmentDate,
     };
 
+    const zoningPayload = {
+      zoning_category: info.zoning.zoningCategory,
+      max_building_height: info.zoning.maxBuildingHeight,
+      max_coverage: info.zoning.maxCoverage,
+      max_far: info.zoning.maxFAR,
+      setback_front: info.zoning.setbackFront,
+      setback_rear: info.zoning.setbackRear,
+      setback_side: info.zoning.setbackSide,
+      special_overlay: info.zoning.specialOverlay,
+    };
+
     forkJoin([
       this.apiService.updateAdministrativeInfo(su_id, adminPayload, 'land'),
       this.apiService.updateLandOverviewInfo(su_id, overviewPayload, 'land'),
       this.apiService.updateTaxAndAssessmentInfo(su_id, taxPayload, 'land'),
+      this.apiService.updateZoningInfo(su_id, zoningPayload),
     ])
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -634,6 +699,53 @@ export class SidePanelComponent implements OnDestroy {
           this.notificationService.showError('Failed to save parcel details. Please try again.');
         },
       });
+
+    // RRR sync: fire-and-forget (independent of the main forkJoin)
+    const currentEntries = info.rrr.entries;
+
+    // Delete removed entries (those fetched from backend but no longer in the list)
+    const currentBaUnitIds = new Set(
+      currentEntries
+        .filter((e) => e.rrrId.startsWith('BU-'))
+        .map((e) => Number(e.rrrId.replace('BU-', ''))),
+    );
+    for (const baUnitId of this.fetchedRRRBaUnitIds) {
+      if (!currentBaUnitIds.has(baUnitId)) {
+        this.apiService
+          .deleteRrr(String(baUnitId))
+          .pipe(takeUntil(this.destroy$))
+          .subscribe();
+      }
+    }
+
+    // Save new entries (those added client-side, identified by rrrId starting with 'LRRR-')
+    const newEntries = currentEntries.filter((e) => e.rrrId.startsWith('LRRR-') && e.holderId);
+    for (const entry of newEntries) {
+      const fd = new FormData();
+      fd.append('su_id', String(su_id));
+      fd.append('sl_ba_unit_name', entry.holder);
+      fd.append('sl_ba_unit_type', 'OWNERSHIP');
+      fd.append('admin_source_type', entry.documentRef || 'Title Deed');
+      fd.append(
+        'parties',
+        JSON.stringify([
+          {
+            pid: entry.holderId,
+            share_type: entry.type,
+            share: entry.share,
+            party_role_type: entry.holderType || 'Owner',
+            rrr_type: 'RIGHT',
+            time_begin: entry.validFrom || null,
+            time_end: entry.validTo || null,
+            description: '',
+          },
+        ]),
+      );
+      this.apiService
+        .postAdminSource(fd)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe();
+    }
   }
 
   // ─── Building Panel Change Handlers ────────────────────
