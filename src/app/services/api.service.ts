@@ -601,6 +601,9 @@ export class APIsService {
       'tax_type',
       'tax_percentage',
       'year_of_assessment',
+      'land_value',
+      'market_value',
+      'tax_status',
     ];
     // Filter the `data` object to keep only the allowed keys and remove empty values
     const filteredData = Object.keys(data)
@@ -687,6 +690,75 @@ export class APIsService {
       'Content-Type': 'application/json',
     });
     return this.http.patch(`${this.baseUrl}lnd-zoning-info/update/su_id=${su_id}/`, data, { headers });
+  }
+
+  // GET PHYSICAL / ENVIRONMENTAL INFO (Land)
+  getPhysicalEnvInfo(su_id: any) {
+    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
+    return this.http.get(`${this.baseUrl}lnd-physical-env/su_id=${su_id}/`, { headers });
+  }
+
+  // UPDATE PHYSICAL / ENVIRONMENTAL INFO (Land)
+  updatePhysicalEnvInfo(su_id: any, data: any) {
+    const headers = new HttpHeaders({
+      Authorization: `Token ${this.token}`,
+      'Content-Type': 'application/json',
+    });
+    return this.http.patch(`${this.baseUrl}lnd-physical-env/update/su_id=${su_id}/`, data, { headers });
+  }
+
+  // GET RRR RESTRICTIONS
+  getRRRRestrictions(rrr_id: number | string) {
+    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
+    return this.http.get(`${this.baseUrl}rrr-restrictions/rrr_id=${rrr_id}/`, { headers });
+  }
+
+  // POST RRR RESTRICTION
+  postRRRRestriction(rrr_id: number | string, data: any) {
+    const headers = new HttpHeaders({
+      Authorization: `Token ${this.token}`,
+      'Content-Type': 'application/json',
+    });
+    return this.http.post(`${this.baseUrl}rrr-restrictions/rrr_id=${rrr_id}/`, data, { headers });
+  }
+
+  // DELETE RRR RESTRICTION
+  deleteRRRRestriction(rrr_id: number | string, id: number | string) {
+    const headers = new HttpHeaders({
+      Authorization: `Token ${this.token}`,
+      'Content-Type': 'application/json',
+    });
+    return this.http.delete(`${this.baseUrl}rrr-restrictions/rrr_id=${rrr_id}/`, {
+      headers,
+      body: { id },
+    });
+  }
+
+  // GET RRR RESPONSIBILITIES
+  getRRRResponsibilities(rrr_id: number | string) {
+    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
+    return this.http.get(`${this.baseUrl}rrr-responsibilities/rrr_id=${rrr_id}/`, { headers });
+  }
+
+  // POST RRR RESPONSIBILITY
+  postRRRResponsibility(rrr_id: number | string, data: any) {
+    const headers = new HttpHeaders({
+      Authorization: `Token ${this.token}`,
+      'Content-Type': 'application/json',
+    });
+    return this.http.post(`${this.baseUrl}rrr-responsibilities/rrr_id=${rrr_id}/`, data, { headers });
+  }
+
+  // DELETE RRR RESPONSIBILITY
+  deleteRRRResponsibility(rrr_id: number | string, id: number | string) {
+    const headers = new HttpHeaders({
+      Authorization: `Token ${this.token}`,
+      'Content-Type': 'application/json',
+    });
+    return this.http.delete(`${this.baseUrl}rrr-responsibilities/rrr_id=${rrr_id}/`, {
+      headers,
+      body: { id },
+    });
   }
 
   // GET LAND TENURE PDF
@@ -989,6 +1061,10 @@ export class APIsService {
       'postal_ad_build',
       'administrative_type',
       'building_name',
+      'registration_date',
+      'construction_year',
+      'structure_type',
+      'condition',
     ];
     // Filter the `data` object to keep only the allowed keys
     // Filter the `data` object to keep only the allowed keys and remove empty values

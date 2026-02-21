@@ -4,7 +4,7 @@ import { Feature } from 'ol';
 import { Geometry, Polygon, MultiPolygon } from 'ol/geom';
 import { getArea, getLength } from 'ol/sphere';
 import { Subject, forkJoin, of } from 'rxjs';
-import { takeUntil, catchError } from 'rxjs/operators';
+import { takeUntil, catchError, switchMap } from 'rxjs/operators';
 import {
   LandParcelInfo,
   createDefaultLandParcel,
@@ -20,6 +20,8 @@ import {
   SurveyMethod,
   RRRInfo,
   RRREntry,
+  RestrictionType,
+  ResponsibilityType,
   ParcelIdentification,
   ParcelSpatial,
   ParcelPhysical,
@@ -75,6 +77,7 @@ export class SidePanelComponent implements OnDestroy {
   selected_featureInfo: SelectedFeatureInfo | null = null;
 
   private fetchedRRRBaUnitIds = new Set<number>();
+  private fetchedRRRMap = new Map<string, number>(); // rrrId (BU-xxx) → actual backend rrr_id
 
   // Sidebar state (signals — matching 3D Cadastre pattern)
   activeSidebarTab = signal<SidebarTab>('home');
@@ -547,9 +550,10 @@ export class SidePanelComponent implements OnDestroy {
       this.apiService.getltAssesAndTaxInfo(su_id).pipe(catchError(() => of({}))),
       this.apiService.getRRRData(su_id).pipe(catchError(() => of(null))),
       this.apiService.getZoningInfo(su_id).pipe(catchError(() => of(null))),
+      this.apiService.getPhysicalEnvInfo(su_id).pipe(catchError(() => of(null))),
     ])
       .pipe(takeUntil(this.destroy$))
-      .subscribe(([adminData, overviewData, taxData, rrrData, zoningData]: [any, any, any, any, any]) => {
+      .subscribe(([adminData, overviewData, taxData, rrrData, zoningData, physicalData]: [any, any, any, any, any, any]) => {
         console.log('[Fetch] adminData from backend:', adminData);
         const current = this.currentLandParcelInfo();
         if (!current) return;
@@ -584,19 +588,32 @@ export class SidePanelComponent implements OnDestroy {
         // Merge tax/assessment data
         if (taxData.assessment_annual_value != null)
           valuation.landValue = Number(taxData.assessment_annual_value);
-        if (taxData.tax_annual_value != null)
-          valuation.annualTax = Number(taxData.tax_annual_value);
+        if (taxData.tax_annual_value != null) valuation.annualTax = Number(taxData.tax_annual_value);
         if (taxData.date_of_valuation) valuation.lastAssessmentDate = taxData.date_of_valuation;
+        if (taxData.market_value != null) valuation.marketValue = Number(taxData.market_value);
+        if (taxData.tax_status) valuation.taxStatus = taxData.tax_status;
+
+        // Merge physical/environmental data
+        if (physicalData) {
+          if (physicalData.elevation != null) physical.elevation = Number(physicalData.elevation);
+          if (physicalData.slope != null) physical.slope = Number(physicalData.slope);
+          if (physicalData.soil_type) physical.soilType = physicalData.soil_type as SoilType;
+          if (physicalData.flood_zone != null) physical.floodZone = Boolean(physicalData.flood_zone);
+          if (physicalData.vegetation_cover) physical.vegetationCover = physicalData.vegetation_cover;
+        }
 
         // Merge RRR data
         this.fetchedRRRBaUnitIds.clear();
+        this.fetchedRRRMap.clear();
         const rrrEntries: RRREntry[] = [];
         const records = rrrData?.records || [];
         for (const record of records) {
           this.fetchedRRRBaUnitIds.add(record.ba_unit_id);
           for (const rrr of record.rrrs || []) {
+            const entryId = `BU-${record.ba_unit_id}`;
+            if (rrr.rrr_id) this.fetchedRRRMap.set(entryId, rrr.rrr_id);
             rrrEntries.push({
-              rrrId: `BU-${record.ba_unit_id}`,
+              rrrId: entryId,
               type: (rrr.share_type as RightType) || RightType.OWN_FREE,
               holder: rrr.party_name || '',
               holderId: String(rrr.pid),
@@ -611,7 +628,6 @@ export class SidePanelComponent implements OnDestroy {
             });
           }
         }
-        const rrr: RRRInfo = { entries: rrrEntries };
 
         // Merge zoning data
         const zoning = { ...current.zoning };
@@ -634,9 +650,49 @@ export class SidePanelComponent implements OnDestroy {
           physical,
           spatial,
           valuation,
-          rrr,
+          rrr: { entries: rrrEntries },
           zoning,
         });
+
+        // Second phase: fetch restrictions & responsibilities per RRR entry
+        const rrr_ids = Array.from(this.fetchedRRRMap.entries()); // [entryId, rrr_id][]
+        if (rrr_ids.length > 0) {
+          const restrictionReqs = rrr_ids.map(([, rid]) =>
+            this.apiService.getRRRRestrictions(rid).pipe(catchError(() => of([]))),
+          );
+          const responsibilityReqs = rrr_ids.map(([, rid]) =>
+            this.apiService.getRRRResponsibilities(rid).pipe(catchError(() => of([]))),
+          );
+          forkJoin([...restrictionReqs, ...responsibilityReqs])
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((results: any[]) => {
+              const half = rrr_ids.length;
+              const updatedEntries = [...rrrEntries];
+              rrr_ids.forEach(([entryId], idx) => {
+                const entry = updatedEntries.find((e) => e.rrrId === entryId);
+                if (!entry) return;
+                entry.restrictions = (results[idx] as any[]).map((r: any) => ({
+                  type: r.rrr_restriction_type as RestrictionType,
+                  description: r.description || '',
+                  validFrom: r.time_begin || '',
+                  validTo: r.time_end || '',
+                }));
+                entry.responsibilities = (results[half + idx] as any[]).map((r: any) => ({
+                  type: r.rrr_responsibility_type as ResponsibilityType,
+                  description: r.description || '',
+                  validFrom: r.time_begin || '',
+                  validTo: r.time_end || '',
+                }));
+              });
+              const current2 = this.currentLandParcelInfo();
+              if (current2) {
+                this.currentLandParcelInfo.set({
+                  ...current2,
+                  rrr: { entries: updatedEntries },
+                });
+              }
+            });
+        }
       });
   }
 
@@ -668,6 +724,16 @@ export class SidePanelComponent implements OnDestroy {
       assessment_annual_value: info.valuation.landValue,
       tax_annual_value: info.valuation.annualTax,
       date_of_valuation: info.valuation.lastAssessmentDate,
+      market_value: info.valuation.marketValue,
+      tax_status: info.valuation.taxStatus,
+    };
+
+    const physicalEnvPayload = {
+      elevation: info.physical.elevation,
+      slope: info.physical.slope,
+      soil_type: info.physical.soilType,
+      flood_zone: info.physical.floodZone,
+      vegetation_cover: info.physical.vegetationCover,
     };
 
     const zoningPayload = {
@@ -686,6 +752,7 @@ export class SidePanelComponent implements OnDestroy {
       this.apiService.updateLandOverviewInfo(su_id, overviewPayload, 'land'),
       this.apiService.updateTaxAndAssessmentInfo(su_id, taxPayload, 'land'),
       this.apiService.updateZoningInfo(su_id, zoningPayload),
+      this.apiService.updatePhysicalEnvInfo(su_id, physicalEnvPayload),
     ])
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -744,6 +811,68 @@ export class SidePanelComponent implements OnDestroy {
       this.apiService
         .postAdminSource(fd)
         .pipe(takeUntil(this.destroy$))
+        .subscribe();
+    }
+
+    // Sync restrictions & responsibilities for existing RRR entries (replace-all strategy)
+    for (const entry of currentEntries.filter((e) => e.rrrId.startsWith('BU-'))) {
+      const rrr_id = this.fetchedRRRMap.get(entry.rrrId);
+      if (!rrr_id) continue;
+
+      // Restrictions: delete all existing, then re-create from current entry
+      this.apiService
+        .getRRRRestrictions(rrr_id)
+        .pipe(
+          switchMap((existing: any) => {
+            const delObs = (existing as any[]).map((r: any) =>
+              this.apiService.deleteRRRRestriction(rrr_id, r.id).pipe(catchError(() => of(null))),
+            );
+            return delObs.length > 0 ? forkJoin(delObs) : of([]);
+          }),
+          switchMap(() => {
+            const createObs = entry.restrictions.map((r) =>
+              this.apiService
+                .postRRRRestriction(rrr_id, {
+                  rrr_restriction_type: r.type,
+                  description: r.description,
+                  time_begin: r.validFrom || null,
+                  time_end: r.validTo || null,
+                })
+                .pipe(catchError(() => of(null))),
+            );
+            return createObs.length > 0 ? forkJoin(createObs) : of([]);
+          }),
+          takeUntil(this.destroy$),
+        )
+        .subscribe();
+
+      // Responsibilities: same replace-all strategy
+      this.apiService
+        .getRRRResponsibilities(rrr_id)
+        .pipe(
+          switchMap((existing: any) => {
+            const delObs = (existing as any[]).map((r: any) =>
+              this.apiService
+                .deleteRRRResponsibility(rrr_id, r.id)
+                .pipe(catchError(() => of(null))),
+            );
+            return delObs.length > 0 ? forkJoin(delObs) : of([]);
+          }),
+          switchMap(() => {
+            const createObs = entry.responsibilities.map((r) =>
+              this.apiService
+                .postRRRResponsibility(rrr_id, {
+                  rrr_responsibility_type: r.type,
+                  description: r.description,
+                  time_begin: r.validFrom || null,
+                  time_end: r.validTo || null,
+                })
+                .pipe(catchError(() => of(null))),
+            );
+            return createObs.length > 0 ? forkJoin(createObs) : of([]);
+          }),
+          takeUntil(this.destroy$),
+        )
         .subscribe();
     }
   }
