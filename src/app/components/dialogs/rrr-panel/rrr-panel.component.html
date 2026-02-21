@@ -567,9 +567,16 @@
   </mat-tab-group>
 </mat-dialog-content>
 <mat-dialog-actions align="end">
-  <!-- *ngIf="civilian_data__array.length != 0" -->
   <div class="container">
-    &nbsp;
+
+    <!-- Inline validation errors — always visible inside the dialog -->
+    <div *ngIf="submitErrors.length > 0" style="margin-bottom:8px;">
+      <div *ngFor="let err of submitErrors"
+           style="color:#c0392b; font-size:12px; display:flex; align-items:center; gap:4px;">
+        <mat-icon style="font-size:14px; width:14px; height:14px;">error_outline</mat-icon>
+        {{ err }}
+      </div>
+    </div>
 
     <button mat-icon-button matSuffix (click)="closeDialog()" class="footer-btn">
       <mat-icon>close</mat-icon> Close</button

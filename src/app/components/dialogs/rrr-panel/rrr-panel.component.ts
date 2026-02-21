@@ -645,38 +645,39 @@ export class RrrPanelComponent implements OnInit, AfterViewInit {
     }
   }
 
+  submitErrors: string[] = [];
+
   SubmitAll() {
+    this.submitErrors = [];
+
     const total = this.getTotalShare();
     if (Math.abs(total - 100) > 1e-6) {
-      this.notificationService.showError(
-        `All party shares must total 100%. Current total: ${total.toFixed(2)}%.`,
-      );
-      return;
+      this.submitErrors.push(`Party shares must total 100% (current: ${total.toFixed(2)}%)`);
     }
 
     const file: File | null =
       this.administrative_source?.source || this.administrative_source?.file_path || null;
 
     if (!this.administrative_source?.admin_source_type) {
-      this.notificationService.showError('Please select a Document Type');
-      return;
+      this.submitErrors.push('Document Type is required');
     }
     if (!file) {
-      this.notificationService.showError('Please attach the Document file (PDF)');
-      return;
+      this.submitErrors.push('PDF document file is required');
     }
     if (!this.administrative_source?.sl_ba_unit_name) {
-      this.notificationService.showError('Please enter Unit Name');
-      return;
+      this.submitErrors.push('Unit Name is required');
     }
     if (!this.administrative_source?.sl_ba_unit_type) {
-      this.notificationService.showError('Please select Unit Type');
-      return;
+      this.submitErrors.push('Unit Type is required');
     }
 
     const parties = this.buildPartiesPayload();
     if (!parties.length) {
-      this.notificationService.showError('Please add at least one party');
+      this.submitErrors.push('Add at least one party');
+    }
+
+    if (this.submitErrors.length > 0) {
+      console.warn('RRR Save validation failed:', this.submitErrors);
       return;
     }
 
@@ -695,6 +696,11 @@ export class RrrPanelComponent implements OnInit, AfterViewInit {
         this.notificationService.showSuccess('Data saved successfully');
         this.administrative_source = {};
         this.adeded_party_cards = [];
+        // Refresh the current owners list and switch to the View tab
+        this.getExistingAdminSourceData();
+        if (this.tabGroup) {
+          this.tabGroup.selectedIndex = 0;
+        }
       },
       (error: any) => {
         console.error('Error saving:', error);

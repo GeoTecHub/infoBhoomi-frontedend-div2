@@ -1865,6 +1865,15 @@ export class APIsService {
     return this.http.post(apiUrl, payload, { headers });
   }
 
+  getDynamicAttributes(su_id: string | number, section_key: string): Observable<any[]> {
+    const headers = new HttpHeaders({
+      Authorization: `Token ${this.token}`,
+      'Content-Type': 'application/json',
+    });
+    const apiUrl = `${this.baseUrl}dynamic-attribute/?su_id=${su_id}&section_key=${section_key}`;
+    return this.http.get<any[]>(apiUrl, { headers });
+  }
+
   updateDynamicAttributeValue(payload: {
     attribute_id: number;
     su_id: string | number;

@@ -1327,9 +1327,12 @@ export class LandTabComponent implements OnInit, AfterViewInit, OnDestroy {
         maxWidth: '75vw',
         panelClass: 'rrr-centered-dialog',
       });
-      // Reset dialogRef when the dialog is closed
+      // Reset dialogRef when the dialog is closed and refresh ownership data
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
+        if (this.canViewRRR(38)) {
+          this.getExistingAdminSourceData();
+        }
       });
     }
   }
@@ -1343,20 +1346,19 @@ export class LandTabComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadCustomAttributes(section: SectionKey) {
     if (!this.selected_feature_ID) return;
 
-    // this.apiService.getDynamicAttributes(this.selected_feature_ID, section).subscribe({
-    //   next: (res: any[]) => {
-    //     // Adjust mapping based on your API response shape
-    //     this.customAttributes[section] = (res || []).map((r: any) => ({
-    //       id: r.id,
-    //       label: r.label,
-    //       value: r.value ?? '',
-    //       section,
-    //     }));
-    //   },
-    //   error: (err) => {
-    //     console.warn('Failed to load dynamic attributes for section', section, err);
-    //   },
-    // });
+    this.apiService.getDynamicAttributes(this.selected_feature_ID, section).subscribe({
+      next: (res: any[]) => {
+        this.customAttributes[section] = (res || []).map((r: any) => ({
+          id: r.id,
+          label: r.label,
+          value: r.value ?? '',
+          section,
+        }));
+      },
+      error: (err) => {
+        console.warn('Failed to load dynamic attributes for section', section, err);
+      },
+    });
   }
 
   // ---------- Start adding a new attribute meta (label only) ----------
@@ -1419,25 +1421,25 @@ export class LandTabComponent implements OnInit, AfterViewInit, OnDestroy {
 
     attr.isSavingValue = true;
 
-    // this.apiService
-    //   .updateDynamicAttributeValue({
-    //     attribute_id: attr.id, // which attribute
-    //     su_id: this.selected_feature_ID, // for which feature / parcel
-    //     value: attr.value ?? '', // current value in textbox
-    //   })
-    //   .pipe(
-    //     finalize(() => {
-    //       attr.isSavingValue = false;
-    //     }),
-    //   )
-    //   .subscribe({
-    //     next: () => {
-    //       this.notificationService.showSuccess('Attribute value saved');
-    //     },
-    //     error: (err) => {
-    //       console.error('Failed to save attribute value', err);
-    //       this.notificationService.showError('Failed to save attribute value');
-    //     },
-    //   });
+    this.apiService
+      .updateDynamicAttributeValue({
+        attribute_id: attr.id as number,
+        su_id: this.selected_feature_ID,
+        value: attr.value ?? '',
+      })
+      .pipe(
+        finalize(() => {
+          attr.isSavingValue = false;
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.notificationService.showSuccess('Attribute value saved');
+        },
+        error: (err) => {
+          console.error('Failed to save attribute value', err);
+          this.notificationService.showError('Failed to save attribute value');
+        },
+      });
   }
 }
