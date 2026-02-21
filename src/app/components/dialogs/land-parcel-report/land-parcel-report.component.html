@@ -1,0 +1,544 @@
+<div class="lpr-dialog">
+
+  <!-- ═══ Header ═══ -->
+  <div class="lpr-header">
+    <div class="lpr-header-left">
+      <div class="lpr-header-icon">
+        <mat-icon>map</mat-icon>
+      </div>
+      <div class="lpr-header-text">
+        <h2 class="lpr-title">Land Parcel Report</h2>
+        <span class="lpr-subtitle">InfoBhoomi · LADM ISO 19152</span>
+      </div>
+    </div>
+    <div class="lpr-header-right">
+      <button class="lpr-icon-btn" title="Print report" (click)="printReport()">
+        <mat-icon>print</mat-icon>
+      </button>
+      <button class="lpr-icon-btn" title="Close" (click)="closeDialog()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ Parcel Identity Bar ═══ -->
+  <div class="lpr-identity-bar">
+    <div class="lpr-identity-main">
+      <span class="lpr-parcel-id">{{ parcel.identification.parcelId || ('Feature #' + data.featureId) }}</span>
+      <span class="lpr-status-badge" [ngClass]="getStatusClass(parcel.identification.parcelStatus)">
+        {{ PARCEL_STATUS_DISPLAY[parcel.identification.parcelStatus] }}
+      </span>
+    </div>
+    <div class="lpr-identity-meta">
+      <span class="lpr-meta-item">
+        <mat-icon>layers</mat-icon>Layer {{ data.layerId ?? '—' }}
+      </span>
+      <span class="lpr-meta-item">
+        <mat-icon>schedule</mat-icon>Generated {{ generatedAt }}
+      </span>
+    </div>
+  </div>
+
+  <!-- ═══ Quick Stats ═══ -->
+  <div class="lpr-stats-bar">
+    <div class="lpr-stat">
+      <span class="lpr-stat-label">Area</span>
+      <span class="lpr-stat-value">{{ formatArea(parcel.spatial.area) }}</span>
+    </div>
+    <div class="lpr-stat-divider"></div>
+    <div class="lpr-stat">
+      <span class="lpr-stat-label">Land Use</span>
+      <span class="lpr-stat-value">{{ LAND_USE_DISPLAY[parcel.identification.landUse] }}</span>
+    </div>
+    <div class="lpr-stat-divider"></div>
+    <div class="lpr-stat">
+      <span class="lpr-stat-label">Tenure</span>
+      <span class="lpr-stat-value">{{ TENURE_TYPE_DISPLAY[parcel.identification.tenureType] }}</span>
+    </div>
+    <div class="lpr-stat-divider"></div>
+    <div class="lpr-stat">
+      <span class="lpr-stat-label">Zoning</span>
+      <span class="lpr-stat-value">{{ parcel.zoning.zoningCategory }}</span>
+    </div>
+    <div class="lpr-stat-divider"></div>
+    <div class="lpr-stat">
+      <span class="lpr-stat-label">Authority</span>
+      <span class="lpr-stat-value">{{ parcel.identification.localAuthority || '—' }}</span>
+    </div>
+  </div>
+
+  <!-- ═══ Tab Bar ═══ -->
+  <div class="lpr-tab-bar">
+    @for (tab of tabs; track tab.id) {
+      <button
+        class="lpr-tab"
+        [class.lpr-tab--active]="activeTab() === tab.id"
+        (click)="activeTab.set(tab.id)"
+      >
+        <mat-icon>{{ tab.icon }}</mat-icon>
+        <span>{{ tab.label }}</span>
+        @if (tab.id === 'rrr') {
+          <span class="lpr-tab-badge">{{ parcel.rrr.entries.length }}</span>
+        }
+      </button>
+    }
+  </div>
+
+  <!-- ═══ Tab Content ═══ -->
+  <mat-dialog-content class="lpr-content">
+
+    <!-- ── Overview Tab ── -->
+    @if (activeTab() === 'overview') {
+      <div class="lpr-tab-body">
+        <div class="lpr-section">
+          <div class="lpr-section-header">
+            <div class="lpr-section-icon"><mat-icon>badge</mat-icon></div>
+            <div>
+              <div class="lpr-section-title">Identification</div>
+              <div class="lpr-section-sub">LADM LA_BAUnit reference data</div>
+            </div>
+          </div>
+          <div class="lpr-field-grid lpr-field-grid--3">
+            <div class="lpr-field">
+              <span class="lpr-field-label">Parcel ID</span>
+              <span class="lpr-field-value lpr-mono lpr-highlight">{{ parcel.identification.parcelId || '—' }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Cadastral Reference</span>
+              <span class="lpr-field-value lpr-mono">{{ parcel.identification.cadastralRef || '—' }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Registration Date</span>
+              <span class="lpr-field-value lpr-mono">{{ formatDate(parcel.identification.registrationDate) }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Parcel Type</span>
+              <span class="lpr-field-value">{{ PARCEL_TYPE_DISPLAY[parcel.identification.parcelType] }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Status</span>
+              <span class="lpr-field-value">{{ PARCEL_STATUS_DISPLAY[parcel.identification.parcelStatus] }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Local Authority</span>
+              <span class="lpr-field-value">{{ parcel.identification.localAuthority || '—' }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Land Use</span>
+              <span class="lpr-field-value">{{ LAND_USE_DISPLAY[parcel.identification.landUse] }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Tenure Type</span>
+              <span class="lpr-field-value">{{ TENURE_TYPE_DISPLAY[parcel.identification.tenureType] }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="lpr-section">
+          <div class="lpr-section-header">
+            <div class="lpr-section-icon"><mat-icon>place</mat-icon></div>
+            <div>
+              <div class="lpr-section-title">Location</div>
+              <div class="lpr-section-sub">Centroid coordinates &amp; geometry</div>
+            </div>
+          </div>
+          <div class="lpr-field-grid lpr-field-grid--3">
+            <div class="lpr-field">
+              <span class="lpr-field-label">Centroid Longitude</span>
+              <span class="lpr-field-value lpr-mono">{{ formatCoord(parcel.spatial.centroidLon) }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Centroid Latitude</span>
+              <span class="lpr-field-value lpr-mono">{{ formatCoord(parcel.spatial.centroidLat) }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">CRS</span>
+              <span class="lpr-field-value lpr-mono">{{ parcel.spatial.crs }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Area</span>
+              <span class="lpr-field-value lpr-mono lpr-highlight">{{ formatAreaM2(parcel.spatial.area) }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Perimeter</span>
+              <span class="lpr-field-value lpr-mono">{{ parcel.spatial.perimeter ? (parcel.spatial.perimeter | number:'1.2-2') + ' m' : '—' }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Geometry Type</span>
+              <span class="lpr-field-value lpr-mono">{{ parcel.spatial.geometryType }}</span>
+            </div>
+          </div>
+        </div>
+
+        @if (parcel.relationships.buildingIds?.length || parcel.relationships.adjacentParcels || parcel.relationships.parentParcel) {
+          <div class="lpr-section">
+            <div class="lpr-section-header">
+              <div class="lpr-section-icon"><mat-icon>account_tree</mat-icon></div>
+              <div>
+                <div class="lpr-section-title">Relationships</div>
+                <div class="lpr-section-sub">Linked buildings &amp; parcels</div>
+              </div>
+            </div>
+            <div class="lpr-field-grid lpr-field-grid--2">
+              @if (parcel.relationships.buildingIds?.length) {
+                <div class="lpr-field lpr-field--wide">
+                  <span class="lpr-field-label">Buildings on Parcel</span>
+                  <span class="lpr-field-value lpr-mono">{{ parcel.relationships.buildingIds.join(', ') }}</span>
+                </div>
+              }
+              @if (parcel.relationships.adjacentParcels) {
+                <div class="lpr-field lpr-field--wide">
+                  <span class="lpr-field-label">Adjacent Parcels</span>
+                  <span class="lpr-field-value lpr-mono">{{ parcel.relationships.adjacentParcels }}</span>
+                </div>
+              }
+              @if (parcel.relationships.parentParcel) {
+                <div class="lpr-field">
+                  <span class="lpr-field-label">Parent Parcel</span>
+                  <span class="lpr-field-value lpr-mono">{{ parcel.relationships.parentParcel }}</span>
+                </div>
+              }
+              @if (parcel.relationships.partOfEstate) {
+                <div class="lpr-field">
+                  <span class="lpr-field-label">Estate / Complex</span>
+                  <span class="lpr-field-value lpr-mono">{{ parcel.relationships.partOfEstate }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ── Spatial Tab ── -->
+    @if (activeTab() === 'spatial') {
+      <div class="lpr-tab-body">
+        <div class="lpr-section">
+          <div class="lpr-section-header">
+            <div class="lpr-section-icon"><mat-icon>straighten</mat-icon></div>
+            <div>
+              <div class="lpr-section-title">Spatial Metrics</div>
+              <div class="lpr-section-sub">Computed from OpenLayers geometry</div>
+            </div>
+          </div>
+          <div class="lpr-metric-cards">
+            <div class="lpr-metric-card lpr-metric-card--accent">
+              <span class="lpr-metric-label">Total Area</span>
+              <span class="lpr-metric-value">{{ formatAreaM2(parcel.spatial.area) }}</span>
+              <span class="lpr-metric-sub">{{ formatArea(parcel.spatial.area) }}</span>
+            </div>
+            <div class="lpr-metric-card">
+              <span class="lpr-metric-label">Perimeter</span>
+              <span class="lpr-metric-value">{{ parcel.spatial.perimeter ? (parcel.spatial.perimeter | number:'1.1-1') + ' m' : '—' }}</span>
+            </div>
+            <div class="lpr-metric-card">
+              <span class="lpr-metric-label">Vertices</span>
+              <span class="lpr-metric-value">{{ parcel.spatial.coordinateCount || '—' }}</span>
+            </div>
+          </div>
+          <div class="lpr-field-grid lpr-field-grid--3" style="margin-top:16px">
+            <div class="lpr-field">
+              <span class="lpr-field-label">Geometry Type</span>
+              <span class="lpr-field-value lpr-mono">{{ parcel.spatial.geometryType }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Boundary Type</span>
+              <span class="lpr-field-value">{{ BOUNDARY_TYPE_DISPLAY[parcel.spatial.boundaryType] }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">CRS</span>
+              <span class="lpr-field-value lpr-mono">{{ parcel.spatial.crs }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="lpr-section">
+          <div class="lpr-section-header">
+            <div class="lpr-section-icon"><mat-icon>my_location</mat-icon></div>
+            <div>
+              <div class="lpr-section-title">Centroid Coordinates</div>
+              <div class="lpr-section-sub">Geographic centre of the parcel boundary</div>
+            </div>
+          </div>
+          <div class="lpr-coord-display">
+            <div class="lpr-coord-row">
+              <div class="lpr-coord-badge">LON</div>
+              <span class="lpr-coord-value">{{ formatCoord(parcel.spatial.centroidLon) }}</span>
+            </div>
+            <div class="lpr-coord-row">
+              <div class="lpr-coord-badge">LAT</div>
+              <span class="lpr-coord-value">{{ formatCoord(parcel.spatial.centroidLat) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Land & Physical Tab ── -->
+    @if (activeTab() === 'land') {
+      <div class="lpr-tab-body">
+        <div class="lpr-section">
+          <div class="lpr-section-header">
+            <div class="lpr-section-icon"><mat-icon>landscape</mat-icon></div>
+            <div>
+              <div class="lpr-section-title">Physical Characteristics</div>
+              <div class="lpr-section-sub">Environmental &amp; terrain data</div>
+            </div>
+          </div>
+          <div class="lpr-field-grid lpr-field-grid--3">
+            <div class="lpr-field">
+              <span class="lpr-field-label">Elevation</span>
+              <span class="lpr-field-value lpr-mono">{{ parcel.physical.elevation ? parcel.physical.elevation + ' m MSL' : '—' }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Slope</span>
+              <span class="lpr-field-value lpr-mono">{{ parcel.physical.slope ? parcel.physical.slope + '°' : '—' }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Soil Type</span>
+              <span class="lpr-field-value">{{ SOIL_TYPE_DISPLAY[parcel.physical.soilType] }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Flood Zone</span>
+              <span class="lpr-field-value" [class.lpr-warning]="parcel.physical.floodZone">
+                {{ parcel.physical.floodZone ? 'Yes — Flood Risk' : 'No' }}
+              </span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Road Access</span>
+              <span class="lpr-field-value" [class.lpr-success]="parcel.physical.accessRoad">
+                {{ parcel.physical.accessRoad ? 'Available' : 'No Access' }}
+              </span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Vegetation Cover</span>
+              <span class="lpr-field-value">{{ parcel.physical.vegetationCover || '—' }}</span>
+            </div>
+          </div>
+          @if (parcel.physical.utilities) {
+            <div class="lpr-utilities-row">
+              <span class="lpr-field-label">Utilities</span>
+              <div class="lpr-tag-list">
+                @for (ut of parcel.physical.utilities.split(','); track $index) {
+                  <span class="lpr-tag">
+                    <mat-icon>check_circle</mat-icon>{{ ut.trim() }}
+                  </span>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ── Zoning Tab ── -->
+    @if (activeTab() === 'zoning') {
+      <div class="lpr-tab-body">
+        <div class="lpr-section">
+          <div class="lpr-section-header">
+            <div class="lpr-section-icon"><mat-icon>domain</mat-icon></div>
+            <div>
+              <div class="lpr-section-title">Zoning Classification</div>
+              <div class="lpr-section-sub">Planning &amp; development controls</div>
+            </div>
+          </div>
+          <div class="lpr-zoning-banner">
+            <span class="lpr-zoning-code">{{ parcel.zoning.zoningCategory }}</span>
+            <span class="lpr-zoning-desc">{{ ZONING_CATEGORY_DISPLAY[parcel.zoning.zoningCategory] }}</span>
+          </div>
+          <div class="lpr-field-grid lpr-field-grid--3" style="margin-top:16px">
+            <div class="lpr-field">
+              <span class="lpr-field-label">Max Building Height</span>
+              <span class="lpr-field-value lpr-mono">{{ parcel.zoning.maxBuildingHeight ? parcel.zoning.maxBuildingHeight + ' m' : '—' }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Max Coverage</span>
+              <span class="lpr-field-value lpr-mono">{{ parcel.zoning.maxCoverage ? parcel.zoning.maxCoverage + '%' : '—' }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Floor Area Ratio</span>
+              <span class="lpr-field-value lpr-mono">{{ parcel.zoning.maxFAR || '—' }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="lpr-section">
+          <div class="lpr-section-header">
+            <div class="lpr-section-icon"><mat-icon>border_style</mat-icon></div>
+            <div>
+              <div class="lpr-section-title">Setbacks</div>
+              <div class="lpr-section-sub">Minimum building setback distances</div>
+            </div>
+          </div>
+          <div class="lpr-setback-grid">
+            <div class="lpr-setback-card">
+              <span class="lpr-setback-dir">Front</span>
+              <span class="lpr-setback-val">{{ parcel.zoning.setbackFront ? parcel.zoning.setbackFront + ' m' : '—' }}</span>
+            </div>
+            <div class="lpr-setback-card">
+              <span class="lpr-setback-dir">Rear</span>
+              <span class="lpr-setback-val">{{ parcel.zoning.setbackRear ? parcel.zoning.setbackRear + ' m' : '—' }}</span>
+            </div>
+            <div class="lpr-setback-card">
+              <span class="lpr-setback-dir">Side</span>
+              <span class="lpr-setback-val">{{ parcel.zoning.setbackSide ? parcel.zoning.setbackSide + ' m' : '—' }}</span>
+            </div>
+          </div>
+          @if (parcel.zoning.specialOverlay) {
+            <div class="lpr-field" style="margin-top:14px">
+              <span class="lpr-field-label">Special Overlay</span>
+              <span class="lpr-field-value lpr-warning">{{ parcel.zoning.specialOverlay }}</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ── Valuation Tab ── -->
+    @if (activeTab() === 'valuation') {
+      <div class="lpr-tab-body">
+        <div class="lpr-section">
+          <div class="lpr-section-header">
+            <div class="lpr-section-icon"><mat-icon>monetization_on</mat-icon></div>
+            <div>
+              <div class="lpr-section-title">Valuation &amp; Assessment</div>
+              <div class="lpr-section-sub">Property tax and land value data</div>
+            </div>
+          </div>
+          <div class="lpr-metric-cards">
+            <div class="lpr-metric-card lpr-metric-card--accent">
+              <span class="lpr-metric-label">Market Value</span>
+              <span class="lpr-metric-value">LKR {{ formatCurrency(parcel.valuation.marketValue) }}</span>
+            </div>
+            <div class="lpr-metric-card">
+              <span class="lpr-metric-label">Land Value</span>
+              <span class="lpr-metric-value">LKR {{ formatCurrency(parcel.valuation.landValue) }}</span>
+            </div>
+            <div class="lpr-metric-card">
+              <span class="lpr-metric-label">Annual Tax</span>
+              <span class="lpr-metric-value">LKR {{ formatCurrency(parcel.valuation.annualTax) }}</span>
+            </div>
+          </div>
+          <div class="lpr-field-grid lpr-field-grid--2" style="margin-top:16px">
+            <div class="lpr-field">
+              <span class="lpr-field-label">Last Assessment Date</span>
+              <span class="lpr-field-value lpr-mono">{{ formatDate(parcel.valuation.lastAssessmentDate) }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Tax Status</span>
+              <span class="lpr-field-value"
+                [class.lpr-success]="parcel.valuation.taxStatus === 'paid'"
+                [class.lpr-warning]="parcel.valuation.taxStatus === 'pending'"
+                [class.lpr-danger]="parcel.valuation.taxStatus === 'overdue'">
+                {{ parcel.valuation.taxStatus | titlecase }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Rights & RRR Tab ── -->
+    @if (activeTab() === 'rrr') {
+      <div class="lpr-tab-body">
+        @if (parcel.rrr.entries.length === 0) {
+          <div class="lpr-empty-state">
+            <mat-icon>gavel</mat-icon>
+            <p>No Rights, Restrictions, or Responsibilities registered for this parcel.</p>
+          </div>
+        } @else {
+          @for (entry of parcel.rrr.entries; track entry.rrrId) {
+            <div class="lpr-rrr-card">
+              <div class="lpr-rrr-card-header">
+                <div class="lpr-rrr-badge">{{ RIGHT_TYPE_DISPLAY[entry.type] }}</div>
+                <span class="lpr-rrr-id lpr-mono">{{ entry.rrrId }}</span>
+              </div>
+              <div class="lpr-field-grid lpr-field-grid--3">
+                <div class="lpr-field">
+                  <span class="lpr-field-label">Holder</span>
+                  <span class="lpr-field-value">{{ entry.holder || '—' }}</span>
+                </div>
+                <div class="lpr-field">
+                  <span class="lpr-field-label">Share</span>
+                  <span class="lpr-field-value lpr-mono lpr-highlight">{{ entry.share || '—' }}</span>
+                </div>
+                <div class="lpr-field">
+                  <span class="lpr-field-label">Valid From</span>
+                  <span class="lpr-field-value lpr-mono">{{ formatDate(entry.validFrom) }}</span>
+                </div>
+                <div class="lpr-field">
+                  <span class="lpr-field-label">Valid To</span>
+                  <span class="lpr-field-value lpr-mono">{{ formatDate(entry.validTo) }}</span>
+                </div>
+                <div class="lpr-field">
+                  <span class="lpr-field-label">Document Ref</span>
+                  <span class="lpr-field-value lpr-mono">{{ entry.documentRef || '—' }}</span>
+                </div>
+              </div>
+              @if (entry.restrictions?.length) {
+                <div class="lpr-rrr-sub-section">
+                  <span class="lpr-rrr-sub-title">Restrictions ({{ entry.restrictions.length }})</span>
+                  @for (r of entry.restrictions; track $index) {
+                    <div class="lpr-rrr-sub-row">
+                      <span class="lpr-tag lpr-tag--warn">{{ r.type }}</span>
+                      <span class="lpr-rrr-sub-desc">{{ r.description || '—' }}</span>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+
+    <!-- ── Metadata Tab ── -->
+    @if (activeTab() === 'metadata') {
+      <div class="lpr-tab-body">
+        <div class="lpr-section">
+          <div class="lpr-section-header">
+            <div class="lpr-section-icon"><mat-icon>fact_check</mat-icon></div>
+            <div>
+              <div class="lpr-section-title">Data Quality &amp; Provenance</div>
+              <div class="lpr-section-sub">Survey and record metadata</div>
+            </div>
+          </div>
+          <div class="lpr-field-grid lpr-field-grid--2">
+            <div class="lpr-field">
+              <span class="lpr-field-label">Data Quality ID</span>
+              <span class="lpr-field-value lpr-mono">{{ parcel.metadata.dataQualityId || '—' }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Accuracy Level</span>
+              <span class="lpr-field-value">{{ ACCURACY_LEVEL_DISPLAY[parcel.metadata.accuracyLevel] }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Survey Method</span>
+              <span class="lpr-field-value">{{ SURVEY_METHOD_DISPLAY[parcel.metadata.surveyMethod] }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Last Updated</span>
+              <span class="lpr-field-value lpr-mono">{{ formatDate(parcel.metadata.lastUpdated) }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Responsible Party</span>
+              <span class="lpr-field-value">{{ parcel.metadata.responsibleParty || '—' }}</span>
+            </div>
+            <div class="lpr-field">
+              <span class="lpr-field-label">Source Document</span>
+              <span class="lpr-field-value lpr-mono">{{ parcel.metadata.sourceDocument || '—' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+  </mat-dialog-content>
+
+  <!-- ═══ Footer ═══ -->
+  <div class="lpr-footer">
+    <span>InfoBhoomi Land Information System — LADM ISO 19152 Compliant Report</span>
+    <span class="lpr-footer-right">Parcel: <strong>{{ parcel.identification.parcelId || data.featureId }}</strong></span>
+  </div>
+
+</div>

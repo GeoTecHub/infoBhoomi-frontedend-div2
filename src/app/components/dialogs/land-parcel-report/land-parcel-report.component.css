@@ -1,0 +1,743 @@
+/* ═══════════════════════════════════════════════════════════════
+   Land Parcel Report Dialog  —  lpr- prefix  —  Dark green GIS theme
+   ═══════════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+}
+
+/* ── Dialog Shell ── */
+.lpr-dialog {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #060e09;
+  color: #d0ead8;
+  font-family: 'DM Sans', system-ui, sans-serif;
+}
+
+/* ── Header ── */
+.lpr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #071410 0%, #0a1f16 100%);
+  border-bottom: 1px solid #1a3a2a;
+  border-radius: 12px 12px 0 0;
+  flex-shrink: 0;
+}
+
+.lpr-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lpr-header-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(111, 232, 160, 0.1);
+  border: 1px solid rgba(111, 232, 160, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6fe8a0;
+  flex-shrink: 0;
+}
+
+.lpr-header-icon mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.lpr-title {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.2px;
+}
+
+.lpr-subtitle {
+  font-size: 11px;
+  color: #5a8a70;
+  margin-top: 1px;
+  display: block;
+  letter-spacing: 0.3px;
+}
+
+.lpr-header-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lpr-icon-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: #5a8a70;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.lpr-icon-btn:hover {
+  background: rgba(111, 232, 160, 0.08);
+  color: #6fe8a0;
+}
+
+.lpr-icon-btn mat-icon {
+  font-size: 19px;
+  width: 19px;
+  height: 19px;
+}
+
+/* ── Identity Bar ── */
+.lpr-identity-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background: #0a1a10;
+  border-bottom: 1px solid #1a3a2a;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lpr-identity-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lpr-parcel-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6fe8a0;
+  letter-spacing: 0.3px;
+}
+
+.lpr-status-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.lpr-badge--active {
+  background: rgba(0, 221, 51, 0.15);
+  color: #00dd33;
+  border: 1px solid rgba(0, 221, 51, 0.25);
+}
+
+.lpr-badge--pending {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.25);
+}
+
+.lpr-badge--suspended {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(248, 113, 113, 0.25);
+}
+
+.lpr-badge--historic {
+  background: rgba(148, 163, 184, 0.12);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.lpr-identity-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.lpr-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #3a6a50;
+}
+
+.lpr-meta-item mat-icon {
+  font-size: 14px;
+  width: 14px;
+  height: 14px;
+}
+
+/* ── Quick Stats Bar ── */
+.lpr-stats-bar {
+  display: flex;
+  align-items: center;
+  background: #0a1a10;
+  border-bottom: 1px solid #1a3a2a;
+  overflow-x: auto;
+  flex-shrink: 0;
+}
+
+.lpr-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px 20px;
+  min-width: 100px;
+}
+
+.lpr-stat-divider {
+  width: 1px;
+  height: 28px;
+  background: #1a3a2a;
+  flex-shrink: 0;
+}
+
+.lpr-stat-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #3a6a50;
+  margin-bottom: 3px;
+}
+
+.lpr-stat-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #a8e6c0;
+  text-align: center;
+}
+
+/* ── Tab Bar ── */
+.lpr-tab-bar {
+  display: flex;
+  align-items: center;
+  background: #0a1a10;
+  border-bottom: 1px solid #1a3a2a;
+  overflow-x: auto;
+  flex-shrink: 0;
+  padding: 0 8px;
+}
+
+.lpr-tab-bar::-webkit-scrollbar {
+  height: 2px;
+}
+
+.lpr-tab-bar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.lpr-tab-bar::-webkit-scrollbar-thumb {
+  background: rgba(111, 232, 160, 0.2);
+}
+
+.lpr-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 12px;
+  font-weight: 500;
+  color: #5a8a70;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+  position: relative;
+  top: 1px;
+}
+
+.lpr-tab mat-icon {
+  font-size: 15px;
+  width: 15px;
+  height: 15px;
+}
+
+.lpr-tab:hover {
+  color: #a8e6c0;
+  background: rgba(111, 232, 160, 0.04);
+}
+
+.lpr-tab--active {
+  color: #6fe8a0;
+  border-bottom-color: #6fe8a0;
+  background: rgba(111, 232, 160, 0.05);
+}
+
+.lpr-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  background: rgba(111, 232, 160, 0.15);
+  border: 1px solid rgba(111, 232, 160, 0.25);
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #6fe8a0;
+}
+
+/* ── Content ── */
+.lpr-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 !important;
+  max-height: none !important;
+  background: #060e09;
+}
+
+.lpr-content::-webkit-scrollbar {
+  width: 5px;
+}
+
+.lpr-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.lpr-content::-webkit-scrollbar-thumb {
+  background: rgba(111, 232, 160, 0.2);
+  border-radius: 3px;
+}
+
+.lpr-tab-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Sections ── */
+.lpr-section {
+  background: #0a1a10;
+  border: 1px solid #1a3a2a;
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+
+.lpr-section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #1a3a2a;
+}
+
+.lpr-section-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #0f2a1c;
+  border: 1px solid #1a3a2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5a8a70;
+  flex-shrink: 0;
+}
+
+.lpr-section-icon mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+.lpr-section-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #a8e6c0;
+  line-height: 1.3;
+}
+
+.lpr-section-sub {
+  font-size: 11px;
+  color: #3a6a50;
+  margin-top: 1px;
+}
+
+/* ── Field Grid ── */
+.lpr-field-grid {
+  display: grid;
+  gap: 14px 20px;
+}
+
+.lpr-field-grid--2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.lpr-field-grid--3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.lpr-field--wide {
+  grid-column: 1 / -1;
+}
+
+.lpr-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.lpr-field-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #3a6a50;
+}
+
+.lpr-field-value {
+  font-size: 13px;
+  color: #d0ead8;
+  line-height: 1.4;
+}
+
+.lpr-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+.lpr-highlight {
+  color: #6fe8a0;
+  font-weight: 600;
+}
+
+.lpr-success {
+  color: #6fe8a0;
+}
+
+.lpr-warning {
+  color: #fbbf24;
+}
+
+.lpr-danger {
+  color: #f87171;
+}
+
+/* ── Metric Cards ── */
+.lpr-metric-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.lpr-metric-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 12px;
+  background: #0f2a1c;
+  border: 1px solid #1a3a2a;
+  border-radius: 10px;
+  text-align: center;
+  gap: 4px;
+}
+
+.lpr-metric-card--accent {
+  background: linear-gradient(135deg, rgba(111, 232, 160, 0.08), rgba(111, 232, 160, 0.04));
+  border-color: rgba(111, 232, 160, 0.2);
+}
+
+.lpr-metric-label {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #3a6a50;
+}
+
+.lpr-metric-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 600;
+  color: #6fe8a0;
+  margin-top: 2px;
+}
+
+.lpr-metric-sub {
+  font-size: 10px;
+  color: #5a8a70;
+}
+
+/* ── Coordinate Display ── */
+.lpr-coord-display {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.lpr-coord-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lpr-coord-badge {
+  width: 36px;
+  height: 24px;
+  background: rgba(111, 232, 160, 0.1);
+  border: 1px solid rgba(111, 232, 160, 0.2);
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #6fe8a0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+}
+
+.lpr-coord-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 500;
+  color: #a8e6c0;
+}
+
+/* ── Zoning Banner ── */
+.lpr-zoning-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(111, 232, 160, 0.08), rgba(111, 232, 160, 0.03));
+  border: 1px solid rgba(111, 232, 160, 0.18);
+  border-radius: 8px;
+}
+
+.lpr-zoning-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  color: #6fe8a0;
+  flex-shrink: 0;
+}
+
+.lpr-zoning-desc {
+  font-size: 13px;
+  color: #a8e6c0;
+  line-height: 1.4;
+}
+
+/* ── Setback Grid ── */
+.lpr-setback-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.lpr-setback-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 10px;
+  background: #0f2a1c;
+  border: 1px solid #1a3a2a;
+  border-radius: 8px;
+}
+
+.lpr-setback-dir {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #3a6a50;
+}
+
+.lpr-setback-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 18px;
+  font-weight: 600;
+  color: #a8e6c0;
+}
+
+/* ── Utilities Tags ── */
+.lpr-utilities-row {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid #1a3a2a;
+}
+
+.lpr-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.lpr-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(111, 232, 160, 0.07);
+  border: 1px solid rgba(111, 232, 160, 0.18);
+  border-radius: 12px;
+  font-size: 11px;
+  color: #a8e6c0;
+}
+
+.lpr-tag mat-icon {
+  font-size: 13px;
+  width: 13px;
+  height: 13px;
+  color: #6fe8a0;
+}
+
+.lpr-tag--warn {
+  background: rgba(251, 191, 36, 0.08);
+  border-color: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+}
+
+/* ── RRR Cards ── */
+.lpr-rrr-card {
+  background: #0a1a10;
+  border: 1px solid #1a3a2a;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.lpr-rrr-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: rgba(111, 232, 160, 0.05);
+  border-bottom: 1px solid #1a3a2a;
+}
+
+.lpr-rrr-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6fe8a0;
+  background: rgba(111, 232, 160, 0.1);
+  border: 1px solid rgba(111, 232, 160, 0.2);
+  border-radius: 6px;
+  padding: 3px 10px;
+}
+
+.lpr-rrr-id {
+  font-size: 11px;
+  color: #3a6a50;
+}
+
+.lpr-rrr-card .lpr-field-grid {
+  padding: 14px 16px;
+}
+
+.lpr-rrr-sub-section {
+  padding: 10px 16px 14px;
+  border-top: 1px solid #1a3a2a;
+}
+
+.lpr-rrr-sub-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: #3a6a50;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.lpr-rrr-sub-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.lpr-rrr-sub-desc {
+  font-size: 12px;
+  color: #5a8a70;
+  line-height: 1.4;
+}
+
+/* ── Empty State ── */
+.lpr-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  color: #3a6a50;
+  gap: 12px;
+}
+
+.lpr-empty-state mat-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+}
+
+.lpr-empty-state p {
+  font-size: 13px;
+  max-width: 320px;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* ── Footer ── */
+.lpr-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 20px;
+  background: #060e09;
+  border-top: 1px solid #1a3a2a;
+  font-size: 10px;
+  color: #2a5a3a;
+  flex-shrink: 0;
+}
+
+.lpr-footer-right strong {
+  color: #3a6a50;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ── Print Styles ── */
+@media print {
+  .lpr-header-right,
+  .lpr-tab-bar,
+  .lpr-footer {
+    display: none;
+  }
+
+  .lpr-dialog {
+    height: auto;
+    background: white;
+    color: #111;
+  }
+
+  .lpr-content {
+    max-height: none !important;
+    overflow: visible;
+  }
+
+  .lpr-tab-body {
+    display: flex !important;
+  }
+}

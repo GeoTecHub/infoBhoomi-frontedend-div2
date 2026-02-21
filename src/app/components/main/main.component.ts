@@ -32,6 +32,26 @@ import { MapService, ProjectionCode } from '../../services/map.service';
 import { SidebarControlService } from '../../services/sidebar-control.service';
 import { UserService } from '../../services/user.service';
 import { InfoModalComponent } from '../dialogs/info-modal/info-modal.component';
+import {
+  LandParcelReportComponent,
+  LandParcelReportData,
+} from '../dialogs/land-parcel-report/land-parcel-report.component';
+import {
+  BoundaryType,
+  createDefaultLandParcel,
+  LandUse,
+  ParcelStatus,
+  ParcelType,
+  SoilType,
+  TenureType,
+  ZoningCategory,
+} from '../../models/land-parcel.model';
+import {
+  AccuracyLevel,
+  RightType,
+  SurveyMethod,
+} from '../../models/building-info.model';
+import { getArea, getLength } from 'ol/sphere';
 
 import { Feature } from 'ol';
 import { Coordinate } from 'ol/coordinate';
@@ -567,6 +587,173 @@ export class MainComponent implements OnInit, OnDestroy {
     if (this.dialogRef) return;
     this.dialogRef = this.dialog.open(InfoModalComponent, { minWidth: '480px' });
     this.dialogRef.afterClosed().subscribe(() => (this.dialogRef = null));
+  }
+
+  onGenerateReport(): void {
+    this.hideContextMenu();
+    if (!this.selectedFeatureInfo) return;
+
+    const parcel = this.buildLandParcelForReport(this.selectedFeatureInfo);
+    const dialogData: LandParcelReportData = {
+      parcel,
+      featureId: this.selectedFeatureInfo.featureId,
+      layerId: this.selectedFeatureInfo.layerId,
+    };
+
+    if (this.dialogRef) return;
+    this.dialogRef = this.dialog.open(LandParcelReportComponent, {
+      panelClass: 'lpr-dark-dialog',
+      width: '900px',
+      maxWidth: '96vw',
+      height: '82vh',
+      data: dialogData,
+    });
+    this.dialogRef.afterClosed().subscribe(() => (this.dialogRef = null));
+  }
+
+  private buildLandParcelForReport(featureInfo: SelectedFeatureInfo) {
+    const props = featureInfo.olFeature?.getProperties() || {};
+    const geometry = featureInfo.olFeature?.getGeometry();
+    const featureId = String(featureInfo.featureId ?? '');
+
+    let area = 0;
+    let perimeter = 0;
+    let geometryType = 'Polygon';
+    let coordinateCount = 0;
+    let centroidLon = 0;
+    let centroidLat = 0;
+
+    if (geometry) {
+      geometryType = geometry.getType();
+      const mapProj = this.mapService.mapInstance?.getView().getProjection();
+      if (geometry instanceof Polygon || geometry instanceof MultiPolygon) {
+        area = getArea(geometry, { projection: mapProj }) || 0;
+        const ring =
+          geometry instanceof Polygon
+            ? geometry.getLinearRing(0)
+            : geometry.getPolygon(0)?.getLinearRing(0);
+        if (ring) perimeter = getLength(ring, { projection: mapProj }) || 0;
+      }
+      const extent = geometry.getExtent();
+      centroidLon = (extent[0] + extent[2]) / 2;
+      centroidLat = (extent[1] + extent[3]) / 2;
+      const flatCoords = (geometry as any).getFlatCoordinates?.() || [];
+      const stride = (geometry as any).stride || 2;
+      coordinateCount = flatCoords.length / stride;
+    }
+
+    const parcel = createDefaultLandParcel(featureId);
+
+    parcel.identification = {
+      parcelId: props['parcel_id'] || props['parcelId'] || props['id'] || featureId,
+      cadastralRef: props['cadastral_ref'] || props['cadastralRef'] || props['lot_number'] || '',
+      parcelType: this.resolveReportEnum(props['parcel_type'], ParcelType, ParcelType.LAND),
+      parcelStatus: this.resolveReportEnum(props['status'], ParcelStatus, ParcelStatus.ACTIVE),
+      landUse: this.resolveReportEnum(props['land_use'] || props['landUse'], LandUse, LandUse.VAC),
+      tenureType: this.resolveReportEnum(props['tenure_type'], TenureType, TenureType.FREE),
+      registrationDate: props['registration_date'] || props['created_at'] || '',
+      localAuthority: props['local_authority'] || props['district'] || props['pd'] || '',
+    };
+
+    parcel.spatial = {
+      area: props['area'] || Math.round(area * 100) / 100,
+      perimeter: props['perimeter'] || Math.round(perimeter * 100) / 100,
+      geometryType,
+      boundaryType: this.resolveReportEnum(
+        props['boundary_type'],
+        BoundaryType,
+        BoundaryType.GENERAL,
+      ),
+      coordinateCount,
+      crs: props['crs'] || 'EPSG:4326',
+      centroidLon: Math.round(centroidLon * 1000000) / 1000000,
+      centroidLat: Math.round(centroidLat * 1000000) / 1000000,
+    };
+
+    parcel.physical = {
+      elevation: props['elevation'] || 0,
+      slope: props['slope'] || 0,
+      soilType: this.resolveReportEnum(props['soil_type'], SoilType, SoilType.LOAM),
+      floodZone: props['flood_zone'] ?? false,
+      vegetationCover: props['vegetation'] || props['vegetation_cover'] || '',
+      accessRoad: props['access_road'] ?? true,
+      utilities: props['utilities'] || '',
+    };
+
+    parcel.zoning = {
+      zoningCategory: this.resolveReportEnum(props['zoning'], ZoningCategory, ZoningCategory.R1),
+      maxBuildingHeight: props['max_height'] || 0,
+      maxCoverage: props['max_coverage'] || 0,
+      maxFAR: props['max_far'] || 0,
+      setbackFront: props['setback_front'] || 0,
+      setbackRear: props['setback_rear'] || 0,
+      setbackSide: props['setback_side'] || 0,
+      specialOverlay: props['special_overlay'] || '',
+    };
+
+    parcel.valuation = {
+      landValue: props['land_value'] || 0,
+      marketValue: props['market_value'] || 0,
+      annualTax: props['annual_tax'] || 0,
+      lastAssessmentDate: props['last_assessment_date'] || '',
+      taxStatus: props['tax_status'] || 'pending',
+    };
+
+    parcel.relationships = {
+      buildingIds: props['building_ids'] || [],
+      adjacentParcels: props['adjacent_parcels'] || '',
+      parentParcel: props['parent_parcel'] || '',
+      childParcels: props['child_parcels'] || '',
+      partOfEstate: props['estate_id'] || '',
+    };
+
+    parcel.metadata = {
+      dataQualityId: props['data_quality_id'] || parcel.metadata.dataQualityId,
+      accuracyLevel: this.resolveReportEnum(
+        props['accuracy_level'],
+        AccuracyLevel,
+        AccuracyLevel.ACC_TIER2,
+      ),
+      surveyMethod: this.resolveReportEnum(
+        props['survey_method'],
+        SurveyMethod,
+        SurveyMethod.SURVEY_TS,
+      ),
+      lastUpdated: props['updated_at'] || props['last_updated'] || new Date().toISOString(),
+      responsibleParty: props['responsible_party'] || props['surveyor'] || '',
+      sourceDocument: props['source_document'] || '',
+    };
+
+    if (props['owner'] || props['owner_name']) {
+      parcel.rrr = {
+        entries: [
+          {
+            rrrId: `LRRR-${featureId}`,
+            type: RightType.OWN_FREE,
+            holder: props['owner'] || props['owner_name'] || '',
+            share: 100,
+            validFrom: props['registration_date'] || '',
+            validTo: '',
+            documentRef: props['deed_ref'] || props['document_ref'] || '',
+            documents: [],
+            restrictions: [],
+            responsibilities: [],
+          },
+        ],
+      };
+    }
+
+    return parcel;
+  }
+
+  private resolveReportEnum<T extends object>(
+    value: any,
+    enumObj: T,
+    fallback: T[keyof T],
+  ): T[keyof T] {
+    if (value === undefined || value === null) return fallback;
+    const values = Object.values(enumObj) as unknown[];
+    return values.includes(value) ? (value as T[keyof T]) : fallback;
   }
 
   private findGndVectorLayer(): VectorLayer<VectorSource<OLFeature<Geometry>>> | null {

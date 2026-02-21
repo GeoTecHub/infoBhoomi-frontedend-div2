@@ -270,6 +270,17 @@
   background-color: #f0f0f0;
 }
 
+.context-menu-report-item {
+  color: #16a34a;
+  border-top: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.context-menu-report-item:hover {
+  background-color: #f0fdf4 !important;
+  color: #15803d;
+}
+
 .copyright-text {
   position: absolute;
   bottom: 0px;
