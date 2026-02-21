@@ -910,6 +910,7 @@ export class APIsService {
       'sl_land_type',
       'administrative_type',
       'land_name',
+      'registration_date',
     ];
 
     // Filter the `data` object to keep only the allowed keys

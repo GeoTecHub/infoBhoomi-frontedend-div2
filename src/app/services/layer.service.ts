@@ -120,7 +120,9 @@ export class LayerService {
   public loadInitialMapLayers(): void {
     if (this.isLoadingSubject.value) return; // Prevent concurrent loading
     console.log('LayerService: Starting initial layer load...');
-    this.isLoadingSubject.next(true);
+    // Defer to next tick to avoid NG0100 (ExpressionChangedAfterItHasBeenCheckedError)
+    // when isLoading$ is read by an async pipe during Angular's current CD cycle.
+    setTimeout(() => this.isLoadingSubject.next(true), 0);
 
     // Chain of operations:
     // 1. Get layer metadata.

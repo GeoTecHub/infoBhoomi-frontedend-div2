@@ -3,8 +3,8 @@ import { Component, EventEmitter, Output, inject, signal, OnDestroy, NgZone } fr
 import { Feature } from 'ol';
 import { Geometry, Polygon, MultiPolygon } from 'ol/geom';
 import { getArea, getLength } from 'ol/sphere';
-import { Subject, forkJoin } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, forkJoin, of } from 'rxjs';
+import { takeUntil, catchError } from 'rxjs/operators';
 import {
   LandParcelInfo,
   createDefaultLandParcel,
@@ -124,6 +124,7 @@ export class SidePanelComponent implements OnDestroy {
           this.currentBuildingInfo.set(null);
           this.buildingModelLoaded.set(false);
           this.currentLandParcelInfo.set(this.createLandParcelFromFeature(featureInfo));
+          this.fetchAndMergeLandParcelData(featureInfo.featureId);
           this.makeExtend();
           break;
         case 3:
@@ -139,6 +140,7 @@ export class SidePanelComponent implements OnDestroy {
           this.currentBuildingInfo.set(null);
           this.buildingModelLoaded.set(false);
           this.currentLandParcelInfo.set(this.createLandParcelFromFeature(featureInfo));
+          this.fetchAndMergeLandParcelData(featureInfo.featureId);
           this.makeExtend();
       }
     });
@@ -535,6 +537,56 @@ export class SidePanelComponent implements OnDestroy {
     this.currentLandParcelInfo.set({ ...current, metadata });
   }
 
+  private fetchAndMergeLandParcelData(su_id: string | number): void {
+    forkJoin([
+      this.apiService.getAdministrativeInfo(su_id).pipe(catchError(() => of({}))),
+      this.apiService.getLandOverViewInfo(su_id).pipe(catchError(() => of({}))),
+      this.apiService.getltAssesAndTaxInfo(su_id).pipe(catchError(() => of({}))),
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([adminData, overviewData, taxData]: [any, any, any]) => {
+        console.log('[Fetch] adminData from backend:', adminData);
+        const current = this.currentLandParcelInfo();
+        if (!current) return;
+
+        const identification = { ...current.identification };
+        const physical = { ...current.physical };
+        const spatial = { ...current.spatial };
+        const valuation = { ...current.valuation };
+
+        // Merge admin data
+        if (adminData.local_auth) identification.localAuthority = adminData.local_auth;
+        if (adminData.sl_land_type)
+          identification.parcelType = this.resolveEnum(
+            adminData.sl_land_type,
+            ParcelType,
+            current.identification.parcelType,
+          );
+        if (adminData.land_name) identification.cadastralRef = adminData.land_name;
+        if (adminData.registration_date) identification.registrationDate = adminData.registration_date;
+        if (adminData.access_road !== undefined)
+          physical.accessRoad = adminData.access_road === 'Yes' || adminData.access_road === true;
+
+        // Merge land overview data
+        if (overviewData.area != null) spatial.area = Number(overviewData.area);
+        if (overviewData.ext_landuse_type)
+          identification.landUse = this.resolveEnum(
+            overviewData.ext_landuse_type,
+            LandUse,
+            current.identification.landUse,
+          );
+
+        // Merge tax/assessment data
+        if (taxData.assessment_annual_value != null)
+          valuation.landValue = Number(taxData.assessment_annual_value);
+        if (taxData.tax_annual_value != null)
+          valuation.annualTax = Number(taxData.tax_annual_value);
+        if (taxData.date_of_valuation) valuation.lastAssessmentDate = taxData.date_of_valuation;
+
+        this.currentLandParcelInfo.set({ ...current, identification, physical, spatial, valuation });
+      });
+  }
+
   onSaveLandParcel(info: LandParcelInfo): void {
     const su_id = this.selected_feature_ID;
     if (!su_id) {
@@ -542,13 +594,15 @@ export class SidePanelComponent implements OnDestroy {
       return;
     }
 
+    // access_road is a CharField on the backend — must be a string, not boolean
     const adminPayload = {
       local_auth: info.identification.localAuthority,
       sl_land_type: info.identification.parcelType,
-      sl_ba_unit_name: info.identification.parcelId,
       land_name: info.identification.cadastralRef,
-      access_road: info.physical.accessRoad,
+      access_road: info.physical.accessRoad ? 'Yes' : 'No',
+      registration_date: info.identification.registrationDate || null,
     };
+    console.log('[Save] adminPayload being sent:', adminPayload);
 
     const overviewPayload = {
       area: info.spatial.area,
@@ -575,6 +629,8 @@ export class SidePanelComponent implements OnDestroy {
         },
         error: (err) => {
           console.error('Save parcel error:', err);
+          // Log the backend's validation error detail for easier debugging
+          console.error('Backend response:', err.error);
           this.notificationService.showError('Failed to save parcel details. Please try again.');
         },
       });
