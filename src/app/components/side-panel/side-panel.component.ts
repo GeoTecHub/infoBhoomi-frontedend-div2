@@ -3,7 +3,7 @@ import { Component, EventEmitter, Output, inject, signal, OnDestroy, NgZone } fr
 import { Feature } from 'ol';
 import { Geometry, Polygon, MultiPolygon } from 'ol/geom';
 import { getArea, getLength } from 'ol/sphere';
-import { Subject } from 'rxjs';
+import { Subject, forkJoin } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import {
   LandParcelInfo,
@@ -45,6 +45,7 @@ import {
   RoofType,
   TopologyStatus,
 } from '../../models/building-info.model';
+import { APIsService } from '../../services/api.service';
 import { DrawService, SelectedFeatureInfo } from '../../services/draw.service';
 import { MapService } from '../../services/map.service';
 import { NotificationService } from '../../services/notifications.service';
@@ -90,6 +91,7 @@ export class SidePanelComponent implements OnDestroy {
     private drawService: DrawService,
     private notificationService: NotificationService,
     private sidebarService: SidebarControlService,
+    private apiService: APIsService,
   ) {
     // Handle feature selection changes
     this.drawService.selectedFeatureInfo$.pipe(takeUntil(this.destroy$)).subscribe((info) => {
@@ -531,6 +533,51 @@ export class SidePanelComponent implements OnDestroy {
     const current = this.currentLandParcelInfo();
     if (!current) return;
     this.currentLandParcelInfo.set({ ...current, metadata });
+  }
+
+  onSaveLandParcel(info: LandParcelInfo): void {
+    const su_id = this.selected_feature_ID;
+    if (!su_id) {
+      this.notificationService.showError('No parcel selected. Please select a parcel first.');
+      return;
+    }
+
+    const adminPayload = {
+      local_auth: info.identification.localAuthority,
+      sl_land_type: info.identification.parcelType,
+      sl_ba_unit_name: info.identification.parcelId,
+      land_name: info.identification.cadastralRef,
+      access_road: info.physical.accessRoad,
+    };
+
+    const overviewPayload = {
+      area: info.spatial.area,
+      ext_landuse_type: info.identification.landUse,
+      reference_coordinate: `${info.spatial.centroidLon},${info.spatial.centroidLat}`,
+      dimension_2d_3d: info.spatial.geometryType?.includes('3') ? '3D' : '2D',
+    };
+
+    const taxPayload = {
+      assessment_annual_value: info.valuation.landValue,
+      tax_annual_value: info.valuation.annualTax,
+      date_of_valuation: info.valuation.lastAssessmentDate,
+    };
+
+    forkJoin([
+      this.apiService.updateAdministrativeInfo(su_id, adminPayload, 'land'),
+      this.apiService.updateLandOverviewInfo(su_id, overviewPayload, 'land'),
+      this.apiService.updateTaxAndAssessmentInfo(su_id, taxPayload, 'land'),
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.notificationService.showSuccess('Parcel details saved successfully.');
+        },
+        error: (err) => {
+          console.error('Save parcel error:', err);
+          this.notificationService.showError('Failed to save parcel details. Please try again.');
+        },
+      });
   }
 
   // ─── Building Panel Change Handlers ────────────────────
