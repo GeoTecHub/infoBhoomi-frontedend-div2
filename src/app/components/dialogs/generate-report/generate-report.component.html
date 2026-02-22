@@ -1,0 +1,48 @@
+<div class="gr-dialog">
+  <!-- Header -->
+  <div class="gr-header">
+    <div class="gr-header-left">
+      <div class="gr-header-icon"><mat-icon>description</mat-icon></div>
+      <div class="gr-header-text">
+        <h2 class="gr-title">Generate Report</h2>
+        <span class="gr-subtitle">Select a report type to generate</span>
+      </div>
+    </div>
+    <button class="gr-close-btn" title="Close" (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- Report Options -->
+  <div class="gr-options">
+    @for (option of reportOptions; track option.id) {
+      <button
+        class="gr-option-card"
+        [class.gr-option-card--available]="option.available"
+        [class.gr-option-card--disabled]="!option.available"
+        [disabled]="!option.available"
+        (click)="openReport(option)"
+      >
+        <div class="gr-option-icon" [style.border-color]="option.available ? option.accent + '44' : '#1a2a40'" [style.background]="option.available ? option.accent + '15' : 'transparent'">
+          <mat-icon [style.color]="option.available ? option.accent : '#2a3a50'">{{ option.icon }}</mat-icon>
+        </div>
+        <div class="gr-option-body">
+          <div class="gr-option-title" [style.color]="option.available ? '#e8f4ff' : '#3a5070'">{{ option.title }}</div>
+          <div class="gr-option-sub">{{ option.subtitle }}</div>
+        </div>
+        <div class="gr-option-arrow">
+          @if (option.available) {
+            <mat-icon [style.color]="option.accent">chevron_right</mat-icon>
+          } @else {
+            <span class="gr-na-badge">N/A</span>
+          }
+        </div>
+      </button>
+    }
+  </div>
+
+  <!-- Footer -->
+  <div class="gr-footer">
+    <span>InfoBhoomi Land Information System · LADM ISO 19152</span>
+  </div>
+</div>

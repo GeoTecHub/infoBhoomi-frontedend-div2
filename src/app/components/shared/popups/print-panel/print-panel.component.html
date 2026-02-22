@@ -1,22 +1,21 @@
-<h4 mat-dialog-title>Print</h4>
+<h4 mat-dialog-title>Print Map</h4>
 
 <mat-dialog-content>
   <div class="input-fields">
     <div class="text-input-field">
-      <label class="text-input-label">Data Set Names:</label>
+      <label class="text-input-label">Title:</label>
       <input
-        title="text input"
+        title="map title"
         type="text"
         class="text-input"
-        placeholder="Layer name..."
+        placeholder="Map title..."
         [(ngModel)]="dataSetName"
-        requireds
       />
     </div>
 
     <div class="dropdown">
       <label class="dropdown-label" for="scale">Scale</label>
-      <select title="dropdown" id="scale" class="dropdown-select">
+      <select title="dropdown" id="scale" class="dropdown-select" [(ngModel)]="selectedScale">
         <option *ngFor="let scale of scales" [value]="scale">
           {{ scale }}
         </option>
@@ -24,8 +23,8 @@
     </div>
 
     <div class="dropdown">
-      <label class="dropdown-label" for="scale">Layout</label>
-      <select title="dropdown" id="layout" class="dropdown-select">
+      <label class="dropdown-label" for="layout">Layout</label>
+      <select title="dropdown" id="layout" class="dropdown-select" [(ngModel)]="selectedLayout">
         <option *ngFor="let layout of layouts" [value]="layout">
           {{ layout }}
         </option>
@@ -33,35 +32,18 @@
     </div>
 
     <div class="dropdown">
-      <label class="dropdown-label" for="scale">Orientation</label>
-      <select title="dropdown" id="orientation" class="dropdown-select">
+      <label class="dropdown-label" for="orientation">Orientation</label>
+      <select
+        title="dropdown"
+        id="orientation"
+        class="dropdown-select"
+        [(ngModel)]="selectedOrientation"
+      >
         <option *ngFor="let orientation of orientations" [value]="orientation">
           {{ orientation }}
         </option>
       </select>
     </div>
-
-    <div class="dropdown">
-      <label class="dropdown-label" for="scale">Layers</label>
-      <select title="dropdown" id="layers" class="dropdown-select">
-        <option *ngFor="let layer of layers" [value]="layer">
-          {{ layer }}
-        </option>
-      </select>
-    </div>
-
-    <div class="dropdown">
-      <label class="dropdown-label" for="scale">Attributes</label>
-      <select title="dropdown" id="attributes" class="dropdown-select">
-        <option *ngFor="let attribute of attributes" [value]="attribute">
-          {{ attribute }}
-        </option>
-      </select>
-    </div>
-  </div>
-
-  <div *ngIf="showProOverlay">
-    <app-pro-version-message></app-pro-version-message>
   </div>
 </mat-dialog-content>
 
@@ -71,9 +53,12 @@
     buttonIcon="cancel"
     buttonStyle="secondary"
     mat-dialog-close
-  >
-  </app-custom-buttons>
+  ></app-custom-buttons>
 
-  <app-custom-buttons buttonText="Apply" buttonIcon="check" buttonStyle="primary">
-  </app-custom-buttons>
+  <app-custom-buttons
+    [buttonText]="isPrinting ? 'Capturing…' : 'Print Map'"
+    buttonIcon="print"
+    buttonStyle="primary"
+    (buttonClick)="printMap()"
+  ></app-custom-buttons>
 </mat-dialog-actions>

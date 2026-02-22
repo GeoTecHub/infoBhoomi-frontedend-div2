@@ -1,0 +1,193 @@
+/* ═══════════════════════════════════════════════════════════════
+   Generate Report Launcher  —  gr- prefix  —  Dark GIS theme
+   ═══════════════════════════════════════════════════════════════ */
+
+:host {
+  display: block;
+}
+
+.gr-dialog {
+  display: flex;
+  flex-direction: column;
+  background: #0d1117;
+  color: #c9d1d9;
+  font-family: 'DM Sans', system-ui, sans-serif;
+  border-radius: 12px;
+  overflow: hidden;
+  min-width: 420px;
+}
+
+/* ── Header ── */
+.gr-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #111827 0%, #1a2235 100%);
+  border-bottom: 1px solid #21293a;
+}
+
+.gr-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gr-header-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #818cf8;
+  flex-shrink: 0;
+}
+
+.gr-header-icon mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.gr-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.gr-subtitle {
+  font-size: 11px;
+  color: #4a5568;
+  display: block;
+  margin-top: 1px;
+}
+
+.gr-close-btn {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: #4a5568;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.gr-close-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #c9d1d9;
+}
+
+.gr-close-btn mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+}
+
+/* ── Options ── */
+.gr-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px;
+}
+
+.gr-option-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border-radius: 10px;
+  border: 1px solid #21293a;
+  background: #111827;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.gr-option-card--available:hover {
+  border-color: #2d3a50;
+  background: #161e2e;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.gr-option-card--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.gr-option-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gr-option-icon mat-icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+}
+
+.gr-option-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.gr-option-title {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.gr-option-sub {
+  font-size: 11px;
+  color: #4a5568;
+  margin-top: 3px;
+  line-height: 1.5;
+}
+
+.gr-option-arrow {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.gr-option-arrow mat-icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+}
+
+.gr-na-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #2d3a50;
+  background: #161e2e;
+  border: 1px solid #21293a;
+  border-radius: 4px;
+  padding: 2px 6px;
+  letter-spacing: 0.4px;
+}
+
+/* ── Footer ── */
+.gr-footer {
+  padding: 10px 20px;
+  border-top: 1px solid #21293a;
+  font-size: 10px;
+  color: #2d3a50;
+  text-align: center;
+}

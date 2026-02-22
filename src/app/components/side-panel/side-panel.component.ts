@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Output, inject, signal, OnDestroy, NgZone } from '@angular/core';
+import { MatDialog } from '@angular/material/dialog';
 import { Feature } from 'ol';
 import { Geometry, Polygon, MultiPolygon } from 'ol/geom';
 import { getArea, getLength } from 'ol/sphere';
@@ -56,6 +57,10 @@ import { SidebarControlService } from '../../services/sidebar-control.service';
 import { BuildingInfoPanelComponent } from './building-info-panel/building-info-panel.component';
 import { HomeTabComponent } from './home-tab/home-tab.component';
 import { LandInfoPanelComponent } from './land-info-panel/land-info-panel.component';
+import {
+  GenerateReportComponent,
+  GenerateReportData,
+} from '../dialogs/generate-report/generate-report.component';
 
 type SidebarTab = 'home' | 'land' | 'building';
 
@@ -98,6 +103,7 @@ export class SidePanelComponent implements OnDestroy {
     private notificationService: NotificationService,
     private sidebarService: SidebarControlService,
     private apiService: APIsService,
+    private dialog: MatDialog,
   ) {
     // Handle feature selection changes
     this.drawService.selectedFeatureInfo$.pipe(takeUntil(this.destroy$)).subscribe((info) => {
@@ -1186,6 +1192,22 @@ export class SidePanelComponent implements OnDestroy {
     const current = this.currentBuildingInfo();
     if (!current) return;
     this.currentBuildingInfo.set({ ...current, metadataQuality });
+  }
+
+  openGenerateReport(): void {
+    const tab = this.activeSidebarTab();
+    const data: GenerateReportData = {
+      type: tab === 'building' ? 'building' : 'land',
+      parcel: this.currentLandParcelInfo(),
+      building: this.currentBuildingInfo(),
+      featureId: this.selected_feature_ID,
+      layerId: this.selected_layer_ID ?? null,
+    };
+    this.dialog.open(GenerateReportComponent, {
+      data,
+      width: '480px',
+      panelClass: 'report-dialog',
+    });
   }
 
   ngOnDestroy(): void {
