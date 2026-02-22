@@ -25,6 +25,8 @@ import TileWMS from 'ol/source/TileWMS'; // <-- IMPORT TileWMS SOURCE
 import { APIsService } from './api.service';
 import { LayerService } from './layer.service';
 import { makePerFeatureStyleFn } from './style-factory.service';
+import GeoJSON from 'ol/format/GeoJSON';
+import { Fill, Stroke, Style } from 'ol/style';
 import { UserService } from './user.service';
 
 export type BaseMapType = 'OSM' | 'BING' | 'SENTINEL' | 'NASA_MODIS' | 'NASA_LANDSAT' | 'NASA_WMS';
@@ -791,6 +793,61 @@ export class MapService {
 
       feature.changed();
       break;
+    }
+  }
+
+  private readonly QUERY_HIGHLIGHT_ID = 'query-highlight';
+
+  private readonly highlightStyle = new Style({
+    fill: new Fill({ color: 'rgba(255, 215, 0, 0.45)' }),
+    stroke: new Stroke({ color: '#FF4500', width: 3 }),
+  });
+
+  /**
+   * Adds returned query features as a highlight overlay on the map and zooms to them.
+   * @param features Array of {su_id, layer_id, area_m2, geojson} from /query-parcels/
+   */
+  highlightQueryResults(features: { su_id: number; geojson: any }[]): void {
+    this.clearQueryHighlight();
+    const validFeatures = features.filter((f) => f.geojson != null);
+    if (!validFeatures.length) return;
+
+    const featureCollection = {
+      type: 'FeatureCollection',
+      features: validFeatures.map((f) => ({
+        type: 'Feature',
+        id: f.su_id,
+        geometry: f.geojson,
+        properties: { su_id: f.su_id },
+      })),
+    };
+
+    const layer = this.addVectorLayer(this.QUERY_HIGHLIGHT_ID, {
+      style: this.highlightStyle,
+      zIndex: 999,
+    });
+
+    const olFeatures = new GeoJSON().readFeatures(featureCollection, {
+      dataProjection: 'EPSG:4326',
+      featureProjection: this.mapViewProjectionCode,
+    });
+
+    layer.getSource()!.addFeatures(olFeatures);
+
+    const extent = layer.getSource()!.getExtent();
+    if (extent && extent.every((v) => isFinite(v))) {
+      this.mapInstance?.getView().fit(extent, {
+        padding: [60, 60, 60, 60],
+        maxZoom: 18,
+        duration: 800,
+      });
+    }
+  }
+
+  /** Removes the query highlight overlay layer from the map. */
+  clearQueryHighlight(): void {
+    if (this.vectorLayers.has(this.QUERY_HIGHLIGHT_ID)) {
+      this.removeVectorLayerById(this.QUERY_HIGHLIGHT_ID);
     }
   }
 

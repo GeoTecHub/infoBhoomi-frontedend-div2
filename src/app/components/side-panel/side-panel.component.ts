@@ -139,6 +139,7 @@ export class SidePanelComponent implements OnDestroy {
           this.currentLandParcelInfo.set(null);
           this.currentBuildingInfo.set(this.createBuildingFromFeature(featureInfo));
           this.buildingModelLoaded.set(true);
+          this.fetchAndMergeBuildingData(featureInfo.featureId);
           this.makeExtend();
           break;
         default:
@@ -694,6 +695,273 @@ export class SidePanelComponent implements OnDestroy {
             });
         }
       });
+  }
+
+  private fetchAndMergeBuildingData(su_id: string | number): void {
+    forkJoin([
+      this.apiService.getBuildingAdministrativeInfo(su_id).pipe(catchError(() => of({}))),
+      this.apiService.getltAssesAndTaxInfo(su_id).pipe(catchError(() => of({}))),
+      this.apiService.getRRRData(su_id).pipe(catchError(() => of(null))),
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([adminData, taxData, rrrData]: [any, any, any]) => {
+        const current = this.currentBuildingInfo();
+        if (!current) return;
+
+        const summary = { ...current.summary };
+        const physicalAttributes = { ...current.physicalAttributes };
+        const taxValuation = {
+          ...(current.taxValuation ?? {
+            assessedValue: 0,
+            marketValue: 0,
+            annualTax: 0,
+            lastAssessmentDate: '',
+            taxStatus: 'pending' as const,
+          }),
+        };
+
+        // Merge admin data
+        if (adminData.building_name) summary.address = adminData.building_name;
+        if (adminData.registration_date) summary.registrationDate = adminData.registration_date;
+        if (adminData.no_floors != null) summary.floorCount = Number(adminData.no_floors);
+        if (adminData.construction_year != null)
+          physicalAttributes.constructionYear = Number(adminData.construction_year);
+        if (adminData.structure_type)
+          physicalAttributes.structureType = adminData.structure_type as StructureType;
+        if (adminData.condition) physicalAttributes.condition = adminData.condition as Condition;
+
+        // Merge tax/assessment data
+        if (taxData.assessment_annual_value != null)
+          taxValuation.assessedValue = Number(taxData.assessment_annual_value);
+        if (taxData.tax_annual_value != null)
+          taxValuation.annualTax = Number(taxData.tax_annual_value);
+        if (taxData.date_of_valuation) taxValuation.lastAssessmentDate = taxData.date_of_valuation;
+        if (taxData.market_value != null) taxValuation.marketValue = Number(taxData.market_value);
+        if (taxData.tax_status) taxValuation.taxStatus = taxData.tax_status;
+
+        // Merge RRR data
+        this.fetchedRRRBaUnitIds.clear();
+        this.fetchedRRRMap.clear();
+        const rrrEntries: RRREntry[] = [];
+        const records = rrrData?.records || [];
+        for (const record of records) {
+          this.fetchedRRRBaUnitIds.add(record.ba_unit_id);
+          for (const rrr of record.rrrs || []) {
+            const entryId = `BU-${record.ba_unit_id}`;
+            if (rrr.rrr_id) this.fetchedRRRMap.set(entryId, rrr.rrr_id);
+            rrrEntries.push({
+              rrrId: entryId,
+              type: (rrr.share_type as RightType) || RightType.OWN_FREE,
+              holder: rrr.party_name || '',
+              holderId: String(rrr.pid),
+              holderType: undefined,
+              share: rrr.share,
+              validFrom: rrr.time_begin || '',
+              validTo: rrr.time_end || '',
+              documentRef: record.sl_ba_unit_name || '',
+              documents: [],
+              restrictions: [],
+              responsibilities: [],
+            });
+          }
+        }
+
+        this.currentBuildingInfo.set({
+          ...current,
+          summary,
+          physicalAttributes,
+          taxValuation,
+          rrr: { entries: rrrEntries },
+        });
+
+        // Second phase: fetch restrictions & responsibilities per RRR entry
+        const rrr_ids = Array.from(this.fetchedRRRMap.entries());
+        if (rrr_ids.length > 0) {
+          const restrictionReqs = rrr_ids.map(([, rid]) =>
+            this.apiService.getRRRRestrictions(rid).pipe(catchError(() => of([]))),
+          );
+          const responsibilityReqs = rrr_ids.map(([, rid]) =>
+            this.apiService.getRRRResponsibilities(rid).pipe(catchError(() => of([]))),
+          );
+          forkJoin([...restrictionReqs, ...responsibilityReqs])
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((results: any[]) => {
+              const half = rrr_ids.length;
+              const updatedEntries = [...rrrEntries];
+              rrr_ids.forEach(([entryId], idx) => {
+                const entry = updatedEntries.find((e) => e.rrrId === entryId);
+                if (!entry) return;
+                entry.restrictions = (results[idx] as any[]).map((r: any) => ({
+                  type: r.rrr_restriction_type as RestrictionType,
+                  description: r.description || '',
+                  validFrom: r.time_begin || '',
+                  validTo: r.time_end || '',
+                }));
+                entry.responsibilities = (results[half + idx] as any[]).map((r: any) => ({
+                  type: r.rrr_responsibility_type as ResponsibilityType,
+                  description: r.description || '',
+                  validFrom: r.time_begin || '',
+                  validTo: r.time_end || '',
+                }));
+              });
+              const current2 = this.currentBuildingInfo();
+              if (current2) {
+                this.currentBuildingInfo.set({
+                  ...current2,
+                  rrr: { entries: updatedEntries },
+                });
+              }
+            });
+        }
+      });
+  }
+
+  onSaveBuildingInfo(info: BuildingInfo): void {
+    const su_id = this.selected_feature_ID;
+    if (!su_id) {
+      this.notificationService.showError('No building selected. Please select a building first.');
+      return;
+    }
+
+    const bldPayload = {
+      building_name: info.summary.address,
+      no_floors: info.summary.floorCount,
+      registration_date: info.summary.registrationDate || null,
+      construction_year: info.physicalAttributes.constructionYear || null,
+      structure_type: info.physicalAttributes.structureType,
+      condition: info.physicalAttributes.condition,
+    };
+
+    const taxPayload = {
+      assessment_annual_value: info.taxValuation?.assessedValue,
+      tax_annual_value: info.taxValuation?.annualTax,
+      date_of_valuation: info.taxValuation?.lastAssessmentDate,
+      market_value: info.taxValuation?.marketValue,
+      tax_status: info.taxValuation?.taxStatus,
+    };
+
+    forkJoin([
+      this.apiService.updateBuildingAdministrativeInfo(su_id, bldPayload, 'building'),
+      this.apiService.updateTaxAndAssessmentInfo(su_id, taxPayload, 'building'),
+    ])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.notificationService.showSuccess('Building details saved successfully.');
+        },
+        error: (err) => {
+          console.error('Save building error:', err);
+          console.error('Backend response:', err.error);
+          this.notificationService.showError('Failed to save building details. Please try again.');
+        },
+      });
+
+    // RRR sync: fire-and-forget
+    const currentEntries = info.rrr.entries;
+
+    // Delete removed entries
+    const currentBaUnitIds = new Set(
+      currentEntries
+        .filter((e) => e.rrrId.startsWith('BU-'))
+        .map((e) => Number(e.rrrId.replace('BU-', ''))),
+    );
+    for (const baUnitId of this.fetchedRRRBaUnitIds) {
+      if (!currentBaUnitIds.has(baUnitId)) {
+        this.apiService
+          .deleteRrr(String(baUnitId))
+          .pipe(takeUntil(this.destroy$))
+          .subscribe();
+      }
+    }
+
+    // Save new entries (identified by rrrId starting with 'BRRR-')
+    const newEntries = currentEntries.filter((e) => e.rrrId.startsWith('BRRR-') && e.holderId);
+    for (const entry of newEntries) {
+      const fd = new FormData();
+      fd.append('su_id', String(su_id));
+      fd.append('sl_ba_unit_name', entry.holder);
+      fd.append('sl_ba_unit_type', 'OWNERSHIP');
+      fd.append('admin_source_type', entry.documentRef || 'Title Deed');
+      fd.append(
+        'parties',
+        JSON.stringify([
+          {
+            pid: entry.holderId,
+            share_type: entry.type,
+            share: entry.share,
+            party_role_type: entry.holderType || 'Owner',
+            rrr_type: 'RIGHT',
+            time_begin: entry.validFrom || null,
+            time_end: entry.validTo || null,
+            description: '',
+          },
+        ]),
+      );
+      this.apiService
+        .postAdminSource(fd)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe();
+    }
+
+    // Sync restrictions & responsibilities for existing RRR entries (replace-all strategy)
+    for (const entry of currentEntries.filter((e) => e.rrrId.startsWith('BU-'))) {
+      const rrr_id = this.fetchedRRRMap.get(entry.rrrId);
+      if (!rrr_id) continue;
+
+      this.apiService
+        .getRRRRestrictions(rrr_id)
+        .pipe(
+          switchMap((existing: any) => {
+            const delObs = (existing as any[]).map((r: any) =>
+              this.apiService.deleteRRRRestriction(rrr_id, r.id).pipe(catchError(() => of(null))),
+            );
+            return delObs.length > 0 ? forkJoin(delObs) : of([]);
+          }),
+          switchMap(() => {
+            const createObs = entry.restrictions.map((r) =>
+              this.apiService
+                .postRRRRestriction(rrr_id, {
+                  rrr_restriction_type: r.type,
+                  description: r.description,
+                  time_begin: r.validFrom || null,
+                  time_end: r.validTo || null,
+                })
+                .pipe(catchError(() => of(null))),
+            );
+            return createObs.length > 0 ? forkJoin(createObs) : of([]);
+          }),
+          takeUntil(this.destroy$),
+        )
+        .subscribe();
+
+      this.apiService
+        .getRRRResponsibilities(rrr_id)
+        .pipe(
+          switchMap((existing: any) => {
+            const delObs = (existing as any[]).map((r: any) =>
+              this.apiService
+                .deleteRRRResponsibility(rrr_id, r.id)
+                .pipe(catchError(() => of(null))),
+            );
+            return delObs.length > 0 ? forkJoin(delObs) : of([]);
+          }),
+          switchMap(() => {
+            const createObs = entry.responsibilities.map((r) =>
+              this.apiService
+                .postRRRResponsibility(rrr_id, {
+                  rrr_responsibility_type: r.type,
+                  description: r.description,
+                  time_begin: r.validFrom || null,
+                  time_end: r.validTo || null,
+                })
+                .pipe(catchError(() => of(null))),
+            );
+            return createObs.length > 0 ? forkJoin(createObs) : of([]);
+          }),
+          takeUntil(this.destroy$),
+        )
+        .subscribe();
+    }
   }
 
   onSaveLandParcel(info: LandParcelInfo): void {

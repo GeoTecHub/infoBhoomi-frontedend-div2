@@ -1986,4 +1986,21 @@ export class APIsService {
 
     return this.http.post(apiUrl, payload, { headers });
   }
+
+  queryParcels(
+    layerId: number,
+    conditions: { field: string; operator: string; value: string }[],
+    logic: 'AND' | 'OR',
+  ) {
+    this.loadFromStorage();
+    const headers = new HttpHeaders({
+      Authorization: `Token ${this.token}`,
+      'Content-Type': 'application/json',
+    });
+    return this.http.post<{ count: number; layer_id: number; features: any[] }>(
+      `${this.baseUrl}query-parcels/`,
+      { layer_id: layerId, conditions, logic },
+      { headers },
+    );
+  }
 }

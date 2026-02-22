@@ -1,0 +1,224 @@
+<div class="brr-dialog">
+  <!-- Header -->
+  <div class="brr-header">
+    <div class="brr-header-left">
+      <div class="brr-header-icon"><mat-icon>apartment</mat-icon></div>
+      <div class="brr-header-text">
+        <h2 class="brr-title">Building Report</h2>
+        <span class="brr-subtitle">InfoBhoomi · LADM ISO 19152 · CityJSON</span>
+      </div>
+    </div>
+    <div class="brr-header-right">
+      <button class="brr-icon-btn" title="Print report" (click)="printReport()">
+        <mat-icon>print</mat-icon>
+      </button>
+      <button class="brr-icon-btn" title="Close" (click)="closeDialog()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+  </div>
+  <!-- Identity Bar -->
+  <div class="brr-identity-bar">
+    <div class="brr-identity-main">
+      <span class="brr-building-id">{{ building.summary.buildingId || ('Feature #' + data.featureId) }}</span>
+      <span class="brr-status-badge" [ngClass]="getLegalStatusClass(building.summary.legalStatus)">
+        {{ LEGAL_STATUS_DISPLAY[building.summary.legalStatus] }}
+      </span>
+    </div>
+    <div class="brr-identity-meta">
+      <span class="brr-meta-item"><mat-icon>layers</mat-icon>Layer {{ data.layerId ?? '—' }}</span>
+      <span class="brr-meta-item"><mat-icon>schedule</mat-icon>Generated {{ generatedAt }}</span>
+    </div>
+  </div>
+  <!-- Quick Stats -->
+  <div class="brr-stats-bar">
+    <div class="brr-stat"><span class="brr-stat-label">Primary Use</span>
+      <span class="brr-stat-value">{{ PRIMARY_USE_DISPLAY[building.summary.primaryUse] }}</span></div>
+    <div class="brr-stat-divider"></div>
+    <div class="brr-stat"><span class="brr-stat-label">Floors</span><span class="brr-stat-value">{{ building.summary.noFloors || '—' }}</span></div>
+    <div class="brr-stat-divider"></div>
+    <div class="brr-stat"><span class="brr-stat-label">Height</span><span class="brr-stat-value">{{ building.spatial.height ? building.spatial.height + ' m' : '—' }}</span></div>
+    <div class="brr-stat-divider"></div>
+    <div class="brr-stat"><span class="brr-stat-label">Condition</span>
+      <span class="brr-stat-value">{{ CONDITION_DISPLAY[building.physical.condition] }}</span></div>
+    <div class="brr-stat-divider"></div>
+    <div class="brr-stat"><span class="brr-stat-label">Units</span>
+      <span class="brr-stat-value">{{ building.units?.length || 0 }}</span></div>
+  </div>
+  <!-- Tab Bar -->
+  <div class="brr-tab-bar">
+    @for (tab of tabs; track tab.id) {
+      <button class="brr-tab" [class.brr-tab--active]="activeTab() === tab.id" (click)="activeTab.set(tab.id)">
+        <mat-icon>{{ tab.icon }}</mat-icon><span>{{ tab.label }}</span>
+        @if (tab.id === 'rrr') {<span class="brr-tab-badge">{{ building.rrr?.entries?.length ?? 0 }}</span>}
+        @if (tab.id === 'units') {<span class="brr-tab-badge">{{ building.units?.length ?? 0 }}</span>}
+      </button>
+    }
+  </div>
+  <mat-dialog-content class="brr-content">
+    @if (activeTab() === 'overview') {
+      <div class="brr-tab-body">
+        <div class="brr-section">
+          <div class="brr-section-header">
+            <div class="brr-section-icon"><mat-icon>badge</mat-icon></div>
+            <div><div class="brr-section-title">Building Identification</div>
+            <div class="brr-section-sub">LADM LA_BAUnit administrative reference</div></div>
+          </div>
+          <div class="brr-field-grid brr-field-grid--3">
+            <div class="brr-field"><span class="brr-field-label">Building ID</span><span class="brr-field-value brr-mono brr-highlight">{{ building.summary.buildingId || '—' }}</span></div>
+            <div class="brr-field"><span class="brr-field-label">Cadastral Reference</span><span class="brr-field-value brr-mono">{{ building.summary.cadastralRef || '—' }}</span></div>
+            <div class="brr-field"><span class="brr-field-label">Registration Date</span><span class="brr-field-value brr-mono">{{ formatDate(building.summary.registrationDate) }}</span></div>
+            <div class="brr-field"><span class="brr-field-label">Legal Status</span><span class="brr-field-value">{{ LEGAL_STATUS_DISPLAY[building.summary.legalStatus] }}</span></div>
+            <div class="brr-field"><span class="brr-field-label">Primary Use</span><span class="brr-field-value">{{ PRIMARY_USE_DISPLAY[building.summary.primaryUse] }}</span></div>
+            <div class="brr-field"><span class="brr-field-label">No. of Floors</span><span class="brr-field-value brr-mono">{{ building.summary.noFloors || '—' }}</span></div>
+          </div>
+        </div>
+        <div class="brr-section">
+          <div class="brr-section-header">
+            <div class="brr-section-icon"><mat-icon>place</mat-icon></div>
+            <div><div class="brr-section-title">Address</div><div class="brr-section-sub">Registered postal address</div></div>
+          </div>
+          <div class="brr-address-block">{{ building.summary.address || '—' }}</div>
+        </div>
+        @if (building.relationships?.parentParcelId || building.relationships?.adjacentBuildings?.length) {
+          <div class="brr-section">
+            <div class="brr-section-header">
+              <div class="brr-section-icon"><mat-icon>account_tree</mat-icon></div>
+              <div><div class="brr-section-title">Relationships</div><div class="brr-section-sub">Linked parcels &amp; buildings</div></div>
+            </div>
+            <div class="brr-field-grid brr-field-grid--2">
+              @if (building.relationships.parentParcelId) {
+                <div class="brr-field"><span class="brr-field-label">Parent Parcel</span><span class="brr-field-value brr-mono">{{ building.relationships.parentParcelId }}</span></div>}
+              @if (building.relationships.complexMembership) {
+                <div class="brr-field"><span class="brr-field-label">Complex</span><span class="brr-field-value brr-mono">{{ building.relationships.complexMembership }}</span></div>}
+              @if (building.relationships.adjacentBuildings?.length) {
+                <div class="brr-field brr-field--wide"><span class="brr-field-label">Adjacent Buildings</span><span class="brr-field-value brr-mono">{{ building.relationships.adjacentBuildings.join(', ') }}</span></div>}
+            </div>
+          </div>
+        }
+      </div>
+    }
+    @if (activeTab() === 'spatial') {
+      <div class="brr-tab-body"><div class="brr-section">
+        <div class="brr-section-header"><div class="brr-section-icon"><mat-icon>straighten</mat-icon></div>
+          <div><div class="brr-section-title">Spatial Metrics</div><div class="brr-section-sub">Footprint area, height &amp; 3D geometry</div></div></div>
+        <div class="brr-metric-cards">
+          <div class="brr-metric-card brr-metric-card--accent"><span class="brr-metric-label">Footprint Area</span><span class="brr-metric-value">{{ formatArea(building.spatial.footprintArea) }}</span></div>
+          <div class="brr-metric-card"><span class="brr-metric-label">Building Height</span><span class="brr-metric-value">{{ building.spatial.height ? building.spatial.height + ' m' : '—' }}</span></div>
+          <div class="brr-metric-card"><span class="brr-metric-label">Detail Level</span><span class="brr-metric-value">{{ building.spatial.lodLevel }}</span><span class="brr-metric-sub">{{ LOD_LEVEL_DISPLAY[building.spatial.lodLevel] }}</span></div>
+        </div>
+        <div class="brr-field-grid brr-field-grid--3" style="margin-top:16px">
+          <div class="brr-field"><span class="brr-field-label">CRS</span><span class="brr-field-value brr-mono">{{ building.spatial.crs }}</span></div>
+          <div class="brr-field"><span class="brr-field-label">Elevation Reference</span><span class="brr-field-value">{{ ELEVATION_REF_DISPLAY[building.spatial.elevationRef] }}</span></div>
+        </div>
+      </div></div>
+    }
+    @if (activeTab() === 'physical') {
+      <div class="brr-tab-body"><div class="brr-section">
+        <div class="brr-section-header"><div class="brr-section-icon"><mat-icon>construction</mat-icon></div>
+          <div><div class="brr-section-title">Physical Attributes</div><div class="brr-section-sub">Construction &amp; structural data</div></div></div>
+        <div class="brr-metric-cards">
+          <div class="brr-metric-card brr-metric-card--accent"><span class="brr-metric-label">Gross Floor Area</span><span class="brr-metric-value">{{ formatArea(building.physical.grossFloorArea) }}</span></div>
+          <div class="brr-metric-card"><span class="brr-metric-label">Construction Year</span><span class="brr-metric-value">{{ building.physical.constructionYear || '—' }}</span></div>
+          <div class="brr-metric-card"><span class="brr-metric-label">Condition</span><span class="brr-metric-value">{{ CONDITION_DISPLAY[building.physical.condition] }}</span></div>
+        </div>
+        <div class="brr-field-grid brr-field-grid--3" style="margin-top:16px">
+          <div class="brr-field"><span class="brr-field-label">Structure Type</span><span class="brr-field-value">{{ STRUCTURE_TYPE_DISPLAY[building.physical.structureType] }}</span></div>
+          <div class="brr-field"><span class="brr-field-label">Roof Type</span><span class="brr-field-value">{{ ROOF_TYPE_DISPLAY[building.physical.roofType] }}</span></div>
+        </div>
+      </div></div>
+    }
+    @if (activeTab() === 'units') {
+      <div class="brr-tab-body">
+        @if (!building.units?.length) {
+          <div class="brr-empty-state"><mat-icon>apartment</mat-icon><p>No building units registered for this building.</p></div>
+        } @else {
+          @for (unit of building.units; track unit.unitId) {
+            <div class="brr-unit-card">
+              <div class="brr-unit-card-header">
+                <span class="brr-unit-badge">{{ UNIT_TYPE_DISPLAY[unit.unitType] }}</span>
+                <span class="brr-unit-id brr-mono">{{ unit.unitId }}</span>
+                <span class="brr-unit-floor">Floor {{ unit.floor ?? '—' }}</span>
+              </div>
+              <div class="brr-field-grid brr-field-grid--3 brr-unit-body">
+                <div class="brr-field"><span class="brr-field-label">Floor Area</span><span class="brr-field-value brr-mono brr-highlight">{{ formatArea(unit.floorArea) }}</span></div>
+                <div class="brr-field"><span class="brr-field-label">Primary Use</span><span class="brr-field-value">{{ PRIMARY_USE_DISPLAY[unit.primaryUse] }}</span></div>
+                <div class="brr-field"><span class="brr-field-label">Rooms</span><span class="brr-field-value brr-mono">{{ unit.rooms?.length ?? 0 }}</span></div>
+              </div>
+            </div>
+          }
+        }
+      </div>
+    }
+    @if (activeTab() === 'assessment') {
+      <div class="brr-tab-body"><div class="brr-section">
+        <div class="brr-section-header"><div class="brr-section-icon"><mat-icon>monetization_on</mat-icon></div>
+          <div><div class="brr-section-title">Tax Valuation &amp; Assessment</div><div class="brr-section-sub">Property assessment and tax liability</div></div></div>
+        <div class="brr-metric-cards">
+          <div class="brr-metric-card brr-metric-card--accent"><span class="brr-metric-label">Market Value</span><span class="brr-metric-value">LKR {{ formatCurrency(building.taxValuation.marketValue) }}</span></div>
+          <div class="brr-metric-card"><span class="brr-metric-label">Assessed Value</span><span class="brr-metric-value">LKR {{ formatCurrency(building.taxValuation.assessedValue) }}</span></div>
+          <div class="brr-metric-card"><span class="brr-metric-label">Annual Tax</span><span class="brr-metric-value">LKR {{ formatCurrency(building.taxValuation.annualTax) }}</span></div>
+        </div>
+        <div class="brr-field-grid brr-field-grid--2" style="margin-top:16px">
+          <div class="brr-field"><span class="brr-field-label">Assessment Date</span><span class="brr-field-value brr-mono">{{ formatDate(building.taxValuation.assessmentDate) }}</span></div>
+          <div class="brr-field"><span class="brr-field-label">Tax Status</span>
+            <span class="brr-field-value" [class.brr-success]="building.taxValuation.taxStatus === 'paid'" [class.brr-warning]="building.taxValuation.taxStatus === 'pending'" [class.brr-danger]="building.taxValuation.taxStatus === 'overdue'">{{ building.taxValuation.taxStatus | titlecase }}</span>
+          </div>
+        </div>
+      </div></div>
+    }
+    @if (activeTab() === 'rrr') {
+      <div class="brr-tab-body">
+        @if (!building.rrr?.entries?.length) {
+          <div class="brr-empty-state"><mat-icon>gavel</mat-icon><p>No Rights, Restrictions, or Responsibilities registered for this building.</p></div>
+        } @else {
+          @for (entry of building.rrr.entries; track entry.rrrId) {
+            <div class="brr-rrr-card">
+              <div class="brr-rrr-card-header">
+                <div class="brr-rrr-badge">{{ RIGHT_TYPE_DISPLAY[entry.type] }}</div>
+                <span class="brr-rrr-id brr-mono">{{ entry.rrrId }}</span>
+              </div>
+              <div class="brr-field-grid brr-field-grid--3">
+                <div class="brr-field"><span class="brr-field-label">Holder</span><span class="brr-field-value">{{ entry.holder || '—' }}</span></div>
+                <div class="brr-field"><span class="brr-field-label">Share</span><span class="brr-field-value brr-mono brr-highlight">{{ entry.share || '—' }}</span></div>
+                <div class="brr-field"><span class="brr-field-label">Valid From</span><span class="brr-field-value brr-mono">{{ formatDate(entry.validFrom) }}</span></div>
+                <div class="brr-field"><span class="brr-field-label">Valid To</span><span class="brr-field-value brr-mono">{{ formatDate(entry.validTo) }}</span></div>
+                <div class="brr-field"><span class="brr-field-label">Document Ref</span><span class="brr-field-value brr-mono">{{ entry.documentRef || '—' }}</span></div>
+              </div>
+              @if (entry.restrictions?.length) {
+                <div class="brr-rrr-sub-section">
+                  <span class="brr-rrr-sub-title">Restrictions ({{ entry.restrictions.length }})</span>
+                  @for (r of entry.restrictions; track $index) {
+                    <div class="brr-rrr-sub-row">
+                      <span class="brr-tag brr-tag--warn">{{ r.type }}</span>
+                      <span class="brr-rrr-sub-desc">{{ r.description || '—' }}</span>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+    @if (activeTab() === 'metadata') {
+      <div class="brr-tab-body"><div class="brr-section">
+        <div class="brr-section-header"><div class="brr-section-icon"><mat-icon>fact_check</mat-icon></div>
+          <div><div class="brr-section-title">Data Quality &amp; Provenance</div><div class="brr-section-sub">Survey and record metadata</div></div></div>
+        <div class="brr-field-grid brr-field-grid--2">
+          <div class="brr-field"><span class="brr-field-label">Data Quality ID</span><span class="brr-field-value brr-mono">{{ building.metadata.dataQualityId || '—' }}</span></div>
+          <div class="brr-field"><span class="brr-field-label">Accuracy Level</span><span class="brr-field-value">{{ ACCURACY_LEVEL_DISPLAY[building.metadata.accuracyLevel] }}</span></div>
+          <div class="brr-field"><span class="brr-field-label">Survey Method</span><span class="brr-field-value">{{ SURVEY_METHOD_DISPLAY[building.metadata.surveyMethod] }}</span></div>
+          <div class="brr-field"><span class="brr-field-label">Last Updated</span><span class="brr-field-value brr-mono">{{ formatDate(building.metadata.lastUpdated) }}</span></div>
+          <div class="brr-field"><span class="brr-field-label">Responsible Party</span><span class="brr-field-value">{{ building.metadata.responsibleParty || '—' }}</span></div>
+          <div class="brr-field"><span class="brr-field-label">Source File</span><span class="brr-field-value brr-mono">{{ building.metadata.sourceFile || '—' }}</span></div>
+        </div>
+      </div></div>
+    }
+  </mat-dialog-content>
+  <!-- Footer -->
+  <div class="brr-footer">
+    <span>InfoBhoomi Land Information System — LADM ISO 19152 Compliant Report</span>
+    <span class="brr-footer-right">Building: <strong>{{ building.summary.buildingId || data.featureId }}</strong></span>
+  </div>
+</div>

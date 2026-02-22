@@ -1,64 +1,248 @@
 .query-builder {
   background-color: white;
+  min-width: 480px;
 }
 
-.content {
-  margin-right: 20px;
+mat-dialog-content {
+  position: relative;
+  min-height: 120px;
 }
 
-label {
+label,
+.section-label {
   display: block;
   font-weight: bold;
   margin-bottom: 5px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #555);
 }
 
 textarea,
-input,
+input[type='text'],
 select {
   width: 100%;
-  padding: 8px;
+  padding: 7px 9px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+  font-size: 0.9rem;
 }
 
 textarea {
   resize: none;
+  background: #f9f9f9;
+  font-family: monospace;
+  font-size: 0.82rem;
 }
 
-.operators-set-1 {
+.form-group {
+  margin-bottom: 12px;
+}
+
+/* ── Condition builder row ─────────────────────────── */
+.condition-row {
   display: flex;
-  flex-direction: row;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
-.operators button {
-  display: inline-block;
-  width: 45px;
-  padding: 5px;
-  margin: 2px;
-  background-color: #f5f5f5;
-  border: 1px solid #ccc;
-  cursor: pointer;
+.condition-row select {
+  flex: 1 1 120px;
+  margin-bottom: 0;
 }
 
-.actions {
-  display: flex;
-  justify-content: space-between;
+.condition-row input {
+  flex: 1 1 100px;
+  margin-bottom: 0;
 }
 
-.actions button {
-  padding: 10px 15px;
+.btn-add-cond {
+  padding: 7px 12px;
+  background: var(--color-primary, #2c7be5);
+  color: #fff;
   border: none;
-  background-color: #007bff;
-  color: white;
   border-radius: 4px;
   cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
-.actions button:nth-child(1) {
-  background-color: #6c757d;
+.btn-add-cond:hover {
+  opacity: 0.88;
 }
 
-mat-dialog-content {
-  position: relative; /* Required so overlay positions correctly */
+/* ── Logic toggle ──────────────────────────────────── */
+.logic-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary, #555);
+}
+
+.logic-toggle button {
+  padding: 4px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #f5f5f5;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.logic-toggle button.active {
+  background: var(--color-primary, #2c7be5);
+  color: #fff;
+  border-color: var(--color-primary, #2c7be5);
+}
+
+/* ── Condition chips ───────────────────────────────── */
+.condition-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 10px;
+  background: #eef4ff;
+  border: 1px solid #c6d9f7;
+  border-radius: 20px;
+  margin-bottom: 5px;
+  font-size: 0.85rem;
+}
+
+.chip-text {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: monospace;
+}
+
+.btn-remove-cond {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  font-size: 0.8rem;
+  margin-left: 8px;
+  padding: 0 4px;
+}
+
+.btn-remove-cond:hover {
+  color: #e53935;
+}
+
+/* ── Result info ───────────────────────────────────── */
+.result-info {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: #e8f5e9;
+  font-size: 0.87rem;
+  color: #2e7d32;
+}
+
+.result-info .zero {
+  color: #b71c1c;
+  background: #fce4ec;
+}
+
+/* ── Save section ──────────────────────────────────── */
+.save-section {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.save-section input {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.btn-save-formula {
+  padding: 7px 14px;
+  background: var(--color-secondary, #6c757d);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.btn-save-formula:hover {
+  opacity: 0.88;
+}
+
+/* ── Saved formulas list (basic mode) ─────────────── */
+.empty-saved {
+  padding: 24px 0;
+  text-align: center;
+  color: #999;
+  font-size: 0.88rem;
+}
+
+.saved-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  margin-bottom: 7px;
+}
+
+.saved-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  overflow: hidden;
+}
+
+.saved-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.saved-meta {
+  font-size: 0.78rem;
+  color: #999;
+}
+
+.saved-actions {
+  display: flex;
+  gap: 6px;
+  margin-left: 10px;
+}
+
+.btn-load {
+  padding: 4px 12px;
+  background: var(--color-primary, #2c7be5);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+
+.btn-delete {
+  padding: 4px 8px;
+  background: none;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+  color: #888;
+  font-size: 0.82rem;
+}
+
+.btn-delete:hover {
+  color: #e53935;
+  border-color: #e53935;
 }

@@ -1,22 +1,29 @@
 <h4 mat-dialog-title>Query Builder</h4>
 
 <div class="query-builder">
-  <!-- Initial Query Builder -->
-  <div class="query-basic" *ngIf="!isAdvancedMode">
+
+  <!-- ══ BASIC MODE (Saved Formulas) ══════════════════════════════════════════ -->
+  <div class="query-basic" *ngIf="!isAdvancedMode()">
     <mat-dialog-content>
-      <div class="content">
-        <label for="saved-formulas">Saved Formulas</label>
-        <textarea id="saved-formulas" rows="10" readonly></textarea>
+
+      <div *ngIf="savedFormulas().length === 0" class="empty-saved">
+        <span>No saved formulas yet. Build a query in Advanced mode and save it.</span>
       </div>
 
-      <div class="content">
-        <label for="formula">Formula</label>
-        <textarea id="formula" rows="5" readonly></textarea>
+      <div *ngIf="savedFormulas().length > 0">
+        <label class="section-label">Saved Formulas</label>
+        <div class="saved-item" *ngFor="let f of savedFormulas()">
+          <div class="saved-info">
+            <span class="saved-name">{{ f.name }}</span>
+            <span class="saved-meta">{{ getLayerLabel(f.layerId) }} · {{ f.conditions.length }} condition(s) · {{ f.logic }}</span>
+          </div>
+          <div class="saved-actions">
+            <button class="btn-load" (click)="loadFormula(f)">Load</button>
+            <button class="btn-delete" (click)="deleteFormula(f.name)">✕</button>
+          </div>
+        </div>
       </div>
 
-      <div *ngIf="showProOverlay">
-        <app-pro-version-message></app-pro-version-message>
-      </div>
     </mat-dialog-content>
 
     <mat-dialog-actions>
@@ -24,83 +31,108 @@
         buttonText="Close"
         buttonIcon="cancel"
         buttonStyle="secondary"
-        mat-dialog-close
-      >
-      </app-custom-buttons>
+        (buttonClick)="onClose()"
+      ></app-custom-buttons>
 
       <app-custom-buttons
         buttonText="Advanced"
         buttonIcon="tune"
         buttonStyle="primary"
-        (buttonClick)="toggleAdvanced()"
-      >
-      </app-custom-buttons>
-
-      <app-custom-buttons buttonText="Apply" buttonIcon="check" buttonStyle="primary">
-      </app-custom-buttons>
+        (buttonClick)="isAdvancedMode.set(true)"
+      ></app-custom-buttons>
     </mat-dialog-actions>
   </div>
 
-  <!-- Advanced Query Builder -->
-  <div class="query-advanced" *ngIf="isAdvancedMode">
+  <!-- ══ ADVANCED MODE ═════════════════════════════════════════════════════════ -->
+  <div class="query-advanced" *ngIf="isAdvancedMode()">
     <mat-dialog-content>
-      <div class="content">
-        <div class="form-group">
-          <label for="query-name">Query Name</label>
-          <input id="query-name" type="text" />
-        </div>
 
-        <div class="form-group">
-          <label for="layers">Select Layer</label>
-          <select id="layers" multiple>
-            <!-- All layer names go here -->
+      <!-- Layer selection -->
+      <div class="form-group">
+        <label>Select Layer</label>
+        <select (change)="onLayerChange($any($event.target).value)">
+          <option value="">-- choose layer --</option>
+          <option *ngFor="let l of supportedLayers" [value]="l.id"
+            [selected]="selectedLayerId() === l.id">
+            {{ l.label }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Condition builder row -->
+      <div class="form-group" *ngIf="selectedLayerId()">
+        <label>Add Condition</label>
+        <div class="condition-row">
+          <select (change)="onFieldChange($any($event.target).value)">
+            <option value="">-- attribute --</option>
+            <option *ngFor="let a of availableAttributes()" [value]="a.field"
+              [selected]="newCondition().field === a.field">
+              {{ a.label }}
+            </option>
           </select>
-        </div>
 
-        <div class="form-group">
-          <label for="attributes">Select Attribute</label>
-          <select id="attributes" multiple>
-            <!-- Attributes of selected layer go here -->
+          <select (change)="onOperatorChange($any($event.target).value)">
+            <option *ngFor="let op of availableOperators()" [value]="op"
+              [selected]="newCondition().operator === op">
+              {{ op === '%' ? 'LIKE' : op }}
+            </option>
           </select>
-        </div>
 
-        <div class="operators-set-1">
-          <app-custom-buttons buttonText="=" buttonStyle="type-1"> </app-custom-buttons>
+          <input
+            type="text"
+            placeholder="value"
+            [value]="newCondition().value"
+            (input)="onValueChange($any($event.target).value)"
+            (keydown.enter)="addCondition()"
+          />
 
-          <app-custom-buttons buttonText="&lt;" buttonStyle="type-1"> </app-custom-buttons>
-
-          <app-custom-buttons buttonText="&gt;" buttonStyle="type-1"> </app-custom-buttons>
-
-          <app-custom-buttons buttonText="&lt;=" buttonStyle="type-1"> </app-custom-buttons>
-
-          <app-custom-buttons buttonText="&gt;=" buttonStyle="type-1"> </app-custom-buttons>
-
-          <app-custom-buttons buttonText="%" buttonStyle="type-1"> </app-custom-buttons>
-
-          <app-custom-buttons buttonText="()" buttonStyle="type-1"> </app-custom-buttons>
-        </div>
-
-        <div class="operators-set-1">
-          <app-custom-buttons buttonText="AND" buttonStyle="type-1"> </app-custom-buttons>
-
-          <app-custom-buttons buttonText="OR" buttonStyle="type-1"> </app-custom-buttons>
-
-          <app-custom-buttons buttonText="NOT" buttonStyle="type-1"> </app-custom-buttons>
-
-          <app-custom-buttons buttonText="NULL" buttonStyle="type-1"> </app-custom-buttons>
-
-          <app-custom-buttons buttonText="IN" buttonStyle="type-1"> </app-custom-buttons>
-        </div>
-
-        <div class="form-group">
-          <label for="formula-advanced">Formula</label>
-          <textarea id="formula-advanced" rows="5"></textarea>
+          <button class="btn-add-cond" (click)="addCondition()">+ Add</button>
         </div>
       </div>
 
-      <div *ngIf="showProOverlay">
-        <app-pro-version-message></app-pro-version-message>
+      <!-- Conditions list -->
+      <div *ngIf="conditions().length > 0">
+        <div class="logic-toggle">
+          <span>Combine with:</span>
+          <button [class.active]="logic() === 'AND'" (click)="setLogic('AND')">AND</button>
+          <button [class.active]="logic() === 'OR'" (click)="setLogic('OR')">OR</button>
+        </div>
+
+        <div class="condition-chip" *ngFor="let c of conditions(); let i = index">
+          <span class="chip-text">
+            {{ getAttrLabel(c.field) }}&nbsp;{{ c.operator === '%' ? 'LIKE' : c.operator }}&nbsp;{{ c.value }}
+          </span>
+          <button class="btn-remove-cond" (click)="removeCondition(i)" title="Remove">✕</button>
+        </div>
       </div>
+
+      <!-- Formula preview -->
+      <div class="form-group" *ngIf="formulaDisplay()">
+        <label>Formula Preview</label>
+        <textarea rows="4" readonly>{{ formulaDisplay() }}</textarea>
+      </div>
+
+      <!-- Result count -->
+      <div class="result-info" *ngIf="resultCount() !== null">
+        <span [class.zero]="resultCount() === 0">
+          {{ resultCount() === 0
+            ? 'No features matched the query.'
+            : resultCount() + ' feature(s) highlighted on map.' }}
+        </span>
+      </div>
+
+      <!-- Save section -->
+      <div class="save-section" *ngIf="conditions().length > 0">
+        <input
+          type="text"
+          placeholder="Formula name…"
+          [value]="saveQueryName()"
+          (input)="saveQueryName.set($any($event.target).value)"
+          (keydown.enter)="saveFormula()"
+        />
+        <button class="btn-save-formula" (click)="saveFormula()">Save Formula</button>
+      </div>
+
     </mat-dialog-content>
 
     <mat-dialog-actions>
@@ -108,23 +140,30 @@
         buttonText="Close"
         buttonIcon="cancel"
         buttonStyle="secondary"
-        mat-dialog-close
-      >
-      </app-custom-buttons>
-
-      <app-custom-buttons buttonText="Save" buttonIcon="bookmark" buttonStyle="primary">
-      </app-custom-buttons>
+        (buttonClick)="onClose()"
+      ></app-custom-buttons>
 
       <app-custom-buttons
-        buttonText="Back"
-        buttonIcon="arrow_back"
+        buttonText="Saved"
+        buttonIcon="bookmark"
         buttonStyle="primary"
-        (buttonClick)="toggleAdvanced()"
-      >
-      </app-custom-buttons>
+        (buttonClick)="isAdvancedMode.set(false)"
+      ></app-custom-buttons>
 
-      <app-custom-buttons buttonText="Apply" buttonIcon="check" buttonStyle="primary">
-      </app-custom-buttons>
+      <app-custom-buttons
+        buttonText="Clear"
+        buttonIcon="clear"
+        buttonStyle="secondary"
+        (buttonClick)="conditions.set([]); resultCount.set(null)"
+      ></app-custom-buttons>
+
+      <app-custom-buttons
+        [buttonText]="isLoading() ? 'Running…' : 'Apply'"
+        buttonIcon="check"
+        buttonStyle="primary"
+        (buttonClick)="applyQuery()"
+      ></app-custom-buttons>
     </mat-dialog-actions>
   </div>
+
 </div>
