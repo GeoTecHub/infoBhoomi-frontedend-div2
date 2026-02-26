@@ -722,6 +722,160 @@
   font-family: 'JetBrains Mono', monospace;
 }
 
+/* ── Cadastral Sketch ── */
+.lpr-sketch-loading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  color: #5a8a70;
+  font-size: 13px;
+}
+
+.lpr-sketch-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(111, 232, 160, 0.2);
+  border-top-color: #6fe8a0;
+  border-radius: 50%;
+  animation: lpr-spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes lpr-spin {
+  to { transform: rotate(360deg); }
+}
+
+.lpr-sketch-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: rgba(248, 113, 113, 0.07);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  border-radius: 8px;
+  color: #f87171;
+  font-size: 12px;
+}
+
+.lpr-sketch-error mat-icon {
+  font-size: 18px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.lpr-sketch-svg-wrap {
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-radius: 8px;
+  border: 1px solid #1a3a2a;
+  background: #f5f9f6;
+}
+
+.lpr-sketch-svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Legend row */
+.lpr-sketch-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin-top: 12px;
+  padding: 10px 12px;
+  background: #0f2a1c;
+  border: 1px solid #1a3a2a;
+  border-radius: 8px;
+}
+
+.lpr-sketch-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #a8e6c0;
+}
+
+.lpr-sketch-swatch {
+  display: inline-block;
+  width: 16px;
+  height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.lpr-sketch-swatch--hatch {
+  background: repeating-linear-gradient(
+    -45deg,
+    #9e9e9e,
+    #9e9e9e 1px,
+    transparent 1px,
+    transparent 5px
+  );
+  border: 1px solid #9e9e9e;
+}
+
+/* Adjacency table */
+.lpr-adj-table-wrap {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid #1a3a2a;
+}
+
+.lpr-adj-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.lpr-adj-table thead tr {
+  background: #0f2a1c;
+}
+
+.lpr-adj-table th {
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #3a6a50;
+  white-space: nowrap;
+  border-bottom: 1px solid #1a3a2a;
+}
+
+.lpr-adj-table td {
+  padding: 7px 12px;
+  color: #d0ead8;
+  border-bottom: 1px solid #0f2a1c;
+}
+
+.lpr-adj-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.lpr-adj-table tbody tr:hover td {
+  background: rgba(111, 232, 160, 0.04);
+}
+
+.lpr-adj-dir {
+  font-weight: 700;
+  color: #6fe8a0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+
+.lpr-sketch-no-adj {
+  padding: 12px;
+  font-size: 12px;
+  color: #3a6a50;
+  text-align: center;
+  font-style: italic;
+}
+
 /* ── Print Styles ── */
 @media print {
   .lpr-header-right,
