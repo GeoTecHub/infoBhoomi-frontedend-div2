@@ -13,6 +13,7 @@ import {
   RRRResponsibility,
   SpatialInfo,
   PhysicalAttributes,
+  UtilityInfo,
   RelationshipsTopology,
   MetadataQuality,
   LegalStatus,
@@ -62,6 +63,7 @@ type CollapsibleSection =
   | 'rrr'
   | 'units'
   | 'physical'
+  | 'utilities'
   | 'relationships'
   | 'metadata';
 
@@ -89,6 +91,7 @@ export class BuildingInfoPanelComponent {
   unitsChanged = output<BuildingUnit[]>();
   spatialChanged = output<SpatialInfo>();
   physicalChanged = output<PhysicalAttributes>();
+  utilitiesChanged = output<UtilityInfo>();
   relationshipsChanged = output<RelationshipsTopology>();
   metadataChanged = output<MetadataQuality>();
   saveModelRequested = output<void>();
@@ -731,6 +734,26 @@ export class BuildingInfoPanelComponent {
     if (!info) return;
     const updated: PhysicalAttributes = { ...info.physicalAttributes, [field]: value };
     this.physicalChanged.emit(updated);
+  }
+
+  // ─── Utilities & Services editing ───────────────────────────
+
+  onUtilityFieldChange(field: keyof UtilityInfo, value: string): void {
+    const info = this.buildingInfo();
+    if (!info) return;
+    const current: UtilityInfo = info.utilities ?? {
+      electricity: '',
+      telephone: '',
+      internet: '',
+      waterDrink: '',
+      water: '',
+      drainage: '',
+      sanitationSewer: '',
+      sanitationGully: '',
+      garbageDisposal: '',
+    };
+    const updated: UtilityInfo = { ...current, [field]: value };
+    this.utilitiesChanged.emit(updated);
   }
 
   // ─── Relationships & Topology editing ───────────────────────

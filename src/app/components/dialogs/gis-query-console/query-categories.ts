@@ -7,12 +7,22 @@ export interface QueryParam {
   options?: string[];
 }
 
+export interface QueryBackend {
+  /** Layer IDs this query runs against (first one is used). */
+  layerIds: number[];
+  /** Translate current params into queryParcels conditions. */
+  toConditions: (params: Record<string, any>) => { field: string; operator: string; value: string }[];
+  logic?: 'AND' | 'OR';
+}
+
 export interface QueryDef {
   id: string;
   name: string;
   description: string;
   params: QueryParam[];
   sql: (p: Record<string, any>) => string;
+  /** If present, this query can be executed against the live backend. */
+  backend?: QueryBackend;
 }
 
 export interface QueryCategory {
@@ -114,43 +124,15 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
     queries: [
       {
         id: 'parcel_search',
-        name: 'Parcel Search',
-        description: 'Search by owner, deed, or assessment number',
-        params: [
-          {
-            key: 'search_by',
-            label: 'Search By',
-            type: 'select',
-            options: ['Owner Name', 'Deed Number', 'Assessment No', 'Survey Plan No'],
-          },
-          { key: 'value', label: 'Search Value', type: 'text', default: '' },
-        ],
-        sql: (p) => {
-          const col =
-            p['search_by'] === 'Owner Name'
-              ? 'owner_name'
-              : p['search_by'] === 'Deed Number'
-                ? 'deed_no'
-                : p['search_by'] === 'Assessment No'
-                  ? 'assessment_no'
-                  : 'survey_plan_no';
-          return `SELECT * FROM land_parcels\nWHERE ${col}\n  ILIKE '%${p['value']}%';`;
+        name: 'Parcel Search by Name',
+        description: 'Search land parcels by name',
+        params: [{ key: 'value', label: 'Search Value', type: 'text', default: '' }],
+        sql: (p) => `SELECT * FROM land_parcels\nWHERE land_name ILIKE '%${p['value']}%';`,
+        backend: {
+          layerIds: [1, 6],
+          toConditions: (p) =>
+            p['value'] ? [{ field: 'land_name', operator: '%', value: String(p['value']) }] : [],
         },
-      },
-      {
-        id: 'gov_land',
-        name: 'Government Land Parcels',
-        description: 'Identify all state-owned land within boundary',
-        params: [
-          {
-            key: 'zone',
-            label: 'GN Division',
-            type: 'select',
-            options: ['All Divisions', 'Colombo', 'Dehiwala', 'Moratuwa', 'Kotte', 'Maharagama'],
-          },
-        ],
-        sql: (p) =>
-          `SELECT * FROM land_parcels\nWHERE ownership_type = 'Government'\n  AND gn_division = '${p['zone']}';`,
       },
       {
         id: 'land_use',
@@ -172,14 +154,27 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
           },
           {
             key: 'min_area',
-            label: 'Min Area (perches)',
+            label: 'Min Area (m²)',
             type: 'number',
             default: 0,
-            unit: 'perch',
+            unit: 'm²',
           },
         ],
         sql: (p) =>
-          `SELECT * FROM land_parcels\nWHERE land_use = '${p['use_type']}'\n  AND area_perches >= ${p['min_area']};`,
+          `SELECT * FROM land_parcels\nWHERE sl_land_type ILIKE '%${p['use_type']}%'\n  AND area >= ${p['min_area']};`,
+        backend: {
+          layerIds: [1, 6],
+          toConditions: (p) => {
+            const conds: { field: string; operator: string; value: string }[] = [
+              { field: 'sl_land_type', operator: '%', value: String(p['use_type']) },
+            ];
+            if (Number(p['min_area']) > 0) {
+              conds.push({ field: 'area_m2', operator: '>=', value: String(p['min_area']) });
+            }
+            return conds;
+          },
+          logic: 'AND',
+        },
       },
       {
         id: 'vacant_land',
@@ -188,20 +183,42 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
         params: [
           {
             key: 'min_area',
-            label: 'Min Area (perches)',
+            label: 'Min Area (m²)',
             type: 'number',
-            default: 10,
-            unit: 'perch',
-          },
-          {
-            key: 'zone',
-            label: 'Zone',
-            type: 'select',
-            options: ['All Zones', 'Residential', 'Commercial', 'Mixed'],
+            default: 250,
+            unit: 'm²',
           },
         ],
         sql: (p) =>
-          `SELECT * FROM land_parcels\nWHERE land_use = 'Vacant'\n  AND area_perches >= ${p['min_area']}\n  AND zoning = '${p['zone']}';`,
+          `SELECT * FROM land_parcels\nWHERE sl_land_type ILIKE '%Vacant%'\n  AND area >= ${p['min_area']};`,
+        backend: {
+          layerIds: [1, 6],
+          toConditions: (p) => {
+            const conds: { field: string; operator: string; value: string }[] = [
+              { field: 'sl_land_type', operator: '%', value: 'Vacant' },
+            ];
+            if (Number(p['min_area']) > 0) {
+              conds.push({ field: 'area_m2', operator: '>=', value: String(p['min_area']) });
+            }
+            return conds;
+          },
+          logic: 'AND',
+        },
+      },
+      {
+        id: 'large_parcels',
+        name: 'Large Parcels',
+        description: 'Find parcels above a given area threshold',
+        params: [
+          { key: 'min_area', label: 'Min Area (m²)', type: 'number', default: 1000, unit: 'm²' },
+        ],
+        sql: (p) => `SELECT * FROM land_parcels\nWHERE area >= ${p['min_area']};`,
+        backend: {
+          layerIds: [1, 6],
+          toConditions: (p) => [
+            { field: 'area_m2', operator: '>=', value: String(p['min_area']) },
+          ],
+        },
       },
     ],
   },
@@ -231,13 +248,7 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
         description: 'Parcels affected by proposed road widening',
         params: [
           { key: 'road', label: 'Road Name', type: 'text', default: '' },
-          {
-            key: 'width',
-            label: 'Widening Distance',
-            type: 'number',
-            default: 5,
-            unit: 'm',
-          },
+          { key: 'width', label: 'Widening Distance', type: 'number', default: 5, unit: 'm' },
         ],
         sql: (p) =>
           `SELECT p.* FROM land_parcels p\nJOIN road_centerlines r ON\n  ST_DWithin(p.geom, r.geom, ${p['width']})\nWHERE r.road_name ILIKE '%${p['road']}%';`,
@@ -253,78 +264,75 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
         sql: (p) =>
           `SELECT b.*, p.assessment_no FROM buildings b\nJOIN land_parcels p ON\n  ST_Within(b.geom, p.geom)\nWHERE b.floor_area_ratio > ${p['max_far']}\n  OR b.plot_coverage > ${p['max_coverage']};`,
       },
-      {
-        id: 'building_permit',
-        name: 'Building Permit Status',
-        description: 'Query building applications by status and area',
-        params: [
-          {
-            key: 'status',
-            label: 'Status',
-            type: 'select',
-            options: ['All', 'Pending', 'Approved', 'Rejected', 'Expired'],
-          },
-          {
-            key: 'zone',
-            label: 'Ward',
-            type: 'select',
-            options: ['All Wards', 'Ward 1', 'Ward 2', 'Ward 3', 'Ward 4', 'Ward 5'],
-          },
-        ],
-        sql: (p) =>
-          `SELECT * FROM building_permits\nWHERE status = '${p['status']}'\n  AND ward = '${p['zone']}'\nORDER BY application_date DESC;`,
-      },
     ],
   },
-  utilities: {
-    label: 'Utilities & Infra',
-    icon: 'build',
-    color: '#f39c12',
+  buildings: {
+    label: 'Buildings',
+    icon: 'apartment',
+    color: '#e67e22',
     queries: [
       {
-        id: 'water_coverage',
-        name: 'Water Supply Coverage Gap',
-        description: 'Properties not connected to municipal water supply',
+        id: 'building_search',
+        name: 'Building Search by Name',
+        description: 'Search buildings by name',
+        params: [{ key: 'value', label: 'Search Value', type: 'text', default: '' }],
+        sql: (p) => `SELECT * FROM buildings\nWHERE building_name ILIKE '%${p['value']}%';`,
+        backend: {
+          layerIds: [3, 12],
+          toConditions: (p) =>
+            p['value'] ? [{ field: 'building_name', operator: '%', value: String(p['value']) }] : [],
+        },
+      },
+      {
+        id: 'high_rise',
+        name: 'High-Rise Buildings',
+        description: 'Find buildings above a given number of floors',
+        params: [
+          { key: 'min_floors', label: 'Min Floors', type: 'number', default: 5 },
+        ],
+        sql: (p) => `SELECT * FROM buildings\nWHERE no_floors >= ${p['min_floors']};`,
+        backend: {
+          layerIds: [3, 12],
+          toConditions: (p) => [
+            { field: 'no_floors', operator: '>=', value: String(p['min_floors']) },
+          ],
+        },
+      },
+      {
+        id: 'poor_condition',
+        name: 'Poor Condition Buildings',
+        description: 'Buildings with condition = Poor or Very Poor',
         params: [
           {
-            key: 'zone',
-            label: 'GN Division',
+            key: 'condition',
+            label: 'Condition',
             type: 'select',
-            options: ['All Divisions', 'Colombo', 'Dehiwala', 'Moratuwa', 'Kotte'],
+            options: ['Poor', 'Very Poor', 'Fair'],
           },
         ],
         sql: (p) =>
-          `SELECT p.* FROM land_parcels p\nLEFT JOIN water_connections w\n  ON p.assessment_no = w.assessment_no\nWHERE w.id IS NULL\n  AND p.gn_division = '${p['zone']}';`,
+          `SELECT * FROM buildings\nWHERE condition ILIKE '%${p['condition']}%';`,
+        backend: {
+          layerIds: [3, 12],
+          toConditions: (p) => [
+            { field: 'condition', operator: '%', value: String(p['condition']) },
+          ],
+        },
       },
       {
-        id: 'drain_catchment',
-        name: 'Drainage Catchment Analysis',
-        description: 'Upstream parcels contributing to a drain outfall',
+        id: 'large_building',
+        name: 'Large Buildings by Area',
+        description: 'Find buildings above a given floor area',
         params: [
-          {
-            key: 'outfall',
-            label: 'Outfall Point',
-            type: 'select',
-            options: [
-              'Outfall A - Beira',
-              'Outfall B - Kelani',
-              'Outfall C - Canal',
-              'Outfall D - Coast',
-            ],
-          },
+          { key: 'min_area', label: 'Min Area (m²)', type: 'number', default: 500, unit: 'm²' },
         ],
-        sql: (p) =>
-          `SELECT p.* FROM land_parcels p\nJOIN drainage_catchments dc\n  ON ST_Within(p.geom, dc.geom)\nWHERE dc.outfall_name = '${p['outfall']}';`,
-      },
-      {
-        id: 'waste_service',
-        name: 'Waste Collection Gaps',
-        description: 'Areas beyond collection route service radius',
-        params: [
-          { key: 'radius', label: 'Service Radius', type: 'number', default: 200, unit: 'm' },
-        ],
-        sql: (p) =>
-          `SELECT p.* FROM land_parcels p\nWHERE NOT EXISTS (\n  SELECT 1 FROM waste_routes w\n  WHERE ST_DWithin(p.geom, w.geom, ${p['radius']})\n);`,
+        sql: (p) => `SELECT * FROM buildings\nWHERE area >= ${p['min_area']};`,
+        backend: {
+          layerIds: [3, 12],
+          toConditions: (p) => [
+            { field: 'area_m2', operator: '>=', value: String(p['min_area']) },
+          ],
+        },
       },
     ],
   },
@@ -335,55 +343,67 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
     queries: [
       {
         id: 'outstanding_rates',
-        name: 'Outstanding Rates',
-        description: 'Properties with unpaid rates or taxes',
+        name: 'Outstanding / Overdue Tax',
+        description: 'Parcels and buildings with overdue tax status',
         params: [
           {
-            key: 'min_arrears',
-            label: 'Min Arrears (LKR)',
-            type: 'number',
-            default: 10000,
-            unit: 'LKR',
-          },
-          {
-            key: 'ward',
-            label: 'Ward',
+            key: 'layer_type',
+            label: 'Layer Type',
             type: 'select',
-            options: ['All Wards', 'Ward 1', 'Ward 2', 'Ward 3', 'Ward 4', 'Ward 5'],
+            options: ['Land Parcels', 'Buildings'],
           },
         ],
-        sql: (p) =>
-          `SELECT p.*, r.total_arrears\nFROM land_parcels p\nJOIN rate_ledger r\n  ON p.assessment_no = r.assessment_no\nWHERE r.total_arrears > ${p['min_arrears']}\n  AND p.ward = '${p['ward']}'\nORDER BY r.total_arrears DESC;`,
+        sql: () =>
+          `SELECT p.su_id, a.tax_status, a.assessment_annual_value\nFROM survey_rep p\nJOIN assessment a ON a.su_id = p.su_id\nWHERE a.tax_status = 'overdue';`,
+        backend: {
+          layerIds: [1, 6],
+          toConditions: () => [{ field: 'tax_status', operator: '=', value: 'overdue' }],
+          // Note: layerIds is overridden at runtime based on layer_type param
+        },
       },
       {
-        id: 'trade_license',
-        name: 'Trade License Status',
-        description: 'Commercial establishments and license compliance',
+        id: 'high_market_value',
+        name: 'High Market Value Properties',
+        description: 'Properties above a market value threshold',
         params: [
           {
-            key: 'status',
-            label: 'License Status',
+            key: 'layer_type',
+            label: 'Layer Type',
             type: 'select',
-            options: ['All', 'Active', 'Expired', 'Not Applied', 'Suspended'],
+            options: ['Land Parcels', 'Buildings'],
           },
+          { key: 'min_value', label: 'Min Market Value', type: 'number', default: 1000000, unit: 'LKR' },
         ],
         sql: (p) =>
-          `SELECT e.*, p.geom\nFROM trade_licenses e\nJOIN land_parcels p\n  ON e.assessment_no = p.assessment_no\nWHERE e.license_status = '${p['status']}';`,
+          `SELECT p.su_id, a.market_value\nFROM survey_rep p\nJOIN assessment a ON a.su_id = p.su_id\nWHERE a.market_value > ${p['min_value']};`,
+        backend: {
+          layerIds: [1, 6],
+          toConditions: (p) => [
+            { field: 'market_value', operator: '>=', value: String(p['min_value']) },
+          ],
+        },
       },
       {
-        id: 'revenue_ward',
-        name: 'Ward-wise Revenue Summary',
-        description: 'Revenue collection vs arrears by ward',
+        id: 'low_assessed_value',
+        name: 'Low Assessment Value',
+        description: 'Properties with assessment value below threshold',
         params: [
           {
-            key: 'year',
-            label: 'Financial Year',
+            key: 'layer_type',
+            label: 'Layer Type',
             type: 'select',
-            options: ['2024/2025', '2023/2024', '2022/2023', '2021/2022'],
+            options: ['Land Parcels', 'Buildings'],
           },
+          { key: 'max_value', label: 'Max Assessed Value', type: 'number', default: 50000, unit: 'LKR' },
         ],
         sql: (p) =>
-          `SELECT p.ward,\n  SUM(r.amount_collected) AS collected,\n  SUM(r.amount_due - r.amount_collected) AS arrears\nFROM rate_ledger r\nJOIN land_parcels p\n  ON r.assessment_no = p.assessment_no\nWHERE r.financial_year = '${p['year']}'\nGROUP BY p.ward;`,
+          `SELECT p.su_id, a.assessment_annual_value\nFROM survey_rep p\nJOIN assessment a ON a.su_id = p.su_id\nWHERE a.assessment_annual_value < ${p['max_value']};`,
+        backend: {
+          layerIds: [1, 6],
+          toConditions: (p) => [
+            { field: 'assessment_value', operator: '<=', value: String(p['max_value']) },
+          ],
+        },
       },
     ],
   },
@@ -432,64 +452,6 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
                   : '1 year';
           return `SELECT p.land_use,\n  COUNT(d.id) AS cases,\n  p.geom\nFROM dengue_reports d\nJOIN land_parcels p\n  ON ST_DWithin(d.geom, p.geom, ${p['radius']})\nWHERE d.reported_date >= NOW()\n  - INTERVAL '${interval}'\nGROUP BY p.land_use, p.geom;`;
         },
-      },
-    ],
-  },
-  social: {
-    label: 'Social & Services',
-    icon: 'groups',
-    color: '#e67e22',
-    queries: [
-      {
-        id: 'nearest_facility',
-        name: 'Nearest Public Facility',
-        description: 'Find closest facility from any location',
-        params: [
-          {
-            key: 'facility',
-            label: 'Facility Type',
-            type: 'select',
-            options: [
-              'Hospital',
-              'School',
-              'Playground',
-              'Library',
-              'Police Station',
-              'Fire Station',
-            ],
-          },
-          {
-            key: 'max_dist',
-            label: 'Max Distance',
-            type: 'number',
-            default: 1000,
-            unit: 'm',
-          },
-        ],
-        sql: (p) =>
-          `SELECT f.name, f.type,\n  ST_Distance(f.geom,\n    ST_SetSRID(ST_MakePoint(lon, lat), 4326)\n  ) AS distance\nFROM public_facilities f\nWHERE f.type = '${p['facility']}'\nORDER BY distance\nLIMIT 5;`,
-      },
-      {
-        id: 'underserved',
-        name: 'Underserved Areas',
-        description: 'Residential zones far from key services',
-        params: [
-          {
-            key: 'facility',
-            label: 'Service Type',
-            type: 'select',
-            options: ['School', 'Hospital', 'Public Transport', 'Market', 'Water Supply'],
-          },
-          {
-            key: 'threshold',
-            label: 'Min Distance',
-            type: 'number',
-            default: 500,
-            unit: 'm',
-          },
-        ],
-        sql: (p) =>
-          `SELECT p.* FROM land_parcels p\nWHERE p.land_use = 'Residential'\n  AND NOT EXISTS (\n    SELECT 1 FROM public_facilities f\n    WHERE f.type = '${p['facility']}'\n    AND ST_DWithin(p.geom, f.geom, ${p['threshold']})\n  );`,
       },
     ],
   },

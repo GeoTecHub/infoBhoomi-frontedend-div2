@@ -26,6 +26,10 @@
   border-bottom: 1px solid #1a3050;
   border-radius: 12px 12px 0 0;
   flex-shrink: 0;
+  cursor: grab;
+}
+.brr-header:active {
+  cursor: grabbing;
 }
 
 .brr-header-left {

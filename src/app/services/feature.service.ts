@@ -505,12 +505,31 @@ export class FeatureService {
           }
         }
 
+        // Collect warnings from all POST responses
+        const allWarnings: string[] = [];
+        for (const r of results) {
+          if (r?.warnings && Array.isArray(r.warnings) && r.warnings.length > 0) {
+            allWarnings.push(...r.warnings.map((w: any) => String(w.detail)));
+          }
+        }
+
         if (savedRecords.length) {
           this.mapService.updateAllFeatureIdsAfterSave(savedRecords, this.layerService);
         }
 
         this.clearStagedChanges();
-        this.notificationService.showSuccess('All changes saved successfully.');
+
+        if (allWarnings.length > 0) {
+          this.notificationService.showSuccess(
+            `${savedRecords.length} feature(s) saved successfully.`,
+          );
+          this.notificationService.showWarning(
+            `${allWarnings.length} feature(s) saved without GND assignment — they fall outside the known GND boundaries or your organisation's AOI.`,
+            6000,
+          );
+        } else {
+          this.notificationService.showSuccess('All changes saved successfully.');
+        }
       }),
       catchError((err) => {
         console.error('[FeatureService] Error during batch save:', err);

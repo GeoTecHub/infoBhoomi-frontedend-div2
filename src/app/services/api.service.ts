@@ -1065,6 +1065,9 @@ export class APIsService {
       'construction_year',
       'structure_type',
       'condition',
+      'wall_type',
+      'ext_builduse_type',
+      'ext_builduse_sub_type',
     ];
     // Filter the `data` object to keep only the allowed keys
     // Filter the `data` object to keep only the allowed keys and remove empty values
@@ -1141,9 +1144,9 @@ export class APIsService {
       'sani_sewer',
       'sani_gully',
       'garbage_dispose',
+      'drainage',
       'expired_date',
       'issued_date',
-      'drainage_system',
     ];
 
     const filteredData = Object.keys(data)
@@ -2001,6 +2004,23 @@ export class APIsService {
       `${this.baseUrl}query-parcels/`,
       { layer_id: layerId, conditions, logic },
       { headers },
+    );
+  }
+
+  exportQueryShp(
+    layerId: number,
+    conditions: { field: string; operator: string; value: string }[],
+    logic: 'AND' | 'OR',
+  ) {
+    this.loadFromStorage();
+    const headers = new HttpHeaders({
+      Authorization: `Token ${this.token}`,
+      'Content-Type': 'application/json',
+    });
+    return this.http.post(
+      `${this.baseUrl}query-parcels/export-shp/`,
+      { layer_id: layerId, conditions, logic },
+      { headers, responseType: 'blob' },
     );
   }
 }

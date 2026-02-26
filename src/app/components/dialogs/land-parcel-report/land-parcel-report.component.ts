@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Inject, signal } from '@angular/core';
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import {
@@ -28,7 +29,7 @@ type ReportTab = 'overview' | 'spatial' | 'land' | 'zoning' | 'valuation' | 'rrr
 @Component({
   selector: 'app-land-parcel-report',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatIconModule],
+  imports: [CommonModule, MatDialogModule, MatIconModule, CdkDrag, CdkDragHandle],
   templateUrl: './land-parcel-report.component.html',
   styleUrls: ['./land-parcel-report.component.css'],
 })

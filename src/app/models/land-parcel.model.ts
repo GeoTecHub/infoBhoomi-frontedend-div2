@@ -227,7 +227,12 @@ export interface ParcelPhysical {
   floodZone: boolean; // Is within a flood zone
   vegetationCover: string; // Description
   accessRoad: boolean; // Has road access
-  utilities: string; // Available utilities description
+  // Utility services (LA_LS_Utinet_LU_Model)
+  waterSupply: string; // water_supply → 'water' field
+  electricity: string; // electricity → 'elec' field
+  drainageSystem: string; // drainage_system → 'drainage' field
+  sanitationGully: string; // sanitation_gully → 'sani_gully' field
+  garbageDisposal: string; // garbage_disposal → 'garbage_dispose' field
 }
 
 /**
@@ -325,7 +330,11 @@ export function createDefaultLandParcel(parcelId?: string): LandParcelInfo {
       floodZone: false,
       vegetationCover: '',
       accessRoad: true,
-      utilities: '',
+      waterSupply: '',
+      electricity: '',
+      drainageSystem: '',
+      sanitationGully: '',
+      garbageDisposal: '',
     },
     zoning: {
       zoningCategory: ZoningCategory.R1,

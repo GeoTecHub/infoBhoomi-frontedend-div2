@@ -73,7 +73,7 @@ const PROJECTION_CONFIG: Record<
 
   'EPSG:3857': {
     def: '+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs +type=crs',
-    defaultCenter: [8890291.87, 772770.1], // Web Mercator (X, Y) for Colombo
+    defaultCenter: [8978131, 719700], // Web Mercator (X, Y) for Kandy test data (7.291°N, 80.634°E)
   },
 
   'EPSG:32644': {
@@ -679,7 +679,7 @@ export class MapService {
     return new View({
       projection: projectionCode,
       center: projConfig.defaultCenter, // Center should be in the coordinates of the VIEW projection
-      zoom: 10,
+      zoom: 17,
       // Add extent if needed based on projection config
       // extent: getProjection(projectionCode)?.getExtent()
     });

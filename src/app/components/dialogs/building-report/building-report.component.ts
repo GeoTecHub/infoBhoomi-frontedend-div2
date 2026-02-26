@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, Inject, signal } from '@angular/core';
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import {
@@ -30,7 +31,7 @@ type BrTab = 'overview' | 'spatial' | 'physical' | 'units' | 'assessment' | 'rrr
 @Component({
   selector: 'app-building-report',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatIconModule],
+  imports: [CommonModule, MatDialogModule, MatIconModule, CdkDrag, CdkDragHandle],
   templateUrl: './building-report.component.html',
   styleUrls: ['./building-report.component.css'],
 })

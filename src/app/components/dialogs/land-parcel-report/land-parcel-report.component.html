@@ -1,7 +1,7 @@
-<div class="lpr-dialog">
+<div class="lpr-dialog" cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragBoundary=".cdk-overlay-container">
 
   <!-- ═══ Header ═══ -->
-  <div class="lpr-header">
+  <div class="lpr-header" cdkDragHandle>
     <div class="lpr-header-left">
       <div class="lpr-header-icon">
         <mat-icon>map</mat-icon>
@@ -315,18 +315,26 @@
               <span class="lpr-field-value">{{ parcel.physical.vegetationCover || '—' }}</span>
             </div>
           </div>
-          @if (parcel.physical.utilities) {
-            <div class="lpr-utilities-row">
-              <span class="lpr-field-label">Utilities</span>
-              <div class="lpr-tag-list">
-                @for (ut of parcel.physical.utilities.split(','); track $index) {
-                  <span class="lpr-tag">
-                    <mat-icon>check_circle</mat-icon>{{ ut.trim() }}
-                  </span>
-                }
-              </div>
+          <div class="lpr-utilities-row">
+            <span class="lpr-field-label">Utilities</span>
+            <div class="lpr-tag-list">
+              @if (parcel.physical.waterSupply) {
+                <span class="lpr-tag"><mat-icon>check_circle</mat-icon>Water Supply</span>
+              }
+              @if (parcel.physical.electricity) {
+                <span class="lpr-tag"><mat-icon>check_circle</mat-icon>Electricity</span>
+              }
+              @if (parcel.physical.drainageSystem) {
+                <span class="lpr-tag"><mat-icon>check_circle</mat-icon>Drainage</span>
+              }
+              @if (parcel.physical.sanitationGully) {
+                <span class="lpr-tag"><mat-icon>check_circle</mat-icon>Sanitation Gully</span>
+              }
+              @if (parcel.physical.garbageDisposal) {
+                <span class="lpr-tag"><mat-icon>check_circle</mat-icon>Garbage Disposal</span>
+              }
             </div>
-          }
+          </div>
         </div>
       </div>
     }

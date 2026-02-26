@@ -85,6 +85,7 @@ export class GenerateReportComponent {
         } as LandParcelReportData,
         width: '900px',
         maxHeight: '90vh',
+        hasBackdrop: false,
         panelClass: 'report-dialog',
       });
     } else if (option.id === 'building' && this.data.building) {
@@ -96,6 +97,7 @@ export class GenerateReportComponent {
         } as BuildingReportData,
         width: '900px',
         maxHeight: '90vh',
+        hasBackdrop: false,
         panelClass: 'report-dialog',
       });
     }

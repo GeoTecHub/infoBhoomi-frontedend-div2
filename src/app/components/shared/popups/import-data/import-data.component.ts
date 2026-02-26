@@ -1078,6 +1078,18 @@ export class ImportDataComponent implements OnDestroy {
       }
     });
 
+    // Warn if any features could not be assigned a GND (client-side lookup miss)
+    const featuresWithoutGnd = olFeatures.filter(
+      (f) => f.get('gnd_id') === null || f.get('gnd_id') === undefined,
+    ).length;
+    if (featuresWithoutGnd > 0) {
+      this.notificationService.showWarning(
+        `${featuresWithoutGnd} feature(s) could not be matched to a GND boundary on the map. ` +
+          `They will be staged for save — the server will attempt auto-assignment and warn if unsuccessful.`,
+        7000,
+      );
+    }
+
     // --- ZOOM TO IMPORTED DATA ---
     // Create a temporary, in-memory source with ONLY the new features to get their precise extent.
     const tempSourceForExtent = new VectorSource({ features: olFeatures });

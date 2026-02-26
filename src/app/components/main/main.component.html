@@ -66,9 +66,6 @@
           Convert to building
         </li>
         <li (click)="onAddLegalForms()">Add Legal Forms</li>
-        <li (click)="onGenerateReport()" class="context-menu-report-item">
-          &#9632; Generate Report
-        </li>
         <li
           *ngIf="user?.user_type === 'admin' || user?.user_type === 'super_admin'"
           (click)="onClickInfo()"

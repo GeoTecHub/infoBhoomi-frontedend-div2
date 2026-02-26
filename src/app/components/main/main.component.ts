@@ -676,8 +676,12 @@ export class MainComponent implements OnInit, OnDestroy {
       soilType: this.resolveReportEnum(props['soil_type'], SoilType, SoilType.LOAM),
       floodZone: props['flood_zone'] ?? false,
       vegetationCover: props['vegetation'] || props['vegetation_cover'] || '',
-      accessRoad: props['access_road'] ?? true,
-      utilities: props['utilities'] || '',
+      accessRoad: props['access_road'] === 'Yes' || props['access_road'] === true,
+      waterSupply: '',
+      electricity: '',
+      drainageSystem: '',
+      sanitationGully: '',
+      garbageDisposal: '',
     };
 
     parcel.zoning = {

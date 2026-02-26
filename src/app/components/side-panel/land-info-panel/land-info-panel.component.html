@@ -385,14 +385,62 @@
                 </td>
               </tr>
               <tr>
-                <td class="label">Utilities</td>
+                <td class="label">Water Supply</td>
                 <td class="value">
                   <input
                     type="text"
                     class="field-input"
-                    [ngModel]="parcelInfo()!.physical.utilities"
-                    (ngModelChange)="onPhysicalFieldChange('utilities', $event)"
-                    placeholder="e.g., Water, Sewer, Electricity"
+                    [ngModel]="parcelInfo()!.physical.waterSupply"
+                    (ngModelChange)="onPhysicalFieldChange('waterSupply', $event)"
+                    placeholder="e.g., Municipal, Borehole"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td class="label">Electricity</td>
+                <td class="value">
+                  <input
+                    type="text"
+                    class="field-input"
+                    [ngModel]="parcelInfo()!.physical.electricity"
+                    (ngModelChange)="onPhysicalFieldChange('electricity', $event)"
+                    placeholder="e.g., Grid, Solar"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td class="label">Drainage</td>
+                <td class="value">
+                  <input
+                    type="text"
+                    class="field-input"
+                    [ngModel]="parcelInfo()!.physical.drainageSystem"
+                    (ngModelChange)="onPhysicalFieldChange('drainageSystem', $event)"
+                    placeholder="e.g., Storm drain, Channel"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td class="label">Sanitation Gully</td>
+                <td class="value">
+                  <input
+                    type="text"
+                    class="field-input"
+                    [ngModel]="parcelInfo()!.physical.sanitationGully"
+                    (ngModelChange)="onPhysicalFieldChange('sanitationGully', $event)"
+                    placeholder="e.g., Cesspit, None"
+                  />
+                </td>
+              </tr>
+              <tr>
+                <td class="label">Garbage Disposal</td>
+                <td class="value">
+                  <input
+                    type="text"
+                    class="field-input"
+                    [ngModel]="parcelInfo()!.physical.garbageDisposal"
+                    (ngModelChange)="onPhysicalFieldChange('garbageDisposal', $event)"
+                    placeholder="e.g., Municipal collection"
                   />
                 </td>
               </tr>

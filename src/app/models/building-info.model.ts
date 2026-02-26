@@ -266,11 +266,15 @@ export const SURVEY_METHOD_DISPLAY: Record<SurveyMethod, string> = {
 export interface BuildingSummary {
   buildingId: string;
   legalStatus: LegalStatus;
-  address: string;
+  address: string; // building_name
   primaryUse: PrimaryUse;
   cadastralRef: string;
-  floorCount: number;
+  floorCount: number; // no_floors
   registrationDate: string;
+  postalAddress: string; // postal_ad_build
+  householdNo: string; // house_hold_no
+  propertyType: string; // bld_property_type
+  accessRoad: boolean; // access_road ('Yes'/'No')
 }
 
 /**
@@ -384,7 +388,23 @@ export interface PhysicalAttributes {
   structureType: StructureType; // Enum, Editable
   condition: Condition; // Enum, Editable
   roofType: RoofType; // Enum, Editable
+  wallType: string; // wall_type, Editable
   grossArea: number; // System-Calculated (sum of unit areas)
+}
+
+/**
+ * Utility Services (LA_LS_Utinet_BU_Model)
+ */
+export interface UtilityInfo {
+  electricity: string; // elec
+  telephone: string; // tele
+  internet: string; // internet
+  waterDrink: string; // water_drink
+  water: string; // water
+  drainage: string; // drainage
+  sanitationSewer: string; // sani_sewer
+  sanitationGully: string; // sani_gully
+  garbageDisposal: string; // garbage_dispose
 }
 
 /**
@@ -431,6 +451,7 @@ export interface BuildingInfo {
   rrr: RRRInfo;
   units: BuildingUnit[];
   physicalAttributes: PhysicalAttributes;
+  utilities?: UtilityInfo;
   taxValuation?: TaxValuation;
   relationshipsTopology: RelationshipsTopology;
   metadataQuality: MetadataQuality;
@@ -539,6 +560,10 @@ export function extractBuildingInfo(cityjson: any, objectId?: string): BuildingI
       floorCount:
         attributes.storeysAboveGround || attributes.numberOfFloors || attributes.floorCount || 1,
       registrationDate: attributes.registrationDate || new Date().toISOString().split('T')[0],
+      postalAddress: '',
+      householdNo: '',
+      propertyType: '',
+      accessRoad: true,
     },
     spatial: {
       footprint: attributes.footprint || 'Polygon',
@@ -590,6 +615,7 @@ export function extractBuildingInfo(cityjson: any, objectId?: string): BuildingI
       structureType: StructureType.CONC_REINF,
       condition: Condition.GOOD,
       roofType: RoofType.FLAT,
+      wallType: '',
       grossArea,
     },
     taxValuation: attributes.assessedValue

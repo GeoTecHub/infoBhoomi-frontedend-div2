@@ -37,6 +37,7 @@ import {
   BuildingUnit,
   SpatialInfo,
   PhysicalAttributes,
+  UtilityInfo,
   RelationshipsTopology,
   MetadataQuality,
   LegalStatus,
@@ -306,8 +307,12 @@ export class SidePanelComponent implements OnDestroy {
       soilType: this.resolveEnum(props['soil_type'], SoilType, SoilType.LOAM),
       floodZone: props['flood_zone'] ?? false,
       vegetationCover: props['vegetation'] || props['vegetation_cover'] || '',
-      accessRoad: props['access_road'] ?? true,
-      utilities: props['utilities'] || '',
+      accessRoad: props['access_road'] === 'Yes' || props['access_road'] === true,
+      waterSupply: '',
+      electricity: '',
+      drainageSystem: '',
+      sanitationGully: '',
+      garbageDisposal: '',
     };
 
     // Map zoning properties
@@ -412,6 +417,10 @@ export class SidePanelComponent implements OnDestroy {
           props['number_of_floors'] ||
           1,
         registrationDate: props['registration_date'] || props['created_at'] || '',
+        postalAddress: props['postal_address'] || '',
+        householdNo: props['household_no'] || '',
+        propertyType: props['property_type'] || '',
+        accessRoad: props['access_road'] === 'Yes' || props['access_road'] === true,
       },
       spatial: {
         footprint: geometryType,
@@ -450,7 +459,19 @@ export class SidePanelComponent implements OnDestroy {
         ),
         condition: this.resolveEnum(props['condition'], Condition, Condition.GOOD),
         roofType: this.resolveEnum(props['roof_type'], RoofType, RoofType.FLAT),
+        wallType: props['wall_type'] || '',
         grossArea: props['gross_area'] || Math.round(footprintArea * 100) / 100,
+      },
+      utilities: {
+        electricity: '',
+        telephone: '',
+        internet: '',
+        waterDrink: '',
+        water: '',
+        drainage: '',
+        sanitationSewer: '',
+        sanitationGully: '',
+        garbageDisposal: '',
       },
       taxValuation: {
         assessedValue: props['assessed_value'] || 0,
@@ -558,9 +579,10 @@ export class SidePanelComponent implements OnDestroy {
       this.apiService.getRRRData(su_id).pipe(catchError(() => of(null))),
       this.apiService.getZoningInfo(su_id).pipe(catchError(() => of(null))),
       this.apiService.getPhysicalEnvInfo(su_id).pipe(catchError(() => of(null))),
+      this.apiService.getItInfo(su_id).pipe(catchError(() => of({}))),
     ])
       .pipe(takeUntil(this.destroy$))
-      .subscribe(([adminData, overviewData, taxData, rrrData, zoningData, physicalData]: [any, any, any, any, any, any]) => {
+      .subscribe(([adminData, overviewData, taxData, rrrData, zoningData, physicalData, utilData]: [any, any, any, any, any, any, any]) => {
         console.log('[Fetch] adminData from backend:', adminData);
         const current = this.currentLandParcelInfo();
         if (!current) return;
@@ -607,6 +629,15 @@ export class SidePanelComponent implements OnDestroy {
           if (physicalData.soil_type) physical.soilType = physicalData.soil_type as SoilType;
           if (physicalData.flood_zone != null) physical.floodZone = Boolean(physicalData.flood_zone);
           if (physicalData.vegetation_cover) physical.vegetationCover = physicalData.vegetation_cover;
+        }
+
+        // Merge utility network data (LA_LS_Utinet_LU_Model)
+        if (utilData) {
+          if (utilData.water_supply != null) physical.waterSupply = utilData.water_supply || '';
+          if (utilData.electricity != null) physical.electricity = utilData.electricity || '';
+          if (utilData.drainage_system != null) physical.drainageSystem = utilData.drainage_system || '';
+          if (utilData.sanitation_gully != null) physical.sanitationGully = utilData.sanitation_gully || '';
+          if (utilData.garbage_disposal != null) physical.garbageDisposal = utilData.garbage_disposal || '';
         }
 
         // Merge RRR data
@@ -708,9 +739,11 @@ export class SidePanelComponent implements OnDestroy {
       this.apiService.getBuildingAdministrativeInfo(su_id).pipe(catchError(() => of({}))),
       this.apiService.getltAssesAndTaxInfo(su_id).pipe(catchError(() => of({}))),
       this.apiService.getRRRData(su_id).pipe(catchError(() => of(null))),
+      this.apiService.getBuildingOverViewInfo(su_id).pipe(catchError(() => of({}))),
+      this.apiService.getBuildItInfo(su_id).pipe(catchError(() => of({}))),
     ])
       .pipe(takeUntil(this.destroy$))
-      .subscribe(([adminData, taxData, rrrData]: [any, any, any]) => {
+      .subscribe(([adminData, taxData, rrrData, overviewData, utilData]: [any, any, any, any, any]) => {
         const current = this.currentBuildingInfo();
         if (!current) return;
 
@@ -730,11 +763,21 @@ export class SidePanelComponent implements OnDestroy {
         if (adminData.building_name) summary.address = adminData.building_name;
         if (adminData.registration_date) summary.registrationDate = adminData.registration_date;
         if (adminData.no_floors != null) summary.floorCount = Number(adminData.no_floors);
+        if (adminData.postal_ad_build) summary.postalAddress = adminData.postal_ad_build;
+        if (adminData.house_hold_no) summary.householdNo = adminData.house_hold_no;
+        if (adminData.bld_property_type) summary.propertyType = adminData.bld_property_type;
+        if (adminData.access_road !== undefined)
+          summary.accessRoad = adminData.access_road === 'Yes' || adminData.access_road === true;
         if (adminData.construction_year != null)
           physicalAttributes.constructionYear = Number(adminData.construction_year);
         if (adminData.structure_type)
           physicalAttributes.structureType = adminData.structure_type as StructureType;
         if (adminData.condition) physicalAttributes.condition = adminData.condition as Condition;
+        if (adminData.wall_type) physicalAttributes.wallType = adminData.wall_type;
+
+        // Merge overview data (roof type, gross area)
+        if (overviewData.roof_type) physicalAttributes.roofType = overviewData.roof_type as RoofType;
+        if (overviewData.area != null) physicalAttributes.grossArea = Number(overviewData.area);
 
         // Merge tax/assessment data
         if (taxData.assessment_annual_value != null)
@@ -772,11 +815,25 @@ export class SidePanelComponent implements OnDestroy {
           }
         }
 
+        // Merge building utility data (LA_LS_Utinet_BU_Model)
+        const utilities: UtilityInfo = {
+          electricity: utilData?.elec || '',
+          telephone: utilData?.tele || '',
+          internet: utilData?.internet || '',
+          waterDrink: utilData?.water_drink || '',
+          water: utilData?.water || '',
+          drainage: utilData?.drainage || '',
+          sanitationSewer: utilData?.sani_sewer || '',
+          sanitationGully: utilData?.sani_gully || '',
+          garbageDisposal: utilData?.garbage_dispose || '',
+        };
+
         this.currentBuildingInfo.set({
           ...current,
           summary,
           physicalAttributes,
           taxValuation,
+          utilities,
           rrr: { entries: rrrEntries },
         });
 
@@ -833,9 +890,14 @@ export class SidePanelComponent implements OnDestroy {
       building_name: info.summary.address,
       no_floors: info.summary.floorCount,
       registration_date: info.summary.registrationDate || null,
+      postal_ad_build: info.summary.postalAddress,
+      house_hold_no: info.summary.householdNo,
+      bld_property_type: info.summary.propertyType,
+      access_road: info.summary.accessRoad ? 'Yes' : 'No',
       construction_year: info.physicalAttributes.constructionYear || null,
       structure_type: info.physicalAttributes.structureType,
       condition: info.physicalAttributes.condition,
+      wall_type: info.physicalAttributes.wallType,
     };
 
     const taxPayload = {
@@ -846,9 +908,15 @@ export class SidePanelComponent implements OnDestroy {
       tax_status: info.taxValuation?.taxStatus,
     };
 
+    const overviewPayload = {
+      roof_type: info.physicalAttributes.roofType || null,
+      area: info.physicalAttributes.grossArea || null,
+    };
+
     forkJoin([
       this.apiService.updateBuildingAdministrativeInfo(su_id, bldPayload, 'building'),
       this.apiService.updateTaxAndAssessmentInfo(su_id, taxPayload, 'building'),
+      this.apiService.updateBuildOverviewInfo(su_id, overviewPayload, 'building'),
     ])
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -861,6 +929,25 @@ export class SidePanelComponent implements OnDestroy {
           this.notificationService.showError('Failed to save building details. Please try again.');
         },
       });
+
+    // Building utility save: fire-and-forget
+    if (info.utilities) {
+      const bldUtilPayload = {
+        elec: info.utilities.electricity,
+        tele: info.utilities.telephone,
+        internet: info.utilities.internet,
+        water_drink: info.utilities.waterDrink,
+        water: info.utilities.water,
+        drainage: info.utilities.drainage,
+        sani_sewer: info.utilities.sanitationSewer,
+        sani_gully: info.utilities.sanitationGully,
+        garbage_dispose: info.utilities.garbageDisposal,
+      };
+      this.apiService
+        .updateBuildingITUtilInfo(su_id, bldUtilPayload, 'building')
+        .pipe(takeUntil(this.destroy$))
+        .subscribe();
+    }
 
     // RRR sync: fire-and-forget
     const currentEntries = info.rrr.entries;
@@ -1041,6 +1128,19 @@ export class SidePanelComponent implements OnDestroy {
         },
       });
 
+    // Utility network save: fire-and-forget
+    const utilPayload = {
+      water_supply: info.physical.waterSupply,
+      electricity: info.physical.electricity,
+      drainage_system: info.physical.drainageSystem,
+      sanitation_gully: info.physical.sanitationGully,
+      garbage_disposal: info.physical.garbageDisposal,
+    };
+    this.apiService
+      .updateITUtilInfo(su_id, utilPayload, 'land')
+      .pipe(takeUntil(this.destroy$))
+      .subscribe();
+
     // RRR sync: fire-and-forget (independent of the main forkJoin)
     const currentEntries = info.rrr.entries;
 
@@ -1180,6 +1280,12 @@ export class SidePanelComponent implements OnDestroy {
     const current = this.currentBuildingInfo();
     if (!current) return;
     this.currentBuildingInfo.set({ ...current, physicalAttributes });
+  }
+
+  onBuildingUtilitiesChanged(utilities: UtilityInfo): void {
+    const current = this.currentBuildingInfo();
+    if (!current) return;
+    this.currentBuildingInfo.set({ ...current, utilities });
   }
 
   onBuildingRelationshipsChanged(relationshipsTopology: RelationshipsTopology): void {
