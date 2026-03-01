@@ -2,25 +2,28 @@
 <!-- Styling for disabled links is applied via [class.disabled-link] -->
 <!-- Click handler prevents navigation if the link is marked as deactivated -->
 
-<a
-  *ngIf="link"
-  [href]="link"
-  [target]="target"
-  [attr.rel]="target === '_blank' ? 'noopener noreferrer' : null"
-  class="custom-button"
-  [ngClass]="{
-    'button-primary': buttonStyle === 'primary',
-    'button-secondary': buttonStyle === 'secondary',
-    'button-long': buttonStyle === 'long',
-    'button-small': isSmall,
-    deactivated: isDeactivated,
-  }"
-  [class.disabled-link]="isDeactivated"
-  (click)="isDeactivated ? $event.preventDefault() : null"
->
-  <mat-icon *ngIf="buttonIcon">{{ buttonIcon }}</mat-icon>
-  <span>{{ buttonText }}</span>
-</a>
+@if (link) {
+  <a
+    [href]="link"
+    [target]="target"
+    [attr.rel]="target === '_blank' ? 'noopener noreferrer' : null"
+    class="custom-button"
+    [ngClass]="{
+      'button-primary': buttonStyle === 'primary',
+      'button-secondary': buttonStyle === 'secondary',
+      'button-long': buttonStyle === 'long',
+      'button-small': isSmall,
+      deactivated: isDeactivated,
+    }"
+    [class.disabled-link]="isDeactivated"
+    (click)="isDeactivated ? $event.preventDefault() : null"
+  >
+    @if (buttonIcon) {
+      <mat-icon>{{ buttonIcon }}</mat-icon>
+    }
+    <span>{{ buttonText }}</span>
+  </a>
+}
 
 <button
   matRipple
@@ -29,7 +32,9 @@
   [disabled]="disabled"
   (click)="onClick()"
 >
-  <mat-icon *ngIf="buttonIcon" class="button-icon">{{ buttonIcon }}</mat-icon>
+  @if (buttonIcon) {
+    <mat-icon class="button-icon">{{ buttonIcon }}</mat-icon>
+  }
   {{ buttonText }}
 </button>
 
@@ -37,8 +42,8 @@
 
 <!-- Otherwise, render a button -->
 <!-- <button *ngIf="!link"
-        type="button"
-        class="custom-button"
+type="button"
+class="custom-button"
         [ngClass]="{
           'button-primary': buttonStyle === 'primary',
           'button-secondary': buttonStyle === 'secondary',
@@ -46,8 +51,8 @@
           'button-small': isSmall,
           'deactivated': isDeactivated
         }"
-        [disabled]="isDeactivated"
-        (click)="onClick()">
-  <mat-icon *ngIf="buttonIcon">{{ buttonIcon }}</mat-icon>
-  <span>{{ buttonText }}</span>
+[disabled]="isDeactivated"
+(click)="onClick()">
+<mat-icon *ngIf="buttonIcon">{{ buttonIcon }}</mat-icon>
+<span>{{ buttonText }}</span>
 </button> -->

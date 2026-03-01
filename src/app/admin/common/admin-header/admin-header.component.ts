@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject, DestroyRef} from '@angular/core';
 import { MatButtonModule, MatIconButton } from '@angular/material/button';
 import { MatRipple } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
@@ -19,13 +19,15 @@ import { APIsService } from '../../../services/api.service';
 
 import { isPlatformBrowser } from '@angular/common';
 import { Inject, PLATFORM_ID } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTooltip } from '@angular/material/tooltip';
-import { Subject, takeUntil } from 'rxjs';
+
 import { FeatureNotAvailableComponent } from '../../../components/dialogs/feature-not-available/feature-not-available.component';
 import { SubscriptionDetailsComponent } from '../../../components/dialogs/subscription-details/subscription-details.component';
 import { AdminService } from '../../../services/admin.service';
 import { NotificationService } from '../../../services/notifications.service';
 import { UserService } from '../../../services/user.service';
+import { ThemeToggleComponent } from '../../../components/shared/theme-toggle/theme-toggle.component';
 
 @Component({
   selector: 'app-admin-header',
@@ -38,11 +40,13 @@ import { UserService } from '../../../services/user.service';
     MatMenuModule,
     CommonModule,
     MatTooltip,
+    ThemeToggleComponent,
   ],
   templateUrl: './admin-header.component.html',
   styleUrl: './admin-header.component.css',
 })
 export class AdminHeaderComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   sex: string = '';
   username: string = '';
   userType: string = '';
@@ -50,7 +54,6 @@ export class AdminHeaderComponent implements OnInit {
   user_org_id: number | null = null;
   current_location: any = { dist: '', city: '', org_name: '' };
   private dialogRef: any;
-  private destroy$ = new Subject<void>();
 
   planName = '';
   planEndsOn = '';
@@ -80,7 +83,7 @@ export class AdminHeaderComponent implements OnInit {
         this.checkUrl(event.url);
       }
     });
-    await this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
+    await this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
       if (user) {
         this.username = user.username.replace(/"/g, '') || '';
         this.sex = user.sex || '';

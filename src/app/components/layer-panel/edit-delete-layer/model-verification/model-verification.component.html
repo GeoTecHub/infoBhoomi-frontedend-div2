@@ -17,12 +17,18 @@
         (click)="togglePasswordVisibility()"
         [title]="passwordVisible ? 'Hide password' : 'Show password'"
       >
-        <mat-icon *ngIf="passwordVisible">visibility_off</mat-icon>
-        <mat-icon *ngIf="!passwordVisible">visibility</mat-icon>
+        @if (passwordVisible) {
+          <mat-icon>visibility_off</mat-icon>
+        }
+        @if (!passwordVisible) {
+          <mat-icon>visibility</mat-icon>
+        }
       </span>
     </div>
   </div>
-  <div *ngIf="passwordRequired" style="color: red; font-size: 12px">*** Password is required</div>
+  @if (passwordRequired) {
+    <div style="color: red; font-size: 12px">*** Password is required</div>
+  }
 </form>
 
 <mat-dialog-actions align="end">

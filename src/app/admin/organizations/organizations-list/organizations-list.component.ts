@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterModule } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+
 import { UserAuthenticatorComponent } from '../../../components/auth/user-authenticator/user-authenticator.component';
 import { APIsService } from '../../../services/api.service';
 import { NotificationService } from '../../../services/notifications.service';
@@ -31,9 +32,9 @@ import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-ba
   standalone: true,
 })
 export class OrganizationsListComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   organizations_list: any = [];
   user_org: number | null = null;
-  private destroy$ = new Subject<void>();
 
   constructor(
     private router: Router,
@@ -42,7 +43,7 @@ export class OrganizationsListComponent implements OnInit {
     private dialog: MatDialog,
     private userService: UserService,
   ) {
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user: any) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
         this.user_org = user.org_id || null;
       }

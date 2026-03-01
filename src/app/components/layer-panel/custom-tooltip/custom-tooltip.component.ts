@@ -1,24 +1,33 @@
-import { CommonModule } from '@angular/common';
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-custom-tooltip',
-  imports: [CommonModule],
+  imports: [],
   template: `
     <div class="tooltip-box">
-      <ul *ngIf="owners.length > 0">
-        <li style="list-style: none!important; font-weight: 500; margin-left: -11px;">Owner</li>
-        <li *ngFor="let user of owners">{{ user.slice(0, user.length - 7) }}</li>
-      </ul>
+      @if (owners.length > 0) {
+        <ul>
+          <li style="list-style: none!important; font-weight: 500; margin-left: -11px;">Owner</li>
+          @for (user of owners; track user) {
+            <li>{{ user.slice(0, user.length - 7) }}</li>
+          }
+        </ul>
+      }
 
-      <hr *ngIf="owners.length > 0 && others.length > 0" class="divider" />
+      @if (owners.length > 0 && others.length > 0) {
+        <hr class="divider" />
+      }
 
-      <ul *ngIf="others.length > 0">
-        <li style="list-style: none!important; font-weight: 500; margin-left: -11px;">
-          Shared Users ({{ others.length }})
-        </li>
-        <li *ngFor="let user of others">{{ user }}</li>
-      </ul>
+      @if (others.length > 0) {
+        <ul>
+          <li style="list-style: none!important; font-weight: 500; margin-left: -11px;">
+            Shared Users ({{ others.length }})
+          </li>
+          @for (user of others; track user) {
+            <li>{{ user }}</li>
+          }
+        </ul>
+      }
     </div>
   `,
   styles: [

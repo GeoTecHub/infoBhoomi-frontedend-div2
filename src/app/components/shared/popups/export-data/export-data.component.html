@@ -11,54 +11,52 @@
     </mat-form-field>
 
     <!-- Step 2a: UI for Selecting Objects -->
-    <div *ngIf="exportType === 'selectedObjects'" class="selection-controls">
-      <!-- The START button -->
-      <button
-        *ngIf="!isSelectingForExport"
-        mat-raised-button
-        color="primary"
-        (click)="startSelectionProcess()"
-      >
-        <mat-icon>mouse</mat-icon>
-        <span>Select Objects on Map</span>
-      </button>
-
-      <!-- The STOP button -->
-      <button
-        *ngIf="isSelectingForExport"
-        mat-raised-button
-        color="accent"
-        (click)="stopSelectionProcess()"
-      >
-        <mat-icon>check_circle</mat-icon>
-        <span>Done Selecting</span>
-      </button>
-
-      <!-- Banner shown DURING selection -->
-      <div *ngIf="isSelectingForExport" class="selection-banner">
-        <p>
-          Selection active. Selected: <strong>{{ selectedFeaturesForExport.length }}</strong>
-        </p>
+    @if (exportType === 'selectedObjects') {
+      <div class="selection-controls">
+        <!-- The START button -->
+        @if (!isSelectingForExport) {
+          <button mat-raised-button color="primary" (click)="startSelectionProcess()">
+            <mat-icon>mouse</mat-icon>
+            <span>Select Objects on Map</span>
+          </button>
+        }
+        <!-- The STOP button -->
+        @if (isSelectingForExport) {
+          <button mat-raised-button color="accent" (click)="stopSelectionProcess()">
+            <mat-icon>check_circle</mat-icon>
+            <span>Done Selecting</span>
+          </button>
+        }
+        <!-- Banner shown DURING selection -->
+        @if (isSelectingForExport) {
+          <div class="selection-banner">
+            <p>
+              Selection active. Selected: <strong>{{ selectedFeaturesForExport.length }}</strong>
+            </p>
+          </div>
+        }
+        <!-- Summary shown AFTER selection -->
+        @if (selectedFeaturesForExport.length > 0 && !isSelectingForExport) {
+          <div class="selection-count">
+            <p>{{ selectedFeaturesForExport.length }} feature(s) ready for export.</p>
+          </div>
+        }
       </div>
-
-      <!-- Summary shown AFTER selection -->
-      <div
-        *ngIf="selectedFeaturesForExport.length > 0 && !isSelectingForExport"
-        class="selection-count"
-      >
-        <p>{{ selectedFeaturesForExport.length }} feature(s) ready for export.</p>
-      </div>
-    </div>
+    }
 
     <!-- Step 2b: UI for Exporting Layers -->
-    <div *ngIf="exportType === 'layers'" class="export-section">
-      <!-- ... your layer selection form field ... -->
-    </div>
+    @if (exportType === 'layers') {
+      <div class="export-section">
+        <!-- ... your layer selection form field ... -->
+      </div>
+    }
 
     <!-- Step 3: Common UI for Format and Filename -->
-    <div *ngIf="showFormatOptions" class="export-section">
-      <!-- ... your format and filename form fields ... -->
-    </div>
+    @if (showFormatOptions) {
+      <div class="export-section">
+        <!-- ... your format and filename form fields ... -->
+      </div>
+    }
   </mat-dialog-content>
 
   <!-- Dialog Actions -->

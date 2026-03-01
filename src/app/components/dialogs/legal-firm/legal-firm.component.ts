@@ -1,5 +1,6 @@
-import { CommonModule } from '@angular/common'; //
-import { Component, Inject } from '@angular/core';
+//
+import { Component, Inject, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -13,7 +14,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabsModule } from '@angular/material/tabs';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { Subject, takeUntil } from 'rxjs';
+
 import { APIsService } from '../../../services/api.service';
 import { NotificationService } from '../../../services/notifications.service';
 import { UserService } from '../../../services/user.service';
@@ -26,7 +27,6 @@ import { UserService } from '../../../services/user.service';
     FormsModule,
     MatCardModule,
     MatIconModule,
-    CommonModule,
     MatFormFieldModule,
     MatInputModule,
     NgSelectModule,
@@ -36,6 +36,7 @@ import { UserService } from '../../../services/user.service';
   standalone: true,
 })
 export class LegalFirmComponent {
+  private destroyRef = inject(DestroyRef);
   selectedGroup: any = {}; // Initialize as an empty object to avoid null errors
 
   filterValue: any;
@@ -88,8 +89,6 @@ export class LegalFirmComponent {
   // BACKEND GET DATA ARRAYS
   authority_types_array: any = [];
 
-  private destroy$ = new Subject<void>();
-
   selectedGroupId: string | null = null;
 
   ngOnInit(): void {
@@ -104,7 +103,7 @@ export class LegalFirmComponent {
     private notificationService: NotificationService,
     private userService: UserService,
   ) {
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user: any) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
         this.user_id = user.user_id || '';
       }

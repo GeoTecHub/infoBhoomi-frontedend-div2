@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import {
   FormBuilder,
@@ -19,7 +18,6 @@ import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-ba
   selector: 'app-organizations-create',
   standalone: true,
   imports: [
-    CommonModule,
     AdminHeaderComponent,
     AdminSideBarComponent,
     MatIconModule,

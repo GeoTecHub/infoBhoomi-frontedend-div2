@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AddLayerModel } from '../../../models/API';
 import { LayerService } from '../../../services/layer.service';
@@ -18,7 +18,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { Subject, takeUntil } from 'rxjs';
+
 import { NotificationService } from '../../../services/notifications.service';
 import { UserService } from '../../../services/user.service';
 
@@ -38,12 +38,12 @@ import { UserService } from '../../../services/user.service';
     MatFormFieldModule,
     MatInputModule,
     NgSelectModule,
-    CommonModule,
   ],
   templateUrl: './create-layer.component.html',
   styleUrl: './create-layer.component.css',
 })
 export class CreateLayerComponent {
+  private destroyRef = inject(DestroyRef);
   layerObj: AddLayerModel = new AddLayerModel();
   showColorPicker: boolean = false;
 
@@ -55,7 +55,6 @@ export class CreateLayerComponent {
   layerNameRequired: boolean = false;
 
   isLoading = false; // avriable for spinner
-  private destroy$ = new Subject<void>();
 
   constructor(
     public dialogRef: MatDialogRef<CreateLayerComponent>,
@@ -63,7 +62,7 @@ export class CreateLayerComponent {
     private userService: UserService,
     private notificationService: NotificationService,
   ) {
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user: any) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
         this.user_type = user.user_type || '';
         this.user_id = user.user_id || '';

@@ -30,12 +30,12 @@
                   <div class="form-group mb-3 col-md-6">
                     <label for="dist">District</label>
                     <!-- <input
-                      id="dist"
-                      type="text"
-                      class="form-control form-control-sm"
-                      formControlName="dist"
-                      placeholder="Enter District"
-                      required
+                    id="dist"
+                    type="text"
+                    class="form-control form-control-sm"
+                    formControlName="dist"
+                    placeholder="Enter District"
+                    required
                     /> -->
                     <select
                       id="dist"
@@ -45,14 +45,13 @@
                       placeholder="Enter District"
                       required
                     >
-                      <option *ngFor="let dist of distList" [value]="dist">{{ dist }}</option>
+                      @for (dist of distList; track dist) {
+                        <option [value]="dist">{{ dist }}</option>
+                      }
                     </select>
-                    <small
-                      class="text-danger"
-                      *ngIf="ctrl('dist')?.touched && ctrl('dist')?.invalid"
-                    >
-                      District is required.
-                    </small>
+                    @if (ctrl('dist')?.touched && ctrl('dist')?.invalid) {
+                      <small class="text-danger"> District is required. </small>
+                    }
                   </div>
 
                   <div class="form-group mb-3 col-md-6">
@@ -65,12 +64,9 @@
                       placeholder="Enter City"
                       required
                     />
-                    <small
-                      class="text-danger"
-                      *ngIf="ctrl('city')?.touched && ctrl('city')?.invalid"
-                    >
-                      City is required.
-                    </small>
+                    @if (ctrl('city')?.touched && ctrl('city')?.invalid) {
+                      <small class="text-danger"> City is required. </small>
+                    }
                   </div>
 
                   <div class="form-group mb-3 col-md-6">
@@ -83,12 +79,11 @@
                       placeholder="e.g., 6.8514"
                       required
                     />
-                    <small
-                      class="text-danger"
-                      *ngIf="ctrl('latitude')?.touched && ctrl('latitude')?.invalid"
-                    >
-                      Enter a valid latitude between −90 and 90.
-                    </small>
+                    @if (ctrl('latitude')?.touched && ctrl('latitude')?.invalid) {
+                      <small class="text-danger">
+                        Enter a valid latitude between −90 and 90.
+                      </small>
+                    }
                   </div>
 
                   <div class="form-group mb-3 col-md-6">
@@ -101,12 +96,11 @@
                       placeholder="e.g., 79.8660"
                       required
                     />
-                    <small
-                      class="text-danger"
-                      *ngIf="ctrl('longitude')?.touched && ctrl('longitude')?.invalid"
-                    >
-                      Enter a valid longitude between −180 and 180.
-                    </small>
+                    @if (ctrl('longitude')?.touched && ctrl('longitude')?.invalid) {
+                      <small class="text-danger">
+                        Enter a valid longitude between −180 and 180.
+                      </small>
+                    }
                   </div>
                 </div>
 

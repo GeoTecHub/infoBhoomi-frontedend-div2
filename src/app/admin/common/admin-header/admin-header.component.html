@@ -27,9 +27,9 @@
         <span [ngClass]="getSubscriptionClass()" class="subscription-label">
           <i class="fas fa-gem"></i>
           <u>{{ planName }}</u>
-          <ng-container *ngIf="planName === 'Free Trial' && planEndsOn">
+          @if (planName === 'Free Trial' && planEndsOn) {
             | <small>Expires in {{ getRemainingDays() }} days</small>
-          </ng-container>
+          }
         </span>
       </div>
 
@@ -46,17 +46,19 @@
         </div>
       </div>
 
-      <div class="header-user-info-conteiner" *ngIf="department">
-        <div class="header-user-info-content" matTooltip="Department" matTooltipPosition="below">
-          <label>
-            <!-- <img alt="logo" src="logos/local-dev-logo.webp" class="local-dev-logo" /> -->
-            <span class="org-text">
-              <i class="fas fa-building" style="margin-right: 6px; color: #00458f"></i>
-              {{ department }}
-            </span>
-          </label>
+      @if (department) {
+        <div class="header-user-info-conteiner">
+          <div class="header-user-info-content" matTooltip="Department" matTooltipPosition="below">
+            <label>
+              <!-- <img alt="logo" src="logos/local-dev-logo.webp" class="local-dev-logo" /> -->
+              <span class="org-text">
+                <i class="fas fa-building" style="margin-right: 6px; color: #00458f"></i>
+                {{ department }}
+              </span>
+            </label>
+          </div>
         </div>
-      </div>
+      }
     </div>
     <div class="header-bottom">
       <div class="header-container">
@@ -71,7 +73,7 @@
           </div>
         </div>
 
-        <ng-container *ngIf="userType === 'super_admin' && !hideSelector">
+        @if (userType === 'super_admin' && !hideSelector) {
           <div
             class="header-layers org-admin-btn"
             [matMenuTriggerFor]="orgMenu"
@@ -90,20 +92,23 @@
               >
             </div>
           </div>
-
           <mat-menu #orgMenu="matMenu" class="org-menu">
-            <ng-container *ngIf="organizations_list?.length">
-              <button
-                mat-menu-item
-                *ngFor="let org of organizations_list"
-                (click)="onOrgChange(org)"
-              >
-                <mat-icon *ngIf="current_org.org_id === org.org_id">check</mat-icon>
-                {{ org.display_name }}
-              </button>
-            </ng-container>
+            @if (organizations_list?.length) {
+              @for (org of organizations_list; track org) {
+                <button mat-menu-item (click)="onOrgChange(org)">
+                  @if (current_org.org_id === org.org_id) {
+                    <mat-icon>check</mat-icon>
+                  }
+                  {{ org.display_name }}
+                </button>
+              }
+            }
           </mat-menu>
-        </ng-container>
+        }
+
+        <div class="header-icon">
+          <app-theme-toggle />
+        </div>
 
         <div class="header-icon">
           <button
@@ -129,25 +134,18 @@
             [matMenuTriggerFor]="profileMenu"
             class="profile-btn h-100 relative"
           >
-            <img
-              *ngIf="sex?.toLowerCase() === 'male'"
-              src="sample/male_avatar.png"
-              alt="Male Profile"
-              class="rounded-avatar"
-            />
-            <img
-              *ngIf="sex?.toLowerCase() === 'female'"
-              src="sample/female_avatar.png"
-              alt="Female Profile"
-              class="rounded-avatar"
-            />
+            @if (sex?.toLowerCase() === 'male') {
+              <img src="sample/male_avatar.png" alt="Male Profile" class="rounded-avatar" />
+            }
+            @if (sex?.toLowerCase() === 'female') {
+              <img src="sample/female_avatar.png" alt="Female Profile" class="rounded-avatar" />
+            }
 
-            <span
-              *ngIf="!sex || (sex !== 'male' && sex !== 'female')"
-              class="rounded-avatar initials-avatar"
-            >
-              {{ username | uppercase | slice: 0 : 2 }}
-            </span>
+            @if (!sex || (sex !== 'male' && sex !== 'female')) {
+              <span class="rounded-avatar initials-avatar">
+                {{ username | uppercase | slice: 0 : 2 }}
+              </span>
+            }
 
             <span class="username-ellipsis" [title]="username">
               {{ username }}

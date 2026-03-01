@@ -18,9 +18,9 @@
                 [readonly]="isDeleteLayer"
                 [(ngModel)]="updatedLayer.layer_name"
               />
-              <div *ngIf="layerNameRequired" style="color: red; font-size: 12px">
-                *** Layer Name is required
-              </div>
+              @if (layerNameRequired) {
+                <div style="color: red; font-size: 12px">*** Layer Name is required</div>
+              }
             </div>
           </div>
           <div class="keyValueWrapper">
@@ -50,9 +50,10 @@
   >
     {{ buttonTitle }}
   </button>
-  <div
-    *ngIf="isLoading"
-    style="padding-left: 5px; padding-right: 5px; color: #005ccb; font-size: 12px"
-  ></div>
-  <mat-spinner *ngIf="isLoading" diameter="20" class="loading-spinner"></mat-spinner>
+  @if (isLoading) {
+    <div style="padding-left: 5px; padding-right: 5px; color: #005ccb; font-size: 12px"></div>
+  }
+  @if (isLoading) {
+    <mat-spinner diameter="20" class="loading-spinner"></mat-spinner>
+  }
 </mat-dialog-actions>

@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -14,7 +15,7 @@ import {
 } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Subject, takeUntil } from 'rxjs';
+
 import {
   AddLayerModel,
   PasswordVerificationRequest,
@@ -44,6 +45,7 @@ import { MatCard, MatCardContent } from '@angular/material/card';
   styleUrl: './edit-delete-layer.component.css',
 })
 export class EditDeleteLayerComponent {
+  private destroyRef = inject(DestroyRef);
   updatedLayer: AddLayerModel = new AddLayerModel();
   layer: any;
   modelHeader!: string;
@@ -58,7 +60,6 @@ export class EditDeleteLayerComponent {
   layerNameRequired: boolean = false;
 
   isLoading = false; // avriable for spinner
-  private destroy$ = new Subject<void>();
 
   constructor(
     public dialogRef: MatDialogRef<EditDeleteLayerComponent>,
@@ -68,7 +69,7 @@ export class EditDeleteLayerComponent {
     private userService: UserService,
     private notificationService: NotificationService,
   ) {
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user: any) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
         this.user_type = user.user_type || '';
         this.user_id = user.user_id || '';

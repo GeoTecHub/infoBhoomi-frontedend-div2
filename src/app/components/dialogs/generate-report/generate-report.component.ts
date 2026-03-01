@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, Inject } from '@angular/core';
 import {
   MAT_DIALOG_DATA,
@@ -38,7 +37,7 @@ interface ReportOption {
 @Component({
   selector: 'app-generate-report',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatIconModule],
+  imports: [MatDialogModule, MatIconModule],
   templateUrl: './generate-report.component.html',
   styleUrls: ['./generate-report.component.css'],
 })
@@ -56,7 +55,8 @@ export class GenerateReportComponent {
       {
         id: 'land',
         title: 'Land Parcel Report',
-        subtitle: '7-section LADM ISO 19152 report covering identification, spatial, physical, zoning, valuation, RRR and metadata.',
+        subtitle:
+          '7-section LADM ISO 19152 report covering identification, spatial, physical, zoning, valuation, RRR and metadata.',
         icon: 'map',
         available: isLand,
         accent: '#6fe8a0',
@@ -64,7 +64,8 @@ export class GenerateReportComponent {
       {
         id: 'building',
         title: 'Building Report',
-        subtitle: '7-section CityJSON/LADM report covering overview, spatial, physical, units, assessment, RRR and metadata.',
+        subtitle:
+          '7-section CityJSON/LADM report covering overview, spatial, physical, units, assessment, RRR and metadata.',
         icon: 'apartment',
         available: isBuild,
         accent: '#5ec8e8',
@@ -84,7 +85,7 @@ export class GenerateReportComponent {
           layerId: this.data.layerId,
         } as LandParcelReportData,
         width: '900px',
-        maxHeight: '90vh',
+        height: '90vh',
         hasBackdrop: false,
         panelClass: 'report-dialog',
       });
@@ -96,7 +97,7 @@ export class GenerateReportComponent {
           layerId: this.data.layerId,
         } as BuildingReportData,
         width: '900px',
-        maxHeight: '90vh',
+        height: '90vh',
         hasBackdrop: false,
         panelClass: 'report-dialog',
       });

@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common'; //
+//
 import { Component, Inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -29,7 +29,6 @@ import { NotificationService } from '../../../services/notifications.service';
     MatFormFieldModule,
     MatInputModule,
     NgSelectModule,
-    CommonModule,
   ],
   templateUrl: './add-layer.component.html',
   styleUrl: './add-layer.component.css',

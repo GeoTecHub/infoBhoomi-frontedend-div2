@@ -7,13 +7,13 @@ import {
   OnDestroy,
   OnInit,
   SimpleChanges,
-  ViewChild,
-} from '@angular/core';
+  ViewChild, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Subject, Subscription } from 'rxjs';
-import { finalize, takeUntil } from 'rxjs/operators';
+import {Subscription } from 'rxjs';
+import {finalize } from 'rxjs/operators';
 import { APIsService } from '../../../services/api.service';
 import { DrawService } from '../../../services/draw.service';
 import { MapService } from '../../../services/map.service';
@@ -33,6 +33,7 @@ import { LoaderComponent } from '../loader/loader.component';
   imports: [ReactiveFormsModule, FormsModule, CommonModule, LoaderComponent, MatTooltipModule],
 })
 export class BuildingTabComponent implements OnInit, AfterViewInit, OnDestroy {
+  private destroyRef = inject(DestroyRef);
   @Input({ required: true }) selected_feature_ID: string | number | null | undefined;
   private featureSub?: Subscription;
   @ViewChild(PanelImgComponent) panelImgComponent!: PanelImgComponent;
@@ -206,7 +207,6 @@ export class BuildingTabComponent implements OnInit, AfterViewInit, OnDestroy {
   public isTaxAssesmentInfoEditMode = false;
   public isTaxInfoEditMode = false;
 
-  private destroy$ = new Subject<void>();
 
   summaryAdministrativeType: string | null = null;
   summaryPropertyType: string | null = null;
@@ -239,7 +239,7 @@ export class BuildingTabComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user: any) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
         this.user_id = user.user_id || '';
       }
@@ -264,7 +264,7 @@ export class BuildingTabComponent implements OnInit, AfterViewInit, OnDestroy {
     //   .pipe(
     //     map(info => info?.featureId),
     //     distinctUntilChanged(),
-    //     takeUntil(this.destroy$)
+    //     takeUntilDestroyed(this.destroyRef)
     //   )
     //   .subscribe((featureId) => {
     //     alert('Builing Tab Component Feature ID Changed + activeTab: ' + this.activeTab);
@@ -1405,8 +1405,6 @@ export class BuildingTabComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.featureSub?.unsubscribe(); // Clean up feature subscription
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   open3dDialog() {

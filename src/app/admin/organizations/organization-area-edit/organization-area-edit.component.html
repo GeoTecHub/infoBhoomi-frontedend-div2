@@ -35,14 +35,15 @@
                 [disabled]="loading"
               >
                 <option [ngValue]="null">Select a Province</option>
-                <option
-                  *ngFor="let province of getPdList(); trackBy: trackByStr"
-                  [ngValue]="province"
-                >
-                  {{ province }}
-                </option>
+                @for (province of getPdList(); track trackByStr($index, province)) {
+                  <option [ngValue]="province">
+                    {{ province }}
+                  </option>
+                }
               </select>
-              <small *ngIf="loading" class="text-muted">Loading areas…</small>
+              @if (loading) {
+                <small class="text-muted">Loading areas…</small>
+              }
             </div>
 
             <div class="form-group mb-3">
@@ -55,12 +56,11 @@
                 [disabled]="!orgAreaDefineService.distList.length || loading"
               >
                 <option [ngValue]="null">Select a District</option>
-                <option
-                  *ngFor="let d of orgAreaDefineService.distList; trackBy: trackByStr"
-                  [ngValue]="d"
-                >
-                  {{ d }}
-                </option>
+                @for (d of orgAreaDefineService.distList; track trackByStr($index, d)) {
+                  <option [ngValue]="d">
+                    {{ d }}
+                  </option>
+                }
               </select>
             </div>
 
@@ -74,12 +74,11 @@
                 [disabled]="!orgAreaDefineService.dsdList.length || loading"
               >
                 <option [ngValue]="null">Select a DSD</option>
-                <option
-                  *ngFor="let dsd of orgAreaDefineService.dsdList; trackBy: trackByStr"
-                  [ngValue]="dsd"
-                >
-                  {{ dsd }}
-                </option>
+                @for (dsd of orgAreaDefineService.dsdList; track trackByStr($index, dsd)) {
+                  <option [ngValue]="dsd">
+                    {{ dsd }}
+                  </option>
+                }
               </select>
             </div>
           </div>
@@ -100,56 +99,53 @@
                   />
                 </div>
 
-                <div
-                  class="mt-2 d-flex align-items-center gap-2"
-                  *ngIf="filteredGndOptions.length && !gnSearchTerm.length"
-                >
-                  <label class="d-flex align-items-center gap-2 mb-0">
-                    <input
-                      type="checkbox"
-                      [checked]="allVisibleChecked"
-                      [indeterminate]="someVisibleChecked"
-                      (change)="toggleSelectAllVisible($event)"
-                      [disabled]="!filteredGndOptions.length"
-                    />
-                    <span style="font-size: 14px; font-weight: 600"> Select all </span>
-                  </label>
-                </div>
-
-                <div class="overflow-section mt-2 d-flex flex-wrap">
-                  <div
-                    class="mb-2 col-md-6"
-                    *ngFor="let row of filteredGndOptions; let index = index; trackBy: trackByGid"
-                  >
-                    <label class="d-flex align-items-center gap-2">
+                @if (filteredGndOptions.length && !gnSearchTerm.length) {
+                  <div class="mt-2 d-flex align-items-center gap-2">
+                    <label class="d-flex align-items-center gap-2 mb-0">
                       <input
                         type="checkbox"
-                        [ngModel]="selectedGndMap[row.gid] || false"
-                        (ngModelChange)="toggleGnd(row.gid, $event)"
-                        [ngModelOptions]="{ standalone: true }"
+                        [checked]="allVisibleChecked"
+                        [indeterminate]="someVisibleChecked"
+                        (change)="toggleSelectAllVisible($event)"
+                        [disabled]="!filteredGndOptions.length"
                       />
-                      <span style="font-size: 14px">{{ row.gnd }}</span>
+                      <span style="font-size: 14px; font-weight: 600"> Select all </span>
                     </label>
                   </div>
-                  <small
-                    class="text-muted"
-                    *ngIf="!filteredGndOptions.length && gnSearchTerm.length"
-                  >
-                    No matching GN Divisions.
-                  </small>
+                }
+
+                <div class="overflow-section mt-2 d-flex flex-wrap">
+                  @for (
+                    row of filteredGndOptions;
+                    track trackByGid(index, row);
+                    let index = $index
+                  ) {
+                    <div class="mb-2 col-md-6">
+                      <label class="d-flex align-items-center gap-2">
+                        <input
+                          type="checkbox"
+                          [ngModel]="selectedGndMap[row.gid] || false"
+                          (ngModelChange)="toggleGnd(row.gid, $event)"
+                          [ngModelOptions]="{ standalone: true }"
+                        />
+                        <span style="font-size: 14px">{{ row.gnd }}</span>
+                      </label>
+                    </div>
+                  }
+                  @if (!filteredGndOptions.length && gnSearchTerm.length) {
+                    <small class="text-muted"> No matching GN Divisions. </small>
+                  }
                 </div>
               </div>
 
               <div class="col-md-2">
-                <div
-                  *ngIf="hasAnySelected"
-                  class="d-flex align-items-center"
-                  style="min-height: 250px; height: 100%"
-                >
-                  <button class="btn add-btn" (click)="addSelectedGnds()">
-                    Add <mat-icon>chevron_right</mat-icon>
-                  </button>
-                </div>
+                @if (hasAnySelected) {
+                  <div class="d-flex align-items-center" style="min-height: 250px; height: 100%">
+                    <button class="btn add-btn" (click)="addSelectedGnds()">
+                      Add <mat-icon>chevron_right</mat-icon>
+                    </button>
+                  </div>
+                }
               </div>
             </div>
           </div>
@@ -179,9 +175,11 @@
                     [ngModelOptions]="{ standalone: true }"
                   >
                     <option [ngValue]="null">All Districts</option>
-                    <option *ngFor="let d of addedDistOptions; trackBy: trackByStr" [ngValue]="d">
-                      {{ d }}
-                    </option>
+                    @for (d of addedDistOptions; track trackByStr($index, d)) {
+                      <option [ngValue]="d">
+                        {{ d }}
+                      </option>
+                    }
                   </select>
                 </div>
 
@@ -194,34 +192,34 @@
                     [ngModelOptions]="{ standalone: true }"
                   >
                     <option [ngValue]="null">All DSDs</option>
-                    <option
-                      *ngFor="let dsd of addedDsdOptions; trackBy: trackByStr"
-                      [ngValue]="dsd"
-                    >
-                      {{ dsd }}
-                    </option>
+                    @for (dsd of addedDsdOptions; track trackByStr($index, dsd)) {
+                      <option [ngValue]="dsd">
+                        {{ dsd }}
+                      </option>
+                    }
                   </select>
                 </div>
 
                 <div class="overflow-section mt-2">
                   <ul class="list-group mb-3">
-                    <li
-                      class="list-group-item d-flex justify-content-between align-items-center gn-label"
-                      *ngFor="let r of filteredAddedGnds; trackBy: trackByGid"
-                    >
-                      <span>
-                        {{ r.gnd }}
-                        <small class="text-muted">({{ r.dsd }} • {{ r.dist }} )</small>
-                      </span>
-                      <div class="d-flex align-items-center">
-                        <span class="badge bg-light text-dark">GID: {{ r.gid }}</span>
-                        <mat-icon
-                          class="text-danger material-icons-custom remove-item-btn"
-                          (click)="removeSingleGnd(r.gid)"
-                          >delete</mat-icon
-                        >
-                      </div>
-                    </li>
+                    @for (r of filteredAddedGnds; track trackByGid($index, r)) {
+                      <li
+                        class="list-group-item d-flex justify-content-between align-items-center gn-label"
+                      >
+                        <span>
+                          {{ r.gnd }}
+                          <small class="text-muted">({{ r.dsd }} • {{ r.dist }} )</small>
+                        </span>
+                        <div class="d-flex align-items-center">
+                          <span class="badge bg-light text-dark">GID: {{ r.gid }}</span>
+                          <mat-icon
+                            class="text-danger material-icons-custom remove-item-btn"
+                            (click)="removeSingleGnd(r.gid)"
+                            >delete</mat-icon
+                          >
+                        </div>
+                      </li>
+                    }
                   </ul>
                 </div>
 

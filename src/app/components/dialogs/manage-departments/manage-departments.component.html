@@ -2,8 +2,8 @@
   <div class="header-content">
     <h2 class="header-title">Manage Department</h2>
     <!-- <button class="close-btn">
-        <mat-icon>close</mat-icon> 
-      </button> -->
+    <mat-icon>close</mat-icon>
+  </button> -->
   </div>
 </div>
 
@@ -41,39 +41,46 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let department of departments_list">
-                  <td *ngIf="department.edit">
-                    <input
-                      type="text"
-                      [(ngModel)]="department.dep_name"
-                      class="form-control form-control-sm small-input"
-                      placeholder="Enter text"
-                    />
-                  </td>
-                  <td *ngIf="!department.edit">{{ department.dep_name }}</td>
-
-                  <td class="text-center">
-                    <mat-icon
-                      class="text-gray material-icons-edit"
-                      *ngIf="!department.edit"
-                      (click)="editDepartment(department)"
-                      >edit</mat-icon
-                    >
-                    &nbsp;
-                    <mat-icon
-                      class="text-gray material-icons-edit"
-                      *ngIf="department.edit"
-                      (click)="updateDepartment(department)"
-                      >save</mat-icon
-                    >
-                    &nbsp;
-                    <mat-icon
-                      class="text-danger material-icons-custom"
-                      (click)="openDeleteModal(department)"
-                      >delete</mat-icon
-                    >
-                  </td>
-                </tr>
+                @for (department of departments_list; track department) {
+                  <tr>
+                    @if (department.edit) {
+                      <td>
+                        <input
+                          type="text"
+                          [(ngModel)]="department.dep_name"
+                          class="form-control form-control-sm small-input"
+                          placeholder="Enter text"
+                        />
+                      </td>
+                    }
+                    @if (!department.edit) {
+                      <td>{{ department.dep_name }}</td>
+                    }
+                    <td class="text-center">
+                      @if (!department.edit) {
+                        <mat-icon
+                          class="text-gray material-icons-edit"
+                          (click)="editDepartment(department)"
+                          >edit</mat-icon
+                        >
+                      }
+                      &nbsp;
+                      @if (department.edit) {
+                        <mat-icon
+                          class="text-gray material-icons-edit"
+                          (click)="updateDepartment(department)"
+                          >save</mat-icon
+                        >
+                      }
+                      &nbsp;
+                      <mat-icon
+                        class="text-danger material-icons-custom"
+                        (click)="openDeleteModal(department)"
+                        >delete</mat-icon
+                      >
+                    </td>
+                  </tr>
+                }
               </tbody>
             </table>
           </div>
@@ -135,21 +142,22 @@
             (click)="togglePasswordVisibility()"
             [title]="passwordVisible ? 'Hide password' : 'Show password'"
           >
-            <mat-icon *ngIf="passwordVisible">visibility_off</mat-icon>
-            <mat-icon *ngIf="!passwordVisible">visibility</mat-icon>
+            @if (passwordVisible) {
+              <mat-icon>visibility_off</mat-icon>
+            }
+            @if (!passwordVisible) {
+              <mat-icon>visibility</mat-icon>
+            }
           </span>
         </div>
       </div>
       <div class="modal-footer py-2 d-flex justify-content-center">
         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">No</button>
-        <button
-          type="button"
-          class="btn btn-danger btn-sm"
-          (click)="confirmDelete()"
-          *ngIf="admin_password"
-        >
-          <i class="fa fa-trash"></i> Delete
-        </button>
+        @if (admin_password) {
+          <button type="button" class="btn btn-danger btn-sm" (click)="confirmDelete()">
+            <i class="fa fa-trash"></i> Delete
+          </button>
+        }
       </div>
     </div>
   </div>

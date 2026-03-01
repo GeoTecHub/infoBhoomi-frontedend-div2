@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormBuilder,
   FormGroup,
@@ -9,7 +9,7 @@ import {
 } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterModule } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+
 import { UserAuthenticatorComponent } from '../../../components/auth/user-authenticator/user-authenticator.component';
 import { APIsService } from '../../../services/api.service';
 import { NotificationService } from '../../../services/notifications.service';
@@ -21,7 +21,6 @@ import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-ba
   selector: 'app-users-create',
   standalone: true,
   imports: [
-    CommonModule,
     AdminHeaderComponent,
     AdminSideBarComponent,
     MatIconModule,
@@ -34,12 +33,12 @@ import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-ba
   styleUrl: './users-create.component.css',
 })
 export class UsersCreateComponent {
+  private destroyRef = inject(DestroyRef);
   userForm!: FormGroup;
   passwordMatch: boolean = true;
   departments_list: any = [];
   default_pw = 'user@user123';
   userType: string = '';
-  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
@@ -48,7 +47,7 @@ export class UsersCreateComponent {
     private router: Router,
     private userService: UserService,
   ) {
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
       if (user) {
         this.userType = user.user_type;
         if (user.user_type === 'admin') {

@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import {
   AbstractControl,
@@ -21,7 +20,6 @@ import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-ba
   selector: 'app-organizations-location-edit',
   standalone: true,
   imports: [
-    CommonModule,
     AdminHeaderComponent,
     AdminSideBarComponent,
     MatIconModule,

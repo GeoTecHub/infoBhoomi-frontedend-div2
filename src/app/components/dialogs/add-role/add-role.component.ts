@@ -1,5 +1,6 @@
-import { CommonModule } from '@angular/common'; //
-import { Component, Inject } from '@angular/core';
+//
+import { Component, Inject, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -13,7 +14,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabsModule } from '@angular/material/tabs';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { Subject, takeUntil } from 'rxjs';
+
 import { APIsService } from '../../../services/api.service';
 import { NotificationService } from '../../../services/notifications.service';
 import { UserService } from '../../../services/user.service';
@@ -28,7 +29,6 @@ import { UserService } from '../../../services/user.service';
     FormsModule,
     MatCardModule,
     MatIconModule,
-    CommonModule,
     MatFormFieldModule,
     MatInputModule,
     NgSelectModule,
@@ -37,13 +37,13 @@ import { UserService } from '../../../services/user.service';
   styleUrl: './add-role.component.css',
 })
 export class AddRoleComponent {
+  private destroyRef = inject(DestroyRef);
   role_user: any = [];
   role_name = '';
   role_type = 'user';
   role_remark: any;
   popup_action = 'Create';
   userType: string | null = null;
-  private destroy$ = new Subject<void>();
   ngOnInit(): void {}
 
   constructor(
@@ -63,7 +63,7 @@ export class AddRoleComponent {
       this.popup_action = 'Create';
     }
 
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
       if (user) {
         this.userType = user.user_type;
       }

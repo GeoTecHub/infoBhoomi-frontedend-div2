@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,14 +15,7 @@ import { LoginService } from '../../../../../services/login.service';
 @Component({
   selector: 'app-user-password-change',
   standalone: true,
-  imports: [
-    MatDialogModule,
-    CommonModule,
-    FormsModule,
-    MatButtonModule,
-    MatProgressSpinnerModule,
-    MatIconModule,
-  ],
+  imports: [MatDialogModule, FormsModule, MatButtonModule, MatProgressSpinnerModule, MatIconModule],
   templateUrl: './user-password-change.component.html',
   styleUrl: './user-password-change.component.css',
 })

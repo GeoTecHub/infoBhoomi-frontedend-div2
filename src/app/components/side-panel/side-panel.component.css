@@ -9,8 +9,8 @@
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: rgba(22, 33, 52, 0.85);
-  border-right: 1px solid rgba(148, 163, 184, 0.1);
+  background: var(--surface-sidebar); /* UI-only change — was rgba(22,33,52,0.85) dark navy */
+  border-right: 1px solid var(--border-default); /* UI-only change — was rgba(148,163,184,0.1) */
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   transition: width 0.2s ease;
@@ -47,12 +47,12 @@
 
 .resize-handle:hover::after,
 .resize-handle:active::after {
-  background: var(--color-primary, rgba(79, 70, 229, 0.8));
+  background: var(--color-primary); /* UI-only change — was var(--color-primary, rgba(79,70,229,0.8)) wrong fallback */
 }
 
 .resize-handle:hover,
 .resize-handle:active {
-  background: rgba(79, 70, 229, 0.15);
+  background: var(--surface-sidebar-hover); /* UI-only change — was rgba(79,70,229,0.15) indigo */
 }
 
 /* ─── Toggle Button ─────────────────────────────────────── */
@@ -66,10 +66,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(30, 41, 59, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: var(--surface-panel); /* UI-only change — was rgba(30,41,59,0.9) dark slate */
+  border: 1px solid var(--border-default); /* UI-only change — was rgba(148,163,184,0.2) */
   border-radius: 0 8px 8px 0;
-  color: #94a3b8;
+  color: var(--text-secondary); /* UI-only change — was #94a3b8 (Tailwind slate-400) */
   cursor: pointer;
   z-index: 10;
   transition: all 0.2s ease;
@@ -77,16 +77,16 @@
 }
 
 .sidebar-toggle:hover {
-  background: rgba(79, 70, 229, 0.2);
-  color: #e2e8f0;
+  background: var(--surface-sidebar-hover); /* UI-only change — was rgba(79,70,229,0.2) indigo */
+  color: var(--text-primary); /* UI-only change — was #e2e8f0 */
 }
 
 /* ─── Tab Bar ───────────────────────────────────────────── */
 .sidebar-tab-bar {
   display: flex;
   gap: 0;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
-  background: rgba(15, 23, 42, 0.6);
+  border-bottom: 1px solid var(--border-default); /* UI-only change — was rgba(148,163,184,0.15) */
+  background: var(--surface-sidebar-header); /* UI-only change — was rgba(15,23,42,0.6) near-black */
   flex-shrink: 0;
 }
 
@@ -99,7 +99,7 @@
   padding: 0.6rem 0.25rem;
   border: none;
   background: transparent;
-  color: #64748b;
+  color: var(--text-secondary); /* UI-only change — was #64748b (Tailwind slate-500) */
   font-size: 0.72rem;
   font-weight: 500;
   cursor: pointer;
@@ -109,18 +109,18 @@
 }
 
 .sidebar-tab:hover:not(.disabled) {
-  color: #94a3b8;
-  background: rgba(148, 163, 184, 0.06);
+  color: var(--text-primary); /* UI-only change — was #94a3b8 */
+  background: var(--surface-sidebar-hover); /* UI-only change — was rgba(148,163,184,0.06) */
 }
 
 .sidebar-tab.active {
-  color: #e2e8f0;
-  border-bottom-color: var(--color-primary, #6366f1);
-  background: rgba(79, 70, 229, 0.08);
+  color: var(--text-primary); /* UI-only change — was #e2e8f0 */
+  border-bottom-color: var(--color-primary); /* UI-only change — fixed wrong fallback #6366f1 indigo */
+  background: var(--surface-sidebar-hover); /* UI-only change — was rgba(79,70,229,0.08) indigo */
 }
 
 .sidebar-tab.active svg {
-  color: #a5b4fc;
+  color: var(--color-primary); /* UI-only change — was #a5b4fc (Tailwind indigo-300) */
 }
 
 .sidebar-tab.disabled {
@@ -129,13 +129,13 @@
 }
 
 .sidebar-tab--report {
-  border-left: 1px solid rgba(148, 163, 184, 0.1);
-  color: #5a7a9a;
+  border-left: 1px solid var(--border-default); /* UI-only change — was rgba(148,163,184,0.1) */
+  color: var(--color-primary); /* UI-only change — was #5a7a9a custom */
 }
 
 .sidebar-tab--report:hover:not(:disabled) {
-  color: #5ec8e8;
-  background: rgba(94, 200, 232, 0.06);
+  color: var(--color-info); /* UI-only change — was #5ec8e8 cyan */
+  background: rgba(23, 162, 184, 0.08); /* UI-only change — --color-info @ 8%, was rgba(94,200,232,0.06) */
 }
 
 .sidebar-tab--report:disabled {
@@ -153,7 +153,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   min-height: 0;
-  color: var(--color-secondary-d2, #e2e8f0);
+  color: var(--text-primary); /* UI-only change — was var(--color-secondary-d2, #e2e8f0) wrong fallback */
 }
 
 /* Custom Scrollbar */
@@ -162,12 +162,12 @@
 }
 
 .sidebar-tab-content::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
+  background: var(--surface-panel-alt); /* UI-only change — was rgba(0,0,0,0.1) */
   border-radius: 3px;
 }
 
 .sidebar-tab-content::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.3);
+  background: var(--color-neutral-d1); /* UI-only change — was rgba(148,163,184,0.3) */
   border-radius: 3px;
 }
 

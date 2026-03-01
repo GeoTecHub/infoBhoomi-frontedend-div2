@@ -33,16 +33,16 @@
 
           <div class="card">
             <div class="card-body">
-              <div
-                class="alert d-flex align-items-center mb-3 alert-info"
-                role="alert"
-                style="font-size: 15px; gap: 8px"
-                *ngIf="userType === 'super_admin'"
-              >
-                <mat-icon style="font-size: 21px" [style.color]="'#31708f'"> info </mat-icon>
-
-                <span style="font-weight: 600"> This form creates Admin accounts only. </span>
-              </div>
+              @if (userType === 'super_admin') {
+                <div
+                  class="alert d-flex align-items-center mb-3 alert-info"
+                  role="alert"
+                  style="font-size: 15px; gap: 8px"
+                >
+                  <mat-icon style="font-size: 21px" [style.color]="'#31708f'"> info </mat-icon>
+                  <span style="font-weight: 600"> This form creates Admin accounts only. </span>
+                </div>
+              }
 
               <form [formGroup]="userForm" class="w-100 px-4">
                 <div class="row">
@@ -71,14 +71,13 @@
                       required
                       (input)="formatEmail()"
                     />
-                    <div
-                      *ngIf="userForm.get('email')?.invalid && userForm.get('email')?.touched"
-                      class="text-danger"
-                    >
-                      <small *ngIf="userForm.get('email')?.errors?.['email']"
-                        >Incorrect email format.</small
-                      >
-                    </div>
+                    @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
+                      <div class="text-danger">
+                        @if (userForm.get('email')?.errors?.['email']) {
+                          <small>Incorrect email format.</small>
+                        }
+                      </div>
+                    }
                   </div>
 
                   <!-- First Name -->
@@ -118,20 +117,19 @@
                       formControlName="mobile"
                       required
                     />
-                    <div
-                      *ngIf="
-                        userForm.get('mobile')?.invalid &&
-                        (userForm.get('mobile')?.dirty || userForm.get('mobile')?.touched)
-                      "
-                      class="text-danger"
-                    >
-                      <small *ngIf="userForm.get('mobile')?.errors?.['pattern']">
-                        Enter a valid 10-digit mobile number starting with 0.
-                      </small>
-                      <small *ngIf="userForm.get('mobile')?.errors?.['required']">
-                        Mobile number is required.
-                      </small>
-                    </div>
+                    @if (
+                      userForm.get('mobile')?.invalid &&
+                      (userForm.get('mobile')?.dirty || userForm.get('mobile')?.touched)
+                    ) {
+                      <div class="text-danger">
+                        @if (userForm.get('mobile')?.errors?.['pattern']) {
+                          <small> Enter a valid 10-digit mobile number starting with 0. </small>
+                        }
+                        @if (userForm.get('mobile')?.errors?.['required']) {
+                          <small> Mobile number is required. </small>
+                        }
+                      </div>
+                    }
                   </div>
 
                   <!-- Address -->
@@ -159,14 +157,13 @@
                       maxlength="12"
                       required
                     />
-                    <div
-                      *ngIf="userForm.get('nic')?.invalid && userForm.get('nic')?.touched"
-                      class="text-danger"
-                    >
-                      <small *ngIf="userForm.get('nic')?.errors?.['pattern']"
-                        >NIC must be 12 digits or 9 digits followed by 'V' or 'X'.</small
-                      >
-                    </div>
+                    @if (userForm.get('nic')?.invalid && userForm.get('nic')?.touched) {
+                      <div class="text-danger">
+                        @if (userForm.get('nic')?.errors?.['pattern']) {
+                          <small>NIC must be 12 digits or 9 digits followed by 'V' or 'X'.</small>
+                        }
+                      </div>
+                    }
                   </div>
 
                   <!-- Birthday -->
@@ -207,12 +204,11 @@
                       required
                     >
                       <option value="" disabled selected>Select Department</option>
-                      <option
-                        *ngFor="let department of departments_list"
-                        [value]="department.dep_id"
-                      >
-                        {{ department.dep_name }}
-                      </option>
+                      @for (department of departments_list; track department) {
+                        <option [value]="department.dep_id">
+                          {{ department.dep_name }}
+                        </option>
+                      }
                     </select>
                   </div>
 

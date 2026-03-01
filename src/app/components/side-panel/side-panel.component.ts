@@ -1,11 +1,11 @@
-import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Output, inject, signal, OnDestroy, NgZone } from '@angular/core';
+import {Component, EventEmitter, Output, inject, signal, NgZone, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { Feature } from 'ol';
 import { Geometry, Polygon, MultiPolygon } from 'ol/geom';
 import { getArea, getLength } from 'ol/sphere';
-import { Subject, forkJoin, of } from 'rxjs';
-import { takeUntil, catchError, switchMap } from 'rxjs/operators';
+import {forkJoin, of } from 'rxjs';
+import {catchError, switchMap } from 'rxjs/operators';
 import {
   LandParcelInfo,
   createDefaultLandParcel,
@@ -68,18 +68,18 @@ type SidebarTab = 'home' | 'land' | 'building';
 @Component({
   selector: 'app-side-panel',
   standalone: true,
-  imports: [CommonModule, BuildingInfoPanelComponent, HomeTabComponent, LandInfoPanelComponent],
+  imports: [BuildingInfoPanelComponent, HomeTabComponent, LandInfoPanelComponent],
   templateUrl: './side-panel.component.html',
   styleUrl: './side-panel.component.css',
 })
-export class SidePanelComponent implements OnDestroy {
+export class SidePanelComponent {
   private ngZone = inject(NgZone);
+  private destroyRef = inject(DestroyRef);
 
   @Output() emitExtend = new EventEmitter<boolean>();
 
   selected_feature_ID: any = '';
   selected_layer_ID: any = '';
-  private destroy$ = new Subject<void>();
   selected_featureInfo: SelectedFeatureInfo | null = null;
 
   private fetchedRRRBaUnitIds = new Set<number>();
@@ -107,7 +107,7 @@ export class SidePanelComponent implements OnDestroy {
     private dialog: MatDialog,
   ) {
     // Handle feature selection changes
-    this.drawService.selectedFeatureInfo$.pipe(takeUntil(this.destroy$)).subscribe((info) => {
+    this.drawService.selectedFeatureInfo$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((info) => {
       if (!info || (Array.isArray(info) && info.length === 0) || info.length > 1) {
         this.selected_feature_ID = null;
         this.currentLandParcelInfo.set(null);
@@ -160,7 +160,7 @@ export class SidePanelComponent implements OnDestroy {
     });
 
     // Handle explicit deselection
-    this.drawService.deselectedFeature$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+    this.drawService.deselectedFeature$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.selected_feature_ID = null;
       this.currentLandParcelInfo.set(null);
       this.currentBuildingInfo.set(null);
@@ -170,7 +170,7 @@ export class SidePanelComponent implements OnDestroy {
     });
 
     // Handle sidebar open/close events
-    this.sidebarService.isClosed$.pipe(takeUntil(this.destroy$)).subscribe((closed) => {
+    this.sidebarService.isClosed$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((closed) => {
       this.isSidebarClosed.set(closed);
     });
   }
@@ -580,158 +580,212 @@ export class SidePanelComponent implements OnDestroy {
       this.apiService.getZoningInfo(su_id).pipe(catchError(() => of(null))),
       this.apiService.getPhysicalEnvInfo(su_id).pipe(catchError(() => of(null))),
       this.apiService.getItInfo(su_id).pipe(catchError(() => of({}))),
+      this.apiService.getLandMetadata(su_id).pipe(catchError(() => of({}))),
     ])
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(([adminData, overviewData, taxData, rrrData, zoningData, physicalData, utilData]: [any, any, any, any, any, any, any]) => {
-        console.log('[Fetch] adminData from backend:', adminData);
-        const current = this.currentLandParcelInfo();
-        if (!current) return;
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(
+        ([adminData, overviewData, taxData, rrrData, zoningData, physicalData, utilData, metaData]: [
+          any,
+          any,
+          any,
+          any,
+          any,
+          any,
+          any,
+          any,
+        ]) => {
+          console.log('[Fetch] adminData from backend:', adminData);
+          const current = this.currentLandParcelInfo();
+          if (!current) return;
 
-        const identification = { ...current.identification };
-        const physical = { ...current.physical };
-        const spatial = { ...current.spatial };
-        const valuation = { ...current.valuation };
+          const identification = { ...current.identification };
+          const physical = { ...current.physical };
+          const spatial = { ...current.spatial };
+          const valuation = { ...current.valuation };
 
-        // Merge admin data
-        if (adminData.local_auth) identification.localAuthority = adminData.local_auth;
-        if (adminData.sl_land_type)
-          identification.parcelType = this.resolveEnum(
-            adminData.sl_land_type,
-            ParcelType,
-            current.identification.parcelType,
-          );
-        if (adminData.land_name) identification.cadastralRef = adminData.land_name;
-        if (adminData.registration_date) identification.registrationDate = adminData.registration_date;
-        if (adminData.access_road !== undefined)
-          physical.accessRoad = adminData.access_road === 'Yes' || adminData.access_road === true;
+          // Merge admin data
+          if (adminData.local_auth) identification.localAuthority = adminData.local_auth;
+          if (adminData.sl_land_type)
+            identification.parcelType = this.resolveEnum(
+              adminData.sl_land_type,
+              ParcelType,
+              current.identification.parcelType,
+            );
+          if (adminData.land_name) identification.cadastralRef = adminData.land_name;
+          if (adminData.registration_date)
+            identification.registrationDate = adminData.registration_date;
+          if (adminData.access_road !== undefined)
+            physical.accessRoad = adminData.access_road === 'Yes' || adminData.access_road === true;
+          if (adminData.parcel_status)
+            identification.parcelStatus = this.resolveEnum(
+              adminData.parcel_status,
+              ParcelStatus,
+              current.identification.parcelStatus,
+            );
+          // GND-derived read-only administrative hierarchy
+          identification.gndName = adminData.gnd ?? identification.gndName;
+          identification.dsd = adminData.dsd ?? identification.dsd;
+          identification.district = adminData.dist ?? identification.district;
+          identification.province = adminData.pd ?? identification.province;
+          identification.electoralDiv = adminData.eletorate ?? identification.electoralDiv;
 
-        // Merge land overview data
-        if (overviewData.area != null) spatial.area = Number(overviewData.area);
-        if (overviewData.ext_landuse_type)
-          identification.landUse = this.resolveEnum(
-            overviewData.ext_landuse_type,
-            LandUse,
-            current.identification.landUse,
-          );
+          // Merge land overview data (area/perimeter/crs/boundary_type from la_ls_land_unit)
+          if (overviewData.area != null) spatial.area = Number(overviewData.area);
+          if (overviewData.perimeter != null) spatial.perimeter = Number(overviewData.perimeter);
+          if (overviewData.boundary_type)
+            spatial.boundaryType = this.resolveEnum(
+              overviewData.boundary_type,
+              BoundaryType,
+              current.spatial.boundaryType,
+            );
+          if (overviewData.crs) spatial.crs = overviewData.crs;
+          if (overviewData.dimension_2d_3d) spatial.geometryType = overviewData.dimension_2d_3d;
+          if (overviewData.ext_landuse_type)
+            identification.landUse = this.resolveEnum(
+              overviewData.ext_landuse_type,
+              LandUse,
+              current.identification.landUse,
+            );
 
-        // Merge tax/assessment data
-        if (taxData.assessment_annual_value != null)
-          valuation.landValue = Number(taxData.assessment_annual_value);
-        if (taxData.tax_annual_value != null) valuation.annualTax = Number(taxData.tax_annual_value);
-        if (taxData.date_of_valuation) valuation.lastAssessmentDate = taxData.date_of_valuation;
-        if (taxData.market_value != null) valuation.marketValue = Number(taxData.market_value);
-        if (taxData.tax_status) valuation.taxStatus = taxData.tax_status;
+          // Merge tax/assessment data
+          if (taxData.land_value != null) valuation.landValue = Number(taxData.land_value);
+          if (taxData.tax_annual_value != null)
+            valuation.annualTax = Number(taxData.tax_annual_value);
+          if (taxData.date_of_valuation) valuation.lastAssessmentDate = taxData.date_of_valuation;
+          if (taxData.market_value != null) valuation.marketValue = Number(taxData.market_value);
+          if (taxData.tax_status) valuation.taxStatus = taxData.tax_status;
 
-        // Merge physical/environmental data
-        if (physicalData) {
-          if (physicalData.elevation != null) physical.elevation = Number(physicalData.elevation);
-          if (physicalData.slope != null) physical.slope = Number(physicalData.slope);
-          if (physicalData.soil_type) physical.soilType = physicalData.soil_type as SoilType;
-          if (physicalData.flood_zone != null) physical.floodZone = Boolean(physicalData.flood_zone);
-          if (physicalData.vegetation_cover) physical.vegetationCover = physicalData.vegetation_cover;
-        }
-
-        // Merge utility network data (LA_LS_Utinet_LU_Model)
-        if (utilData) {
-          if (utilData.water_supply != null) physical.waterSupply = utilData.water_supply || '';
-          if (utilData.electricity != null) physical.electricity = utilData.electricity || '';
-          if (utilData.drainage_system != null) physical.drainageSystem = utilData.drainage_system || '';
-          if (utilData.sanitation_gully != null) physical.sanitationGully = utilData.sanitation_gully || '';
-          if (utilData.garbage_disposal != null) physical.garbageDisposal = utilData.garbage_disposal || '';
-        }
-
-        // Merge RRR data
-        this.fetchedRRRBaUnitIds.clear();
-        this.fetchedRRRMap.clear();
-        const rrrEntries: RRREntry[] = [];
-        const records = rrrData?.records || [];
-        for (const record of records) {
-          this.fetchedRRRBaUnitIds.add(record.ba_unit_id);
-          for (const rrr of record.rrrs || []) {
-            const entryId = `BU-${record.ba_unit_id}`;
-            if (rrr.rrr_id) this.fetchedRRRMap.set(entryId, rrr.rrr_id);
-            rrrEntries.push({
-              rrrId: entryId,
-              type: (rrr.share_type as RightType) || RightType.OWN_FREE,
-              holder: rrr.party_name || '',
-              holderId: String(rrr.pid),
-              holderType: undefined,
-              share: rrr.share,
-              validFrom: rrr.time_begin || '',
-              validTo: rrr.time_end || '',
-              documentRef: record.sl_ba_unit_name || '',
-              documents: [],
-              restrictions: [],
-              responsibilities: [],
-            });
+          // Merge physical/environmental data
+          if (physicalData) {
+            if (physicalData.elevation != null) physical.elevation = Number(physicalData.elevation);
+            if (physicalData.slope != null) physical.slope = Number(physicalData.slope);
+            if (physicalData.soil_type) physical.soilType = physicalData.soil_type as SoilType;
+            if (physicalData.flood_zone != null)
+              physical.floodZone = Boolean(physicalData.flood_zone);
+            if (physicalData.vegetation_cover)
+              physical.vegetationCover = physicalData.vegetation_cover;
           }
-        }
 
-        // Merge zoning data
-        const zoning = { ...current.zoning };
-        if (zoningData) {
-          if (zoningData.zoning_category)
-            zoning.zoningCategory = zoningData.zoning_category as ZoningCategory;
-          if (zoningData.max_building_height != null)
-            zoning.maxBuildingHeight = Number(zoningData.max_building_height);
-          if (zoningData.max_coverage != null) zoning.maxCoverage = Number(zoningData.max_coverage);
-          if (zoningData.max_far != null) zoning.maxFAR = Number(zoningData.max_far);
-          if (zoningData.setback_front != null) zoning.setbackFront = Number(zoningData.setback_front);
-          if (zoningData.setback_rear != null) zoning.setbackRear = Number(zoningData.setback_rear);
-          if (zoningData.setback_side != null) zoning.setbackSide = Number(zoningData.setback_side);
-          if (zoningData.special_overlay) zoning.specialOverlay = zoningData.special_overlay;
-        }
+          // Merge utility network data (LA_LS_Utinet_LU_Model)
+          if (utilData) {
+            if (utilData.water_supply != null) physical.waterSupply = utilData.water_supply || '';
+            if (utilData.electricity != null) physical.electricity = utilData.electricity || '';
+            if (utilData.drainage_system != null)
+              physical.drainageSystem = utilData.drainage_system || '';
+            if (utilData.sanitation_gully != null)
+              physical.sanitationGully = utilData.sanitation_gully || '';
+            if (utilData.garbage_disposal != null)
+              physical.garbageDisposal = utilData.garbage_disposal || '';
+          }
 
-        this.currentLandParcelInfo.set({
-          ...current,
-          identification,
-          physical,
-          spatial,
-          valuation,
-          rrr: { entries: rrrEntries },
-          zoning,
-        });
-
-        // Second phase: fetch restrictions & responsibilities per RRR entry
-        const rrr_ids = Array.from(this.fetchedRRRMap.entries()); // [entryId, rrr_id][]
-        if (rrr_ids.length > 0) {
-          const restrictionReqs = rrr_ids.map(([, rid]) =>
-            this.apiService.getRRRRestrictions(rid).pipe(catchError(() => of([]))),
-          );
-          const responsibilityReqs = rrr_ids.map(([, rid]) =>
-            this.apiService.getRRRResponsibilities(rid).pipe(catchError(() => of([]))),
-          );
-          forkJoin([...restrictionReqs, ...responsibilityReqs])
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((results: any[]) => {
-              const half = rrr_ids.length;
-              const updatedEntries = [...rrrEntries];
-              rrr_ids.forEach(([entryId], idx) => {
-                const entry = updatedEntries.find((e) => e.rrrId === entryId);
-                if (!entry) return;
-                entry.restrictions = (results[idx] as any[]).map((r: any) => ({
-                  type: r.rrr_restriction_type as RestrictionType,
-                  description: r.description || '',
-                  validFrom: r.time_begin || '',
-                  validTo: r.time_end || '',
-                }));
-                entry.responsibilities = (results[half + idx] as any[]).map((r: any) => ({
-                  type: r.rrr_responsibility_type as ResponsibilityType,
-                  description: r.description || '',
-                  validFrom: r.time_begin || '',
-                  validTo: r.time_end || '',
-                }));
+          // Merge RRR data
+          this.fetchedRRRBaUnitIds.clear();
+          this.fetchedRRRMap.clear();
+          const rrrEntries: RRREntry[] = [];
+          const records = rrrData?.records || [];
+          for (const record of records) {
+            this.fetchedRRRBaUnitIds.add(record.ba_unit_id);
+            for (const rrr of record.rrrs || []) {
+              const entryId = `BU-${record.ba_unit_id}`;
+              if (rrr.rrr_id) this.fetchedRRRMap.set(entryId, rrr.rrr_id);
+              rrrEntries.push({
+                rrrId: entryId,
+                type: (rrr.share_type as RightType) || RightType.OWN_FREE,
+                holder: rrr.party_name || '',
+                holderId: String(rrr.pid),
+                holderType: undefined,
+                share: rrr.share,
+                validFrom: rrr.time_begin || '',
+                validTo: rrr.time_end || '',
+                documentRef: record.sl_ba_unit_name || '',
+                documents: [],
+                restrictions: [],
+                responsibilities: [],
               });
-              const current2 = this.currentLandParcelInfo();
-              if (current2) {
-                this.currentLandParcelInfo.set({
-                  ...current2,
-                  rrr: { entries: updatedEntries },
+            }
+          }
+
+          // Merge zoning data
+          const zoning = { ...current.zoning };
+          if (zoningData) {
+            if (zoningData.zoning_category)
+              zoning.zoningCategory = zoningData.zoning_category as ZoningCategory;
+            if (zoningData.max_building_height != null)
+              zoning.maxBuildingHeight = Number(zoningData.max_building_height);
+            if (zoningData.max_coverage != null)
+              zoning.maxCoverage = Number(zoningData.max_coverage);
+            if (zoningData.max_far != null) zoning.maxFAR = Number(zoningData.max_far);
+            if (zoningData.setback_front != null)
+              zoning.setbackFront = Number(zoningData.setback_front);
+            if (zoningData.setback_rear != null)
+              zoning.setbackRear = Number(zoningData.setback_rear);
+            if (zoningData.setback_side != null)
+              zoning.setbackSide = Number(zoningData.setback_side);
+            if (zoningData.special_overlay) zoning.specialOverlay = zoningData.special_overlay;
+          }
+
+          // Merge metadata (la_spatial_source)
+          const metadata = { ...current.metadata };
+          if (metaData) {
+            if (metaData.spatial_source_type) metadata.surveyMethod = metaData.spatial_source_type as SurveyMethod;
+            if (metaData.source_id) metadata.sourceDocument = metaData.source_id;
+            if (metaData.surveyor_name) metadata.responsibleParty = metaData.surveyor_name;
+            if (metaData.date_accept) metadata.lastUpdated = metaData.date_accept;
+            if (metaData.description) metadata.accuracyLevel = metaData.description as AccuracyLevel;
+          }
+
+          this.currentLandParcelInfo.set({
+            ...current,
+            identification,
+            physical,
+            spatial,
+            valuation,
+            rrr: { entries: rrrEntries },
+            zoning,
+            metadata,
+          });
+
+          // Second phase: fetch restrictions & responsibilities per RRR entry
+          const rrr_ids = Array.from(this.fetchedRRRMap.entries()); // [entryId, rrr_id][]
+          if (rrr_ids.length > 0) {
+            const restrictionReqs = rrr_ids.map(([, rid]) =>
+              this.apiService.getRRRRestrictions(rid).pipe(catchError(() => of([]))),
+            );
+            const responsibilityReqs = rrr_ids.map(([, rid]) =>
+              this.apiService.getRRRResponsibilities(rid).pipe(catchError(() => of([]))),
+            );
+            forkJoin([...restrictionReqs, ...responsibilityReqs])
+              .pipe(takeUntilDestroyed(this.destroyRef))
+              .subscribe((results: any[]) => {
+                const half = rrr_ids.length;
+                const updatedEntries = [...rrrEntries];
+                rrr_ids.forEach(([entryId], idx) => {
+                  const entry = updatedEntries.find((e) => e.rrrId === entryId);
+                  if (!entry) return;
+                  entry.restrictions = (results[idx] as any[]).map((r: any) => ({
+                    type: r.rrr_restriction_type as RestrictionType,
+                    description: r.description || '',
+                    validFrom: r.time_begin || '',
+                    validTo: r.time_end || '',
+                  }));
+                  entry.responsibilities = (results[half + idx] as any[]).map((r: any) => ({
+                    type: r.rrr_responsibility_type as ResponsibilityType,
+                    description: r.description || '',
+                    validFrom: r.time_begin || '',
+                    validTo: r.time_end || '',
+                  }));
                 });
-              }
-            });
-        }
-      });
+                const current2 = this.currentLandParcelInfo();
+                if (current2) {
+                  this.currentLandParcelInfo.set({
+                    ...current2,
+                    rrr: { entries: updatedEntries },
+                  });
+                }
+              });
+          }
+        },
+      );
   }
 
   private fetchAndMergeBuildingData(su_id: string | number): void {
@@ -742,141 +796,145 @@ export class SidePanelComponent implements OnDestroy {
       this.apiService.getBuildingOverViewInfo(su_id).pipe(catchError(() => of({}))),
       this.apiService.getBuildItInfo(su_id).pipe(catchError(() => of({}))),
     ])
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(([adminData, taxData, rrrData, overviewData, utilData]: [any, any, any, any, any]) => {
-        const current = this.currentBuildingInfo();
-        if (!current) return;
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(
+        ([adminData, taxData, rrrData, overviewData, utilData]: [any, any, any, any, any]) => {
+          const current = this.currentBuildingInfo();
+          if (!current) return;
 
-        const summary = { ...current.summary };
-        const physicalAttributes = { ...current.physicalAttributes };
-        const taxValuation = {
-          ...(current.taxValuation ?? {
-            assessedValue: 0,
-            marketValue: 0,
-            annualTax: 0,
-            lastAssessmentDate: '',
-            taxStatus: 'pending' as const,
-          }),
-        };
+          const summary = { ...current.summary };
+          const physicalAttributes = { ...current.physicalAttributes };
+          const taxValuation = {
+            ...(current.taxValuation ?? {
+              assessedValue: 0,
+              marketValue: 0,
+              annualTax: 0,
+              lastAssessmentDate: '',
+              taxStatus: 'pending' as const,
+            }),
+          };
 
-        // Merge admin data
-        if (adminData.building_name) summary.address = adminData.building_name;
-        if (adminData.registration_date) summary.registrationDate = adminData.registration_date;
-        if (adminData.no_floors != null) summary.floorCount = Number(adminData.no_floors);
-        if (adminData.postal_ad_build) summary.postalAddress = adminData.postal_ad_build;
-        if (adminData.house_hold_no) summary.householdNo = adminData.house_hold_no;
-        if (adminData.bld_property_type) summary.propertyType = adminData.bld_property_type;
-        if (adminData.access_road !== undefined)
-          summary.accessRoad = adminData.access_road === 'Yes' || adminData.access_road === true;
-        if (adminData.construction_year != null)
-          physicalAttributes.constructionYear = Number(adminData.construction_year);
-        if (adminData.structure_type)
-          physicalAttributes.structureType = adminData.structure_type as StructureType;
-        if (adminData.condition) physicalAttributes.condition = adminData.condition as Condition;
-        if (adminData.wall_type) physicalAttributes.wallType = adminData.wall_type;
+          // Merge admin data
+          if (adminData.building_name) summary.address = adminData.building_name;
+          if (adminData.registration_date) summary.registrationDate = adminData.registration_date;
+          if (adminData.no_floors != null) summary.floorCount = Number(adminData.no_floors);
+          if (adminData.postal_ad_build) summary.postalAddress = adminData.postal_ad_build;
+          if (adminData.house_hold_no) summary.householdNo = adminData.house_hold_no;
+          if (adminData.bld_property_type) summary.propertyType = adminData.bld_property_type;
+          if (adminData.access_road !== undefined)
+            summary.accessRoad = adminData.access_road === 'Yes' || adminData.access_road === true;
+          if (adminData.construction_year != null)
+            physicalAttributes.constructionYear = Number(adminData.construction_year);
+          if (adminData.structure_type)
+            physicalAttributes.structureType = adminData.structure_type as StructureType;
+          if (adminData.condition) physicalAttributes.condition = adminData.condition as Condition;
+          if (adminData.wall_type) physicalAttributes.wallType = adminData.wall_type;
 
-        // Merge overview data (roof type, gross area)
-        if (overviewData.roof_type) physicalAttributes.roofType = overviewData.roof_type as RoofType;
-        if (overviewData.area != null) physicalAttributes.grossArea = Number(overviewData.area);
+          // Merge overview data (roof type, gross area)
+          if (overviewData.roof_type)
+            physicalAttributes.roofType = overviewData.roof_type as RoofType;
+          if (overviewData.area != null) physicalAttributes.grossArea = Number(overviewData.area);
 
-        // Merge tax/assessment data
-        if (taxData.assessment_annual_value != null)
-          taxValuation.assessedValue = Number(taxData.assessment_annual_value);
-        if (taxData.tax_annual_value != null)
-          taxValuation.annualTax = Number(taxData.tax_annual_value);
-        if (taxData.date_of_valuation) taxValuation.lastAssessmentDate = taxData.date_of_valuation;
-        if (taxData.market_value != null) taxValuation.marketValue = Number(taxData.market_value);
-        if (taxData.tax_status) taxValuation.taxStatus = taxData.tax_status;
+          // Merge tax/assessment data
+          if (taxData.assessment_annual_value != null)
+            taxValuation.assessedValue = Number(taxData.assessment_annual_value);
+          if (taxData.tax_annual_value != null)
+            taxValuation.annualTax = Number(taxData.tax_annual_value);
+          if (taxData.date_of_valuation)
+            taxValuation.lastAssessmentDate = taxData.date_of_valuation;
+          if (taxData.market_value != null) taxValuation.marketValue = Number(taxData.market_value);
+          if (taxData.tax_status) taxValuation.taxStatus = taxData.tax_status;
 
-        // Merge RRR data
-        this.fetchedRRRBaUnitIds.clear();
-        this.fetchedRRRMap.clear();
-        const rrrEntries: RRREntry[] = [];
-        const records = rrrData?.records || [];
-        for (const record of records) {
-          this.fetchedRRRBaUnitIds.add(record.ba_unit_id);
-          for (const rrr of record.rrrs || []) {
-            const entryId = `BU-${record.ba_unit_id}`;
-            if (rrr.rrr_id) this.fetchedRRRMap.set(entryId, rrr.rrr_id);
-            rrrEntries.push({
-              rrrId: entryId,
-              type: (rrr.share_type as RightType) || RightType.OWN_FREE,
-              holder: rrr.party_name || '',
-              holderId: String(rrr.pid),
-              holderType: undefined,
-              share: rrr.share,
-              validFrom: rrr.time_begin || '',
-              validTo: rrr.time_end || '',
-              documentRef: record.sl_ba_unit_name || '',
-              documents: [],
-              restrictions: [],
-              responsibilities: [],
-            });
-          }
-        }
-
-        // Merge building utility data (LA_LS_Utinet_BU_Model)
-        const utilities: UtilityInfo = {
-          electricity: utilData?.elec || '',
-          telephone: utilData?.tele || '',
-          internet: utilData?.internet || '',
-          waterDrink: utilData?.water_drink || '',
-          water: utilData?.water || '',
-          drainage: utilData?.drainage || '',
-          sanitationSewer: utilData?.sani_sewer || '',
-          sanitationGully: utilData?.sani_gully || '',
-          garbageDisposal: utilData?.garbage_dispose || '',
-        };
-
-        this.currentBuildingInfo.set({
-          ...current,
-          summary,
-          physicalAttributes,
-          taxValuation,
-          utilities,
-          rrr: { entries: rrrEntries },
-        });
-
-        // Second phase: fetch restrictions & responsibilities per RRR entry
-        const rrr_ids = Array.from(this.fetchedRRRMap.entries());
-        if (rrr_ids.length > 0) {
-          const restrictionReqs = rrr_ids.map(([, rid]) =>
-            this.apiService.getRRRRestrictions(rid).pipe(catchError(() => of([]))),
-          );
-          const responsibilityReqs = rrr_ids.map(([, rid]) =>
-            this.apiService.getRRRResponsibilities(rid).pipe(catchError(() => of([]))),
-          );
-          forkJoin([...restrictionReqs, ...responsibilityReqs])
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((results: any[]) => {
-              const half = rrr_ids.length;
-              const updatedEntries = [...rrrEntries];
-              rrr_ids.forEach(([entryId], idx) => {
-                const entry = updatedEntries.find((e) => e.rrrId === entryId);
-                if (!entry) return;
-                entry.restrictions = (results[idx] as any[]).map((r: any) => ({
-                  type: r.rrr_restriction_type as RestrictionType,
-                  description: r.description || '',
-                  validFrom: r.time_begin || '',
-                  validTo: r.time_end || '',
-                }));
-                entry.responsibilities = (results[half + idx] as any[]).map((r: any) => ({
-                  type: r.rrr_responsibility_type as ResponsibilityType,
-                  description: r.description || '',
-                  validFrom: r.time_begin || '',
-                  validTo: r.time_end || '',
-                }));
+          // Merge RRR data
+          this.fetchedRRRBaUnitIds.clear();
+          this.fetchedRRRMap.clear();
+          const rrrEntries: RRREntry[] = [];
+          const records = rrrData?.records || [];
+          for (const record of records) {
+            this.fetchedRRRBaUnitIds.add(record.ba_unit_id);
+            for (const rrr of record.rrrs || []) {
+              const entryId = `BU-${record.ba_unit_id}`;
+              if (rrr.rrr_id) this.fetchedRRRMap.set(entryId, rrr.rrr_id);
+              rrrEntries.push({
+                rrrId: entryId,
+                type: (rrr.share_type as RightType) || RightType.OWN_FREE,
+                holder: rrr.party_name || '',
+                holderId: String(rrr.pid),
+                holderType: undefined,
+                share: rrr.share,
+                validFrom: rrr.time_begin || '',
+                validTo: rrr.time_end || '',
+                documentRef: record.sl_ba_unit_name || '',
+                documents: [],
+                restrictions: [],
+                responsibilities: [],
               });
-              const current2 = this.currentBuildingInfo();
-              if (current2) {
-                this.currentBuildingInfo.set({
-                  ...current2,
-                  rrr: { entries: updatedEntries },
+            }
+          }
+
+          // Merge building utility data (LA_LS_Utinet_BU_Model)
+          const utilities: UtilityInfo = {
+            electricity: utilData?.elec || '',
+            telephone: utilData?.tele || '',
+            internet: utilData?.internet || '',
+            waterDrink: utilData?.water_drink || '',
+            water: utilData?.water || '',
+            drainage: utilData?.drainage || '',
+            sanitationSewer: utilData?.sani_sewer || '',
+            sanitationGully: utilData?.sani_gully || '',
+            garbageDisposal: utilData?.garbage_dispose || '',
+          };
+
+          this.currentBuildingInfo.set({
+            ...current,
+            summary,
+            physicalAttributes,
+            taxValuation,
+            utilities,
+            rrr: { entries: rrrEntries },
+          });
+
+          // Second phase: fetch restrictions & responsibilities per RRR entry
+          const rrr_ids = Array.from(this.fetchedRRRMap.entries());
+          if (rrr_ids.length > 0) {
+            const restrictionReqs = rrr_ids.map(([, rid]) =>
+              this.apiService.getRRRRestrictions(rid).pipe(catchError(() => of([]))),
+            );
+            const responsibilityReqs = rrr_ids.map(([, rid]) =>
+              this.apiService.getRRRResponsibilities(rid).pipe(catchError(() => of([]))),
+            );
+            forkJoin([...restrictionReqs, ...responsibilityReqs])
+              .pipe(takeUntilDestroyed(this.destroyRef))
+              .subscribe((results: any[]) => {
+                const half = rrr_ids.length;
+                const updatedEntries = [...rrrEntries];
+                rrr_ids.forEach(([entryId], idx) => {
+                  const entry = updatedEntries.find((e) => e.rrrId === entryId);
+                  if (!entry) return;
+                  entry.restrictions = (results[idx] as any[]).map((r: any) => ({
+                    type: r.rrr_restriction_type as RestrictionType,
+                    description: r.description || '',
+                    validFrom: r.time_begin || '',
+                    validTo: r.time_end || '',
+                  }));
+                  entry.responsibilities = (results[half + idx] as any[]).map((r: any) => ({
+                    type: r.rrr_responsibility_type as ResponsibilityType,
+                    description: r.description || '',
+                    validFrom: r.time_begin || '',
+                    validTo: r.time_end || '',
+                  }));
                 });
-              }
-            });
-        }
-      });
+                const current2 = this.currentBuildingInfo();
+                if (current2) {
+                  this.currentBuildingInfo.set({
+                    ...current2,
+                    rrr: { entries: updatedEntries },
+                  });
+                }
+              });
+          }
+        },
+      );
   }
 
   onSaveBuildingInfo(info: BuildingInfo): void {
@@ -918,7 +976,7 @@ export class SidePanelComponent implements OnDestroy {
       this.apiService.updateTaxAndAssessmentInfo(su_id, taxPayload, 'building'),
       this.apiService.updateBuildOverviewInfo(su_id, overviewPayload, 'building'),
     ])
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.notificationService.showSuccess('Building details saved successfully.');
@@ -945,7 +1003,7 @@ export class SidePanelComponent implements OnDestroy {
       };
       this.apiService
         .updateBuildingITUtilInfo(su_id, bldUtilPayload, 'building')
-        .pipe(takeUntil(this.destroy$))
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe();
     }
 
@@ -960,10 +1018,7 @@ export class SidePanelComponent implements OnDestroy {
     );
     for (const baUnitId of this.fetchedRRRBaUnitIds) {
       if (!currentBaUnitIds.has(baUnitId)) {
-        this.apiService
-          .deleteRrr(String(baUnitId))
-          .pipe(takeUntil(this.destroy$))
-          .subscribe();
+        this.apiService.deleteRrr(String(baUnitId)).pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
       }
     }
 
@@ -992,7 +1047,14 @@ export class SidePanelComponent implements OnDestroy {
       );
       this.apiService
         .postAdminSource(fd)
-        .pipe(takeUntil(this.destroy$))
+        .pipe(
+          switchMap((res: any) => {
+            const rrr_id = res?.created_rrr_ids?.[0];
+            if (rrr_id) this.syncRRRSubRecords(rrr_id, entry);
+            return of(null);
+          }),
+          takeUntilDestroyed(this.destroyRef),
+        )
         .subscribe();
     }
 
@@ -1000,60 +1062,7 @@ export class SidePanelComponent implements OnDestroy {
     for (const entry of currentEntries.filter((e) => e.rrrId.startsWith('BU-'))) {
       const rrr_id = this.fetchedRRRMap.get(entry.rrrId);
       if (!rrr_id) continue;
-
-      this.apiService
-        .getRRRRestrictions(rrr_id)
-        .pipe(
-          switchMap((existing: any) => {
-            const delObs = (existing as any[]).map((r: any) =>
-              this.apiService.deleteRRRRestriction(rrr_id, r.id).pipe(catchError(() => of(null))),
-            );
-            return delObs.length > 0 ? forkJoin(delObs) : of([]);
-          }),
-          switchMap(() => {
-            const createObs = entry.restrictions.map((r) =>
-              this.apiService
-                .postRRRRestriction(rrr_id, {
-                  rrr_restriction_type: r.type,
-                  description: r.description,
-                  time_begin: r.validFrom || null,
-                  time_end: r.validTo || null,
-                })
-                .pipe(catchError(() => of(null))),
-            );
-            return createObs.length > 0 ? forkJoin(createObs) : of([]);
-          }),
-          takeUntil(this.destroy$),
-        )
-        .subscribe();
-
-      this.apiService
-        .getRRRResponsibilities(rrr_id)
-        .pipe(
-          switchMap((existing: any) => {
-            const delObs = (existing as any[]).map((r: any) =>
-              this.apiService
-                .deleteRRRResponsibility(rrr_id, r.id)
-                .pipe(catchError(() => of(null))),
-            );
-            return delObs.length > 0 ? forkJoin(delObs) : of([]);
-          }),
-          switchMap(() => {
-            const createObs = entry.responsibilities.map((r) =>
-              this.apiService
-                .postRRRResponsibility(rrr_id, {
-                  rrr_responsibility_type: r.type,
-                  description: r.description,
-                  time_begin: r.validFrom || null,
-                  time_end: r.validTo || null,
-                })
-                .pipe(catchError(() => of(null))),
-            );
-            return createObs.length > 0 ? forkJoin(createObs) : of([]);
-          }),
-          takeUntil(this.destroy$),
-        )
-        .subscribe();
+      this.syncRRRSubRecords(rrr_id, entry);
     }
   }
 
@@ -1071,18 +1080,22 @@ export class SidePanelComponent implements OnDestroy {
       land_name: info.identification.cadastralRef,
       access_road: info.physical.accessRoad ? 'Yes' : 'No',
       registration_date: info.identification.registrationDate || null,
+      parcel_status: info.identification.parcelStatus,
     };
     console.log('[Save] adminPayload being sent:', adminPayload);
 
     const overviewPayload = {
       area: info.spatial.area,
+      perimeter: info.spatial.perimeter,
       ext_landuse_type: info.identification.landUse,
       reference_coordinate: `${info.spatial.centroidLon},${info.spatial.centroidLat}`,
       dimension_2d_3d: info.spatial.geometryType?.includes('3') ? '3D' : '2D',
+      boundary_type: info.spatial.boundaryType,
+      crs: info.spatial.crs,
     };
 
     const taxPayload = {
-      assessment_annual_value: info.valuation.landValue,
+      land_value: info.valuation.landValue,
       tax_annual_value: info.valuation.annualTax,
       date_of_valuation: info.valuation.lastAssessmentDate,
       market_value: info.valuation.marketValue,
@@ -1115,7 +1128,7 @@ export class SidePanelComponent implements OnDestroy {
       this.apiService.updateZoningInfo(su_id, zoningPayload),
       this.apiService.updatePhysicalEnvInfo(su_id, physicalEnvPayload),
     ])
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
           this.notificationService.showSuccess('Parcel details saved successfully.');
@@ -1138,7 +1151,20 @@ export class SidePanelComponent implements OnDestroy {
     };
     this.apiService
       .updateITUtilInfo(su_id, utilPayload, 'land')
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe();
+
+    // Metadata save: fire-and-forget (la_spatial_source)
+    const metadataPayload = {
+      spatial_source_type: info.metadata.surveyMethod,
+      source_id: info.metadata.sourceDocument,
+      description: info.metadata.accuracyLevel,
+      date_accept: info.metadata.lastUpdated?.split('T')[0] || null,
+      surveyor_name: info.metadata.responsibleParty,
+    };
+    this.apiService
+      .updateLandMetadata(su_id, metadataPayload)
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe();
 
     // RRR sync: fire-and-forget (independent of the main forkJoin)
@@ -1152,10 +1178,7 @@ export class SidePanelComponent implements OnDestroy {
     );
     for (const baUnitId of this.fetchedRRRBaUnitIds) {
       if (!currentBaUnitIds.has(baUnitId)) {
-        this.apiService
-          .deleteRrr(String(baUnitId))
-          .pipe(takeUntil(this.destroy$))
-          .subscribe();
+        this.apiService.deleteRrr(String(baUnitId)).pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
       }
     }
 
@@ -1184,7 +1207,14 @@ export class SidePanelComponent implements OnDestroy {
       );
       this.apiService
         .postAdminSource(fd)
-        .pipe(takeUntil(this.destroy$))
+        .pipe(
+          switchMap((res: any) => {
+            const rrr_id = res?.created_rrr_ids?.[0];
+            if (rrr_id) this.syncRRRSubRecords(rrr_id, entry);
+            return of(null);
+          }),
+          takeUntilDestroyed(this.destroyRef),
+        )
         .subscribe();
     }
 
@@ -1192,63 +1222,65 @@ export class SidePanelComponent implements OnDestroy {
     for (const entry of currentEntries.filter((e) => e.rrrId.startsWith('BU-'))) {
       const rrr_id = this.fetchedRRRMap.get(entry.rrrId);
       if (!rrr_id) continue;
-
-      // Restrictions: delete all existing, then re-create from current entry
-      this.apiService
-        .getRRRRestrictions(rrr_id)
-        .pipe(
-          switchMap((existing: any) => {
-            const delObs = (existing as any[]).map((r: any) =>
-              this.apiService.deleteRRRRestriction(rrr_id, r.id).pipe(catchError(() => of(null))),
-            );
-            return delObs.length > 0 ? forkJoin(delObs) : of([]);
-          }),
-          switchMap(() => {
-            const createObs = entry.restrictions.map((r) =>
-              this.apiService
-                .postRRRRestriction(rrr_id, {
-                  rrr_restriction_type: r.type,
-                  description: r.description,
-                  time_begin: r.validFrom || null,
-                  time_end: r.validTo || null,
-                })
-                .pipe(catchError(() => of(null))),
-            );
-            return createObs.length > 0 ? forkJoin(createObs) : of([]);
-          }),
-          takeUntil(this.destroy$),
-        )
-        .subscribe();
-
-      // Responsibilities: same replace-all strategy
-      this.apiService
-        .getRRRResponsibilities(rrr_id)
-        .pipe(
-          switchMap((existing: any) => {
-            const delObs = (existing as any[]).map((r: any) =>
-              this.apiService
-                .deleteRRRResponsibility(rrr_id, r.id)
-                .pipe(catchError(() => of(null))),
-            );
-            return delObs.length > 0 ? forkJoin(delObs) : of([]);
-          }),
-          switchMap(() => {
-            const createObs = entry.responsibilities.map((r) =>
-              this.apiService
-                .postRRRResponsibility(rrr_id, {
-                  rrr_responsibility_type: r.type,
-                  description: r.description,
-                  time_begin: r.validFrom || null,
-                  time_end: r.validTo || null,
-                })
-                .pipe(catchError(() => of(null))),
-            );
-            return createObs.length > 0 ? forkJoin(createObs) : of([]);
-          }),
-          takeUntil(this.destroy$),
-        )
-        .subscribe();
+      this.syncRRRSubRecords(rrr_id, entry);
     }
+  }
+
+  // ─── RRR Sub-record Sync Helper ────────────────────────
+  private syncRRRSubRecords(rrr_id: number, entry: RRREntry): void {
+    this.apiService
+      .getRRRRestrictions(rrr_id)
+      .pipe(
+        switchMap((existing: any) => {
+          const delObs = (existing as any[]).map((r: any) =>
+            this.apiService.deleteRRRRestriction(rrr_id, r.id).pipe(catchError(() => of(null))),
+          );
+          return delObs.length > 0 ? forkJoin(delObs) : of([]);
+        }),
+        switchMap(() => {
+          const createObs = entry.restrictions.map((r) =>
+            this.apiService
+              .postRRRRestriction(rrr_id, {
+                rrr_restriction_type: r.type,
+                description: r.description,
+                time_begin: r.validFrom || null,
+                time_end: r.validTo || null,
+              })
+              .pipe(catchError(() => of(null))),
+          );
+          return createObs.length > 0 ? forkJoin(createObs) : of([]);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
+
+    this.apiService
+      .getRRRResponsibilities(rrr_id)
+      .pipe(
+        switchMap((existing: any) => {
+          const delObs = (existing as any[]).map((r: any) =>
+            this.apiService
+              .deleteRRRResponsibility(rrr_id, r.id)
+              .pipe(catchError(() => of(null))),
+          );
+          return delObs.length > 0 ? forkJoin(delObs) : of([]);
+        }),
+        switchMap(() => {
+          const createObs = entry.responsibilities.map((r) =>
+            this.apiService
+              .postRRRResponsibility(rrr_id, {
+                rrr_responsibility_type: r.type,
+                description: r.description,
+                time_begin: r.validFrom || null,
+                time_end: r.validTo || null,
+              })
+              .pipe(catchError(() => of(null))),
+          );
+          return createObs.length > 0 ? forkJoin(createObs) : of([]);
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe();
   }
 
   // ─── Building Panel Change Handlers ────────────────────
@@ -1312,12 +1344,8 @@ export class SidePanelComponent implements OnDestroy {
     this.dialog.open(GenerateReportComponent, {
       data,
       width: '480px',
-      panelClass: 'report-dialog',
+      panelClass: 'gr-launcher-panel',
     });
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
 }

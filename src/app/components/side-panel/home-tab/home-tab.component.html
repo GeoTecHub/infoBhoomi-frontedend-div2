@@ -1,16 +1,15 @@
 <div class="side-panel-space-1">
-  <div
-    *ngIf="show_admin_panel"
-    matRipple
-    class="side-panel-button highlight-btn"
-    (click)="openAdminPanelDialog()"
-  >
-    <mat-icon class="icon-highlight">admin_panel_settings</mat-icon>
-    <div class="button-label">
-      <ng-container *ngIf="user_type === 'super_admin'"> Super </ng-container>
-      Admin Panel
+  @if (show_admin_panel) {
+    <div matRipple class="side-panel-button highlight-btn" (click)="openAdminPanelDialog()">
+      <mat-icon class="icon-highlight">admin_panel_settings</mat-icon>
+      <div class="button-label">
+        @if (user_type === 'super_admin') {
+          Super
+        }
+        Admin Panel
+      </div>
     </div>
-  </div>
+  }
 
   <div matRipple class="side-panel-button" (click)="openImportDialog()">
     <mat-icon>download</mat-icon>

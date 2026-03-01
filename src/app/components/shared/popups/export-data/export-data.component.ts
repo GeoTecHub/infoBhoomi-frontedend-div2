@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms'; // For ngModel
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -7,8 +7,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { firstValueFrom, Subject, Subscription } from 'rxjs';
-import { filter, take, takeUntil } from 'rxjs/operators';
+import {firstValueFrom, Subscription } from 'rxjs';
+import {filter, take } from 'rxjs/operators';
 
 import OLFeature from 'ol/Feature';
 import OLGeoJSON from 'ol/format/GeoJSON';
@@ -34,7 +34,6 @@ type ExportFormat = 'geojson' | 'kml' | 'shp' | null;
   selector: 'app-export-data',
   standalone: true,
   imports: [
-    CommonModule,
     FormsModule,
     MatDialogModule,
     MatFormFieldModule,
@@ -48,6 +47,7 @@ type ExportFormat = 'geojson' | 'kml' | 'shp' | null;
   styleUrls: ['./export-data.component.css'],
 })
 export class ExportDataComponent implements OnInit, OnDestroy {
+  private destroyRef = inject(DestroyRef);
   // --- Component State ---
   exportType: ExportType = null;
   exportFormat: ExportFormat = 'kml';
@@ -64,7 +64,6 @@ export class ExportDataComponent implements OnInit, OnDestroy {
 
   private selectionSubscription: Subscription | null = null;
   private escapeListener: ((event: KeyboardEvent) => void) | null = null;
-  private destroy$ = new Subject<void>();
 
   private olGeoJsonFormat = new OLGeoJSON();
   private olKmlFormat = new KML({ extractStyles: true, showPointNames: true });
@@ -85,8 +84,6 @@ export class ExportDataComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
     // Ensure cleanup happens if the dialog is closed while selecting.
     this.stopSelectionProcess();
   }
@@ -94,7 +91,7 @@ export class ExportDataComponent implements OnInit, OnDestroy {
   loadAvailableLayers(): void {
     this.layerService
       .getLayers()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((layers) => {
         this.availableLayersForExport = layers;
       });
@@ -138,7 +135,7 @@ export class ExportDataComponent implements OnInit, OnDestroy {
 
       // Subscribe to the results from the service.
       this.selectionSubscription = this.drawService.selectedFeatures$
-        .pipe(takeUntil(this.destroy$))
+        .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe((featuresFromService) => {
           this.selectedFeaturesForExport = featuresFromService;
           this.cdr.detectChanges();

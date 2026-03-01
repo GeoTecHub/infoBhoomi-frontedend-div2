@@ -7,10 +7,10 @@ import {
   Input,
   OnDestroy,
   OnInit,
-  SimpleChanges,
-} from '@angular/core';
+  SimpleChanges, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { finalize, Subject, takeUntil } from 'rxjs';
+import {finalize } from 'rxjs';
 import { APIsService } from '../../../services/api.service';
 import { DrawService } from '../../../services/draw.service';
 import { MapService } from '../../../services/map.service';
@@ -61,6 +61,7 @@ interface DynamicAttribute {
   styleUrl: './land-tab.component.css',
 })
 export class LandTabComponent implements OnInit, AfterViewInit, OnDestroy {
+  private destroyRef = inject(DestroyRef);
   // ================= DYNAMIC ATTRIBUTES =================
 
   readonly SECTION_KEYS = LAND_TAB_SECTIONS;
@@ -100,7 +101,6 @@ export class LandTabComponent implements OnInit, AfterViewInit, OnDestroy {
   };
 
   @Input({ required: true }) selected_feature_ID: string | number | null | undefined;
-  private destroy$ = new Subject<void>();
   // ---------------------- temp variables -----------------
   selected_imag_file: File | null = null;
   // is_loading_toast = true;
@@ -265,7 +265,7 @@ export class LandTabComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user: any) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
         this.user_id = user.user_id || '';
       }
@@ -284,7 +284,7 @@ export class LandTabComponent implements OnInit, AfterViewInit, OnDestroy {
     //   .pipe(
     //     map((info) => info?.featureId),
     //     distinctUntilChanged(),
-    //     takeUntil(this.destroy$)
+    //     takeUntilDestroyed(this.destroyRef)
     //   )
     //   .subscribe((featureId) => {
     //     // This code only runs if the tab is currently rendered
@@ -1338,8 +1338,6 @@ export class LandTabComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   // ---------- Dynamic attributes: load for a given section ----------

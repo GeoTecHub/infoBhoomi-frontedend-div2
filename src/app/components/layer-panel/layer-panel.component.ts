@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit, ViewContainerRef } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ViewContainerRef, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { LayerService } from '../../services/layer.service';
 
@@ -22,8 +23,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Subject } from 'rxjs'; // Import Subject
-import { takeUntil } from 'rxjs/operators'; // Import takeUntil
+import {Subject } from 'rxjs'; // Import Subject
+ // Import takeUntil
 import { APIsService } from '../../services/api.service';
 import { NotificationService } from '../../services/notifications.service';
 import { UserService } from '../../services/user.service';
@@ -75,6 +76,7 @@ export class LayerPanelComponent implements OnInit, OnDestroy {
   currentSelectedLayerIdForDrawing: number | string | null = null; // Track the ID for the checkbox
 
   private _snackBar = inject(MatSnackBar);
+  private destroyRef = inject(DestroyRef);
   private destroy$ = new Subject<void>(); // Subject for unsubscribing
 
   layer_pop_permissions: any = [];
@@ -97,7 +99,7 @@ export class LayerPanelComponent implements OnInit, OnDestroy {
     private overlay: Overlay,
     private vcr: ViewContainerRef,
   ) {
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user: any) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
         this.username = user.username.replace(/"/g, '') || '';
         this.user_id = user.user_id.toString() || '';
@@ -130,19 +132,19 @@ export class LayerPanelComponent implements OnInit, OnDestroy {
     }
 
     // Subscribe to VISIBILITY changes
-    this.layerService.selectedLayerIds$.pipe(takeUntil(this.destroy$)).subscribe((ids) => {
+    this.layerService.selectedLayerIds$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((ids) => {
       console.log('LayerPanel: Visibility IDs received from service:', ids);
       this.selectedLayerIds = ids; // Assign correct type
     });
 
     // Subscribe to CURRENT DRAWING LAYER changes
-    this.layerService.currentLayerIdForDrawing$.pipe(takeUntil(this.destroy$)).subscribe((id) => {
+    this.layerService.currentLayerIdForDrawing$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((id) => {
       console.log('LayerPanel: Current Drawing Layer ID received from service:', id);
       this.currentSelectedLayerIdForDrawing = id;
     });
 
     // added by malaka
-    this.layerService.buildingsDisabled$.pipe(takeUntil(this.destroy$)).subscribe((disabled) => {
+    this.layerService.buildingsDisabled$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((disabled) => {
       this.isBuildingsDisabled = disabled;
     });
   }
@@ -182,8 +184,6 @@ export class LayerPanelComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     // Implement OnDestroy
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 
   getDefaultLayersPermisions() {
@@ -228,7 +228,7 @@ export class LayerPanelComponent implements OnInit, OnDestroy {
       this.layer_permisions = res;
       this.layerService
         .getLayers() // this where we get layer ID asssigned to the user
-        .pipe(takeUntil(this.destroy$)) // Ensure unsubscription user 1 => 2,3, 4 => edit? delete? save? visible??
+        .pipe(takeUntilDestroyed(this.destroyRef)) // Ensure unsubscription user 1 => 2,3, 4 => edit? delete? save? visible??
         .subscribe({
           // Use observer object syntax for better error handling
           next: (res: API_LAYER_RESPONSE[]) => {

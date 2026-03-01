@@ -90,17 +90,16 @@
                       formControlName="org_email"
                       (input)="formatEmail()"
                     />
-                    <div
-                      *ngIf="
-                        organizationForm.get('org_email')?.invalid &&
-                        organizationForm.get('org_email')?.touched
-                      "
-                      class="text-danger"
-                    >
-                      <small *ngIf="organizationForm.get('org_email')?.errors?.['email']">
-                        Incorrect email format.
-                      </small>
-                    </div>
+                    @if (
+                      organizationForm.get('org_email')?.invalid &&
+                      organizationForm.get('org_email')?.touched
+                    ) {
+                      <div class="text-danger">
+                        @if (organizationForm.get('org_email')?.errors?.['email']) {
+                          <small> Incorrect email format. </small>
+                        }
+                      </div>
+                    }
                   </div>
 
                   <div class="form-group mb-3 col-md-6">
@@ -123,9 +122,11 @@
                       required
                     >
                       <option value="" disabled selected>Select Plan</option>
-                      <option *ngFor="let plan of subscriptionPlans" [value]="plan.value">
-                        {{ plan.label }}
-                      </option>
+                      @for (plan of subscriptionPlans; track plan) {
+                        <option [value]="plan.value">
+                          {{ plan.label }}
+                        </option>
+                      }
                     </select>
                   </div>
 

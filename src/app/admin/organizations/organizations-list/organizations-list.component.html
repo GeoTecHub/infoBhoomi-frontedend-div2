@@ -40,66 +40,74 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let org of organizations_list">
-              <td>
-                {{ org.display_name }}
-                <ng-container *ngIf="this.user_org === org.org_id">
-                  <span
-                    class="org-dot"
-                    matTooltip="Current organization"
-                    matTooltipPosition="above"
-                    aria-label="Current organization"
-                    role="img"
-                  ></span>
-                </ng-container>
-              </td>
-              <td>{{ org.contact_no ?? '-' }}</td>
-              <td>
-                {{ org.permit_end_date ? (org.permit_end_date | date: 'dd/MM/yyyy') : '-' }}
-                <span *ngIf="isPermitExpired(org.permit_end_date)" class="permit-expired-badge"
-                  >Expired</span
-                >
-              </td>
-              <td>{{ org.subscription_plan }}</td>
-              <td>{{ org.users_limit ?? '-' }}</td>
-              <td class="checkbox-cell">
-                <input
-                  type="checkbox"
-                  [checked]="org.status"
-                  (change)="toggleStatus($event, org)"
-                  class="styled-checkbox"
-                  [ngClass]="{
-                    'green-checkbox': org.status,
-                    'red-checkbox': !org.status,
-                  }"
-                />
-              </td>
-              <td style="text-align: center; max-width: 200px; width: 200px">
-                <div class="d-flex align-items-center gap-3 justify-content-between">
-                  <a
-                    (click)="updateLocation(org)"
-                    class="link-text"
-                    [ngClass]="org.org_loc ? 'update-loc-btn' : 'set-loc-btn'"
-                    style="width: 100px"
-                  >
-                    <span *ngIf="org.org_loc"> Update Location </span>
-                    <span *ngIf="!org.org_loc"> Set Location </span>
-                  </a>
-
-                  <a
-                    (click)="updateArea(org)"
-                    class="link-text"
-                    [ngClass]="org.org_area ? 'update-loc-btn' : 'set-loc-btn'"
-                    style="width: 100px"
-                  >
-                    <span *ngIf="org.org_area"> Update Area </span>
-                    <span *ngIf="!org.org_area"> Set Area </span>
-                  </a>
-
-                  <a (click)="showOrganization(org)" class="link-text"> More Info</a>
-                </div>
-              </td>
-            </tr>
+            @for (org of organizations_list; track org) {
+              <tr>
+                <td>
+                  {{ org.display_name }}
+                  @if (this.user_org === org.org_id) {
+                    <span
+                      class="org-dot"
+                      matTooltip="Current organization"
+                      matTooltipPosition="above"
+                      aria-label="Current organization"
+                      role="img"
+                    ></span>
+                  }
+                </td>
+                <td>{{ org.contact_no ?? '-' }}</td>
+                <td>
+                  {{ org.permit_end_date ? (org.permit_end_date | date: 'dd/MM/yyyy') : '-' }}
+                  @if (isPermitExpired(org.permit_end_date)) {
+                    <span class="permit-expired-badge">Expired</span>
+                  }
+                </td>
+                <td>{{ org.subscription_plan }}</td>
+                <td>{{ org.users_limit ?? '-' }}</td>
+                <td class="checkbox-cell">
+                  <input
+                    type="checkbox"
+                    [checked]="org.status"
+                    (change)="toggleStatus($event, org)"
+                    class="styled-checkbox"
+                    [ngClass]="{
+                      'green-checkbox': org.status,
+                      'red-checkbox': !org.status,
+                    }"
+                  />
+                </td>
+                <td style="text-align: center; max-width: 200px; width: 200px">
+                  <div class="d-flex align-items-center gap-3 justify-content-between">
+                    <a
+                      (click)="updateLocation(org)"
+                      class="link-text"
+                      [ngClass]="org.org_loc ? 'update-loc-btn' : 'set-loc-btn'"
+                      style="width: 100px"
+                    >
+                      @if (org.org_loc) {
+                        <span> Update Location </span>
+                      }
+                      @if (!org.org_loc) {
+                        <span> Set Location </span>
+                      }
+                    </a>
+                    <a
+                      (click)="updateArea(org)"
+                      class="link-text"
+                      [ngClass]="org.org_area ? 'update-loc-btn' : 'set-loc-btn'"
+                      style="width: 100px"
+                    >
+                      @if (org.org_area) {
+                        <span> Update Area </span>
+                      }
+                      @if (!org.org_area) {
+                        <span> Set Area </span>
+                      }
+                    </a>
+                    <a (click)="showOrganization(org)" class="link-text"> More Info</a>
+                  </div>
+                </td>
+              </tr>
+            }
           </tbody>
         </table>
       </div>

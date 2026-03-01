@@ -2,8 +2,8 @@
   <div class="header-content">
     <h2 class="header-title">{{ popup_action }} Role</h2>
     <!-- <button class="close-btn">
-        <mat-icon>close</mat-icon> 
-      </button> -->
+    <mat-icon>close</mat-icon>
+  </button> -->
   </div>
 </div>
 
@@ -12,15 +12,17 @@
     <mat-card-content>
       <div class="keyValueList">
         <div class="show_all_inputs">
-          <div class="keyValueWrapper" *ngIf="userType === 'super_admin'">
-            <div class="keyValueWrapper__keyValue">
-              <div class="keyValue__key">Role Type</div>
-              <select class="keyValue__value" [(ngModel)]="role_type">
-                <option [value]="'admin'">Admin</option>
-                <option [value]="'user'">User</option>
-              </select>
+          @if (userType === 'super_admin') {
+            <div class="keyValueWrapper">
+              <div class="keyValueWrapper__keyValue">
+                <div class="keyValue__key">Role Type</div>
+                <select class="keyValue__value" [(ngModel)]="role_type">
+                  <option [value]="'admin'">Admin</option>
+                  <option [value]="'user'">User</option>
+                </select>
+              </div>
             </div>
-          </div>
+          }
           <div class="keyValueWrapper">
             <div class="keyValueWrapper__keyValue">
               <div class="keyValue__key">Role</div>
@@ -37,7 +39,9 @@
                 rows="4"
               >
               </textarea>
-              <div class="char-count" *ngIf="role_remark">{{ role_remark.length || 0 }} / 250</div>
+              @if (role_remark) {
+                <div class="char-count">{{ role_remark.length || 0 }} / 250</div>
+              }
             </div>
           </div>
         </div>

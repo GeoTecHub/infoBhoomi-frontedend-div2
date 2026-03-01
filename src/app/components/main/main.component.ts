@@ -1,12 +1,13 @@
 // src/app/components/main/main.component.ts
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, inject, OnDestroy, OnInit, ViewChild, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute } from '@angular/router';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+
+
 
 // OpenLayers imports
 import { Map as OLMap } from 'ol';
@@ -128,9 +129,9 @@ export class MainComponent implements OnInit, OnDestroy {
   private loginService = inject(LoginService);
   private dialog = inject(MatDialog);
   private route = inject(ActivatedRoute);
+  private destroyRef = inject(DestroyRef);
 
   // --- Private Properties ---
-  private destroy$ = new Subject<void>();
   private mapInstance: OLMap | null = null;
   private mousePositionControl: MousePosition | null = null;
   private dialogRef: any;
@@ -163,17 +164,17 @@ export class MainComponent implements OnInit, OnDestroy {
     private notificationService: NotificationService,
   ) {
     // Subscriptions that don't depend on the DOM being ready
-    this.sidebarService.isClosed$.pipe(takeUntil(this.destroy$)).subscribe((closed) => {
+    this.sidebarService.isClosed$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((closed) => {
       this.isSidebarClosed = closed;
     });
 
-    this.drawService.selectedFeatureInfo$.pipe(takeUntil(this.destroy$)).subscribe((info) => {
+    this.drawService.selectedFeatureInfo$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((info) => {
       // If info is an array, use the first element or null; otherwise, use info as is
       const selectedInfo = Array.isArray(info) ? (info.length > 0 ? info[0] : null) : info;
       this.handleFeatureSelection(selectedInfo);
     });
 
-    this.drawService.deselectedFeature$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+    this.drawService.deselectedFeature$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.extendWidth = false;
     });
   }
@@ -183,31 +184,31 @@ export class MainComponent implements OnInit, OnDestroy {
     this.availableProjections = this.mapService.getAvailableProjectionCodes();
 
     // Subscribe to display projection changes
-    this.mapService.displayProjection$.pipe(takeUntil(this.destroy$)).subscribe((projCode) => {
+    this.mapService.displayProjection$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((projCode) => {
       this.selectedDisplayProjection = projCode;
       this.setupMousePositionControl();
     });
 
     // Subscribe to layer visibility changes from the service
-    this.layerService.selectedLayerIds$.pipe(takeUntil(this.destroy$)).subscribe((visibleIds) => {
+    this.layerService.selectedLayerIds$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((visibleIds) => {
       this.updateMapLayerVisibility(visibleIds);
     });
 
     // Subscribe to drawing layer changes to update the UI
     this.layerService.currentLayerIdForDrawing$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((layerId) => {
         // this.updateCurrentLayerName(layerId);
       });
 
-    this.layerService.isLoading$.pipe(takeUntil(this.destroy$)).subscribe((isLoading) => {
+    this.layerService.isLoading$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((isLoading) => {
       this.isLayerLoading = isLoading;
       if (!isLoading) {
         this.tryAutoSelectFeature();
       }
     });
 
-    this.route.queryParamMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const featureId = params.get('feature_id');
       if (featureId) {
         this.featureLinkService.setPendingFeatureId(featureId);
@@ -217,7 +218,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
     // REFACTORED: Map initialization is triggered by login status, not component lifecycle.
     // This is more robust and avoids timing issues and the need for setTimeout.
-    this.loginService.loginStatus$.pipe(takeUntil(this.destroy$)).subscribe((isLoggedIn) => {
+    this.loginService.loginStatus$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((isLoggedIn) => {
       if (isLoggedIn) {
         // Use a microtask to ensure the view is updated and mapContainer is available
         Promise.resolve().then(() => this.initializeMap());
@@ -257,7 +258,7 @@ export class MainComponent implements OnInit, OnDestroy {
     this.mapService.initializeMap(this.mapContainer.nativeElement);
 
     // Subscribe to the map instance from the service
-    this.mapService.mapInstance$.pipe(takeUntil(this.destroy$)).subscribe((map) => {
+    this.mapService.mapInstance$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((map) => {
       if (map && !this.mapInstance) {
         // Run only on first-time initialization
         this.mapInstance = map;
@@ -972,8 +973,6 @@ export class MainComponent implements OnInit, OnDestroy {
   // }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
 
     // Clean up global event listeners
     if (this.mapInstance) {

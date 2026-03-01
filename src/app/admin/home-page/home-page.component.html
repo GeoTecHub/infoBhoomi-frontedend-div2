@@ -190,32 +190,36 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let login of logins">
-                      <td class="f-12">{{ login.username }}</td>
-                      <td class="f-12">{{ login.email }}</td>
-                      <td class="f-12">{{ login.first_name + ' ' + login.last_name }}</td>
-                      <td class="f-12">{{ login.department }}</td>
-                      <td class="f-12">
-                        <div
-                          [ngClass]="
-                            login.user_type === 'admin'
-                              ? 'admin-pill'
-                              : login.user_type === 'user'
-                                ? 'user-pill'
-                                : !login.is_active
-                                  ? 'disabled-pill'
-                                  : ''
-                          "
-                        >
-                          {{ login.user_type }}
-                        </div>
-                      </td>
-                      <td class="text-muted small f-12">
-                        {{
-                          login.last_login ? (login.last_login | date: 'dd/MM/yyyy h:mm:ss a') : ''
-                        }}
-                      </td>
-                    </tr>
+                    @for (login of logins; track login) {
+                      <tr>
+                        <td class="f-12">{{ login.username }}</td>
+                        <td class="f-12">{{ login.email }}</td>
+                        <td class="f-12">{{ login.first_name + ' ' + login.last_name }}</td>
+                        <td class="f-12">{{ login.department }}</td>
+                        <td class="f-12">
+                          <div
+                            [ngClass]="
+                              login.user_type === 'admin'
+                                ? 'admin-pill'
+                                : login.user_type === 'user'
+                                  ? 'user-pill'
+                                  : !login.is_active
+                                    ? 'disabled-pill'
+                                    : ''
+                            "
+                          >
+                            {{ login.user_type }}
+                          </div>
+                        </td>
+                        <td class="text-muted small f-12">
+                          {{
+                            login.last_login
+                              ? (login.last_login | date: 'dd/MM/yyyy h:mm:ss a')
+                              : ''
+                          }}
+                        </td>
+                      </tr>
+                    }
                   </tbody>
                 </table>
               </div>

@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -13,7 +12,6 @@ import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-ba
 @Component({
   selector: 'app-organization-area-edit',
   imports: [
-    CommonModule,
     AdminHeaderComponent,
     AdminSideBarComponent,
     MatIconModule,

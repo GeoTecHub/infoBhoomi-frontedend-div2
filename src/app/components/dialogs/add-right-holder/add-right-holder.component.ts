@@ -1,9 +1,9 @@
-import { CommonModule } from '@angular/common';
-import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
+import {Component, Inject, OnInit, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { Subject, takeUntil } from 'rxjs';
+
 import { PartyType, PARTY_TYPE_DISPLAY } from '../../../models/building-info.model';
 import { APIsService } from '../../../services/api.service';
 import { NotificationService } from '../../../services/notifications.service';
@@ -23,12 +23,12 @@ type DialogStep = 'select-type' | 'enter-id' | 'search-result' | 'create-new';
 @Component({
   selector: 'app-add-right-holder',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatIconModule],
+  imports: [FormsModule, MatDialogModule, MatIconModule],
   templateUrl: './add-right-holder.component.html',
   styleUrls: ['./add-right-holder.component.css'],
 })
-export class AddRightHolderComponent implements OnInit, OnDestroy {
-  private destroy$ = new Subject<void>();
+export class AddRightHolderComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   private userId: any;
 
   // Steps
@@ -108,7 +108,7 @@ export class AddRightHolderComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user: any) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) this.userId = user.user_id || '';
     });
   }
@@ -406,8 +406,4 @@ export class AddRightHolderComponent implements OnInit, OnDestroy {
     this.dialogRef.close(null);
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
 }

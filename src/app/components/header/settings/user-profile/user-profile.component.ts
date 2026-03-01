@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,7 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Subject, takeUntil } from 'rxjs';
+
 import { UserService } from '../../../../services/user.service';
 import { UserPasswordChangeComponent } from './user-password-change/user-password-change.component';
 import { UserUsernameChangeComponent } from './user-username-change/user-username-change.component';
@@ -24,12 +24,12 @@ import { UserUsernameChangeComponent } from './user-username-change/user-usernam
     MatIconModule,
     MatTooltipModule,
     MatDialogModule,
-    CommonModule,
   ],
   templateUrl: './user-profile.component.html',
   styleUrl: './user-profile.component.css',
 })
 export class UserProfileComponent implements OnInit {
+  private destroyRef = inject(DestroyRef);
   first_name: string = '';
   last_name: string = '';
   nic: string = '';
@@ -43,7 +43,6 @@ export class UserProfileComponent implements OnInit {
   username: string = '';
 
   @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
-  private destroy$ = new Subject<void>();
 
   constructor(
     public dialog: MatDialog,
@@ -53,7 +52,7 @@ export class UserProfileComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user: any) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
         this.username = user.username.replace(/"/g, '') || '';
         this.first_name = user.first_name || '';

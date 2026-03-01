@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -13,8 +14,8 @@ import { Draw, Snap } from 'ol/interaction';
 import { DrawEvent } from 'ol/interaction/Draw';
 import VectorLayer from 'ol/layer/Vector'; // Import VectorLayer
 import { get, transform } from 'ol/proj';
-import { firstValueFrom, map, Observable, Subject, Subscription } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import {firstValueFrom, map, Observable, Subject, Subscription } from 'rxjs';
+
 import { v4 as uuidv4 } from 'uuid';
 
 // Services
@@ -45,6 +46,7 @@ import { GeomService } from '../../services/geom.service';
 })
 export class ToolsComponent implements OnInit, OnDestroy {
   private sidebarService = inject(SidebarControlService);
+  private destroyRef = inject(DestroyRef);
   public activeTool$: Observable<ActiveTool>;
   public isSnappingEnabled$: Observable<boolean>;
   public isDrawingReady$: Observable<boolean>;
@@ -90,11 +92,11 @@ export class ToolsComponent implements OnInit, OnDestroy {
     this.isDrawingReady$ = this.drawService.interactionsReady$; // Subscribe to readiness
     this.canUndo$ = this.appStateService.canUndo$;
 
-    this.sidebarService.isClosed$.pipe(takeUntil(this.destroy$)).subscribe((closed) => {
+    this.sidebarService.isClosed$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((closed) => {
       this.isSidebarClosed = closed;
     });
 
-    this.drawService.deselectedFeature$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+    this.drawService.deselectedFeature$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.extendWidth = false;
     });
 
@@ -112,7 +114,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.toolbarSaveSubscription = this.toolbarActionService.saveAllTriggered$
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.saveAllChanges());
   }
 
@@ -127,8 +129,6 @@ export class ToolsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
     this.drawService.setActiveTool(null);
   }
 

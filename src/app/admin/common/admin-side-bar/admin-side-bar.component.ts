@@ -1,8 +1,8 @@
-import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { RouterModule } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+
 import { FeatureNotAvailableComponent } from '../../../components/dialogs/feature-not-available/feature-not-available.component';
 import { UserService } from '../../../services/user.service';
 import { AdminService, PermId } from '../../../services/admin.service';
@@ -10,7 +10,7 @@ import { AdminService, PermId } from '../../../services/admin.service';
 @Component({
   selector: 'app-admin-side-bar',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [RouterModule],
   templateUrl: './admin-side-bar.component.html',
   styleUrl: './admin-side-bar.component.css',
 })
@@ -19,13 +19,12 @@ export class AdminSideBarComponent {
   selected_layer_ID: any = '';
   activeTab: number = 2;
   user_type: string = '';
-  private destroy$ = new Subject<void>();
   constructor(
     private cdr: ChangeDetectorRef,
     private userService: UserService,
     private adminService: AdminService,
   ) {
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user: any) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
         this.user_type = user.user_type || '';
       }
@@ -42,6 +41,7 @@ export class AdminSideBarComponent {
   }
 
   dialog = inject(MatDialog);
+private destroyRef = inject(DestroyRef);
   private dialogRef: any;
 
   openProAlert() {

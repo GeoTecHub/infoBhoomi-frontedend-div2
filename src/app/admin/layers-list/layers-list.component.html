@@ -53,17 +53,18 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr
-                      *ngFor="let layer of otherGroups"
-                      (click)="selectLayer(layer)"
-                      class="cursor-pointer"
-                      [class.selected]="selectedLayer === layer"
-                    >
-                      <td>{{ layer.layer_name }}</td>
-                      <td class="text-center">
-                        <span [style.background]="layer.colour" class="color-box"></span>
-                      </td>
-                    </tr>
+                    @for (layer of otherGroups; track layer) {
+                      <tr
+                        (click)="selectLayer(layer)"
+                        class="cursor-pointer"
+                        [class.selected]="selectedLayer === layer"
+                      >
+                        <td>{{ layer.layer_name }}</td>
+                        <td class="text-center">
+                          <span [style.background]="layer.colour" class="color-box"></span>
+                        </td>
+                      </tr>
+                    }
                   </tbody>
                 </table>
               </div>
@@ -86,42 +87,45 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let layer of orgGroup">
-                      <td>{{ layer.layer_name }}</td>
-                      <td class="text-center">
-                        <span [style.background]="layer.colour" class="color-box"></span>
-                      </td>
-                      <td class="text-center">
-                        <mat-icon
-                          class="text-gray material-icons-edit"
-                          (click)="addLayer('edit', layer)"
-                          *ngIf="getPermissionEdit(253)"
-                          >edit</mat-icon
-                        >
-                        &nbsp;
-                        <mat-icon
-                          class="text-danger material-icons-custom"
-                          (click)="openDeleteModal(layer)"
-                          *ngIf="getPermissionDelete(253)"
-                          >delete</mat-icon
-                        >
-                      </td>
-                    </tr>
+                    @for (layer of orgGroup; track layer) {
+                      <tr>
+                        <td>{{ layer.layer_name }}</td>
+                        <td class="text-center">
+                          <span [style.background]="layer.colour" class="color-box"></span>
+                        </td>
+                        <td class="text-center">
+                          @if (getPermissionEdit(253)) {
+                            <mat-icon
+                              class="text-gray material-icons-edit"
+                              (click)="addLayer('edit', layer)"
+                              >edit</mat-icon
+                            >
+                          }
+                          &nbsp;
+                          @if (getPermissionDelete(253)) {
+                            <mat-icon
+                              class="text-danger material-icons-custom"
+                              (click)="openDeleteModal(layer)"
+                              >delete</mat-icon
+                            >
+                          }
+                        </td>
+                      </tr>
+                    }
                   </tbody>
                 </table>
-                <div
-                  class="d-grid gap-2 d-md-flex justify-content-md-end"
-                  *ngIf="getPermissionAdd(253)"
-                >
-                  <button
-                    mat-icon-button
-                    matSuffix
-                    (click)="addLayer('create', 'null')"
-                    class="admin-primary-bg-btn"
-                  >
-                    <mat-icon>add</mat-icon> Create Layer
-                  </button>
-                </div>
+                @if (getPermissionAdd(253)) {
+                  <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button
+                      mat-icon-button
+                      matSuffix
+                      (click)="addLayer('create', 'null')"
+                      class="admin-primary-bg-btn"
+                    >
+                      <mat-icon>add</mat-icon> Create Layer
+                    </button>
+                  </div>
+                }
               </div>
             </div>
           </div>
@@ -142,20 +146,23 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let layer of nullGroup">
-                      <td>{{ layer.layer_name }}</td>
-                      <td class="text-center">
-                        <span [style.background]="layer.colour" class="color-box"></span>
-                      </td>
-                      <td class="text-center">
-                        <mat-icon
-                          class="text-gray material-icons-edit"
-                          (click)="addLayer('edit', layer)"
-                          *ngIf="getPermissionEdit(253)"
-                          >edit</mat-icon
-                        >
-                      </td>
-                    </tr>
+                    @for (layer of nullGroup; track layer) {
+                      <tr>
+                        <td>{{ layer.layer_name }}</td>
+                        <td class="text-center">
+                          <span [style.background]="layer.colour" class="color-box"></span>
+                        </td>
+                        <td class="text-center">
+                          @if (getPermissionEdit(253)) {
+                            <mat-icon
+                              class="text-gray material-icons-edit"
+                              (click)="addLayer('edit', layer)"
+                              >edit</mat-icon
+                            >
+                          }
+                        </td>
+                      </tr>
+                    }
                   </tbody>
                 </table>
               </div>
@@ -164,68 +171,73 @@
         </div>
         <div class="d-flex align-items-center justify-content-between w-100 mb-3"></div>
 
-        <div class="col-12 mt-3" *ngIf="selectedLayer">
-          <div class="card">
-            <div class="card-body">
-              <div class="d-flex align-items-center justify-content-between w-100 mb-3">
-                <div class="mb-0 admin-pages-title">User Layer Sharing</div>
-              </div>
-              <table class="table">
-                <thead>
-                  <tr>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Name</th>
-                    <th>Department</th>
-                    <th class="text-center">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr class="owner-row">
-                    <td>
-                      <div class="d-flex gap-2 align-items-center">
-                        <div>
-                          {{ selectedLayer.owner.username }}
+        @if (selectedLayer) {
+          <div class="col-12 mt-3">
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between w-100 mb-3">
+                  <div class="mb-0 admin-pages-title">User Layer Sharing</div>
+                </div>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Username</th>
+                      <th>Email</th>
+                      <th>Name</th>
+                      <th>Department</th>
+                      <th class="text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr class="owner-row">
+                      <td>
+                        <div class="d-flex gap-2 align-items-center">
+                          <div>
+                            {{ selectedLayer.owner.username }}
+                          </div>
+                          <div class="owner-pill">Owner</div>
                         </div>
-                        <div class="owner-pill">Owner</div>
-                      </div>
-                    </td>
-                    <td>{{ selectedLayer.owner.email }}</td>
-                    <td>
-                      {{ selectedLayer.owner.first_name }} {{ selectedLayer.owner.last_name }}
-                    </td>
-                    <td>{{ selectedLayer.owner.dep_name }}</td>
-                    <td class="text-center">-</td>
-                  </tr>
-                  <tr *ngFor="let user of selectedLayer.shared_users">
-                    <td>{{ user.username }}</td>
-                    <td>{{ user.email }}</td>
-                    <td>{{ user.first_name }}</td>
-                    <td>{{ user.dep_name }}</td>
-                    <td class="text-center">
-                      <mat-icon
-                        class="text-danger material-icons-custom mx-auto"
-                        (click)="openDeleteCommonModal(user)"
-                        *ngIf="getPermissionDelete(253)"
-                        >delete</mat-icon
-                      >
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <button
-                  mat-icon-button
-                  matSuffix
-                  (click)="shareLayer()"
-                  class="admin-primary-bg-btn"
-                >
-                  <mat-icon>share</mat-icon> Share Layer
-                </button>
+                      </td>
+                      <td>{{ selectedLayer.owner.email }}</td>
+                      <td>
+                        {{ selectedLayer.owner.first_name }} {{ selectedLayer.owner.last_name }}
+                      </td>
+                      <td>{{ selectedLayer.owner.dep_name }}</td>
+                      <td class="text-center">-</td>
+                    </tr>
+                    @for (user of selectedLayer.shared_users; track user) {
+                      <tr>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.first_name }}</td>
+                        <td>{{ user.dep_name }}</td>
+                        <td class="text-center">
+                          @if (getPermissionDelete(253)) {
+                            <mat-icon
+                              class="text-danger material-icons-custom mx-auto"
+                              (click)="openDeleteCommonModal(user)"
+                              >delete</mat-icon
+                            >
+                          }
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                  <button
+                    mat-icon-button
+                    matSuffix
+                    (click)="shareLayer()"
+                    class="admin-primary-bg-btn"
+                  >
+                    <mat-icon>share</mat-icon> Share Layer
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        }
       </div>
     </div>
   </div>
@@ -259,21 +271,22 @@
             (click)="togglePasswordVisibility()"
             [title]="passwordVisible ? 'Hide password' : 'Show password'"
           >
-            <mat-icon *ngIf="passwordVisible">visibility_off</mat-icon>
-            <mat-icon *ngIf="!passwordVisible">visibility</mat-icon>
+            @if (passwordVisible) {
+              <mat-icon>visibility_off</mat-icon>
+            }
+            @if (!passwordVisible) {
+              <mat-icon>visibility</mat-icon>
+            }
           </span>
         </div>
       </div>
       <div class="modal-footer py-2 d-flex justify-content-center">
         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">No</button>
-        <button
-          type="button"
-          class="btn btn-danger btn-sm"
-          (click)="confirmDelete()"
-          *ngIf="admin_password"
-        >
-          <i class="fa fa-trash"></i> Delete
-        </button>
+        @if (admin_password) {
+          <button type="button" class="btn btn-danger btn-sm" (click)="confirmDelete()">
+            <i class="fa fa-trash"></i> Delete
+          </button>
+        }
       </div>
     </div>
   </div>

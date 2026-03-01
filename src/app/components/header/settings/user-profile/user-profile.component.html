@@ -9,18 +9,12 @@
   <div class="profile-image-block">
     <div class="d-flex align-items-center gx-4 profile-image-container-main mx-auto">
       <div class="profile-image-container">
-        <img
-          src="sample/male_avatar.png"
-          alt="Profile Image"
-          class="profile-image"
-          *ngIf="sex.toLowerCase() === 'male'"
-        />
-        <img
-          src="sample/female_avatar.png"
-          alt="Profile Image"
-          class="profile-image"
-          *ngIf="sex.toLowerCase() === 'female'"
-        />
+        @if (sex.toLowerCase() === 'male') {
+          <img src="sample/male_avatar.png" alt="Profile Image" class="profile-image" />
+        }
+        @if (sex.toLowerCase() === 'female') {
+          <img src="sample/female_avatar.png" alt="Profile Image" class="profile-image" />
+        }
         <button mat-icon-button class="change-image-button" (click)="editProfilePic()">
           <mat-icon>photo_camera</mat-icon>
         </button>
@@ -50,14 +44,14 @@
 
     <form class="user-profile-form">
       <!-- <label>
-        <b>First Name:</b>
-        <input type="text" [value]="first_name" readonly #firstnameSp [matTooltip]="first_name" [matTooltipDisabled]="!isOverflow(firstnameSp)">
-      </label>
+      <b>First Name:</b>
+      <input type="text" [value]="first_name" readonly #firstnameSp [matTooltip]="first_name" [matTooltipDisabled]="!isOverflow(firstnameSp)">
+    </label>
 
-      <label>
-        <b>Last Name:</b>
-        <input type="text" [value]="last_name" readonly #lastnameSp [matTooltip]="last_name" [matTooltipDisabled]="!isOverflow(lastnameSp)">
-      </label> -->
+    <label>
+      <b>Last Name:</b>
+      <input type="text" [value]="last_name" readonly #lastnameSp [matTooltip]="last_name" [matTooltipDisabled]="!isOverflow(lastnameSp)">
+    </label> -->
 
       <label>
         <b>Name:</b>
@@ -72,19 +66,19 @@
       </label>
 
       <!-- <label>
-        <b>NIC:</b>
-        <input type="text" [value]="nic" readonly #nicSp [matTooltip]="nic" [matTooltipDisabled]="!isOverflow(nicSp)">
-      </label>
+      <b>NIC:</b>
+      <input type="text" [value]="nic" readonly #nicSp [matTooltip]="nic" [matTooltipDisabled]="!isOverflow(nicSp)">
+    </label>
 
-      <label>
-        <b>Age:</b>
-        <input type="text" [value]="age" readonly>
-      </label>
+    <label>
+      <b>Age:</b>
+      <input type="text" [value]="age" readonly>
+    </label>
 
-      <label>
-        <b>Sex:</b>
-        <input type="text" [value]="sex" readonly>
-      </label> -->
+    <label>
+      <b>Sex:</b>
+      <input type="text" [value]="sex" readonly>
+    </label> -->
 
       <label>
         <b>Employee ID:</b>

@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -10,7 +10,7 @@ import {
   MatSnackBarHorizontalPosition,
   MatSnackBarVerticalPosition,
 } from '@angular/material/snack-bar';
-import { Subject, takeUntil } from 'rxjs';
+
 import { ChangeUsernameModel } from '../../../../../models/API';
 import { APIsService } from '../../../../../services/api.service';
 import { LoginService } from '../../../../../services/login.service';
@@ -20,14 +20,7 @@ import { UserService } from '../../../../../services/user.service';
 @Component({
   selector: 'app-user-username-change',
   standalone: true,
-  imports: [
-    MatDialogModule,
-    CommonModule,
-    FormsModule,
-    MatButtonModule,
-    MatProgressSpinnerModule,
-    MatIconModule,
-  ],
+  imports: [MatDialogModule, FormsModule, MatButtonModule, MatProgressSpinnerModule, MatIconModule],
   templateUrl: './user-username-change.component.html',
   styleUrl: './user-username-change.component.css',
 })
@@ -37,7 +30,7 @@ export class UserUsernameChangeComponent {
   usertoken: string = '';
   userId: string = '';
   private snackBar = inject(MatSnackBar);
-  private destroy$ = new Subject<void>();
+  private destroyRef = inject(DestroyRef);
 
   constructor(
     private loginService: LoginService,
@@ -49,7 +42,7 @@ export class UserUsernameChangeComponent {
 
   ngOnInit(): void {
     this.usertoken = localStorage.getItem('Token') || '';
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user: any) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
         this.userId = user.user_id.toString() || '';
       }

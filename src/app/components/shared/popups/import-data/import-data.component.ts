@@ -1,5 +1,6 @@
 import { HttpClient, HttpEventType } from '@angular/common/http';
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import type {
   FeatureCollection,
@@ -32,7 +33,7 @@ type ShpJSOutput =
   | FeatureCollection<Geometry, GeoJsonProperties>
   | FeatureCollection<Geometry, GeoJsonProperties>[];
 
-import { CommonModule } from '@angular/common'; // For *ngIf etc.
+// For *ngIf etc.
 import { Circle as CircleStyle, Fill, Stroke, Style, Text } from 'ol/style'; // For labeling
 
 import {
@@ -82,7 +83,6 @@ enum FileType {
   selector: 'app-import-data',
   standalone: true, // Assuming standalone
   imports: [
-    CommonModule,
     MatProgressSpinnerModule,
     MatDialogClose,
     MatDialogActions,
@@ -96,6 +96,7 @@ enum FileType {
   styleUrl: './import-data.component.css',
 })
 export class ImportDataComponent implements OnDestroy {
+  private destroyRef = inject(DestroyRef);
   isLoading: boolean = false;
   selectedFile: File | null = null;
   selectedFileName: string = '';
@@ -156,7 +157,7 @@ export class ImportDataComponent implements OnDestroy {
     private userService: UserService,
     private drawService: DrawService,
   ) {
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user: any) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
         this.userId = user.user_id || '';
       }
@@ -1375,8 +1376,6 @@ export class ImportDataComponent implements OnDestroy {
     this.processedGeoTiffBlob = null;
 
     // 4. Clean up subscriptions
-    this.destroy$.next();
-    this.destroy$.complete();
 
     if (this.uploadSubscription) {
       this.uploadSubscription.unsubscribe();

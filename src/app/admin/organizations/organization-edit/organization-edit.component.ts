@@ -1,5 +1,5 @@
 // admin/organizations/organization-edit/organization-edit.component.ts
-import { CommonModule } from '@angular/common';
+
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import {
   FormBuilder,
@@ -21,7 +21,6 @@ import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-ba
   selector: 'app-organization-edit',
   standalone: true,
   imports: [
-    CommonModule,
     AdminHeaderComponent,
     AdminSideBarComponent,
     MatIconModule,

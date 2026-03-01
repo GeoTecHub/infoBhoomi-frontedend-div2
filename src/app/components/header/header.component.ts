@@ -1,6 +1,7 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule, MatIconButton } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -10,7 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
-import { combineLatest, Subject, takeUntil } from 'rxjs';
+import {combineLatest } from 'rxjs';
 import { APIsService } from '../../services/api.service';
 import { AppStateService } from '../../services/app-state.service';
 import { DrawService } from '../../services/draw.service';
@@ -29,6 +30,7 @@ import { WorkspaceComponent } from '../dialogs/workspace/workspace.component';
 import { LayerPanelComponent } from '../layer-panel/layer-panel.component';
 import { ActivityLogComponent } from './settings/activity-log/activity-log.component';
 import { UserProfileComponent } from './settings/user-profile/user-profile.component';
+import { ThemeToggleComponent } from '../shared/theme-toggle/theme-toggle.component';
 
 interface ParcelResult {
   parcel_id: string;
@@ -50,6 +52,7 @@ type SearchFieldType = 'su_id' | 'nic' | 'valuation';
     MatCheckboxModule,
     FormsModule,
     MatTooltip,
+    ThemeToggleComponent,
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
@@ -66,6 +69,7 @@ type SearchFieldType = 'su_id' | 'nic' | 'valuation';
   ],
 })
 export class HeaderComponent implements OnDestroy, OnInit {
+  private destroyRef = inject(DestroyRef);
   public activeBaseMap: BaseMapType = 'OSM';
 
   isSaving: boolean = false;
@@ -76,7 +80,6 @@ export class HeaderComponent implements OnDestroy, OnInit {
   organization: string = ''; // replaced with the login response detail - (organization)
   current_location: any = { dist: '', city: '', org_name: '' };
   activeOperation: 'draw' | 'select' | 'split' | 'edit' | null = null;
-  private destroy$ = new Subject<void>();
   public canUndo: boolean = false; // For binding to the Undo button's disabled state
   public currentLayerName: string = 'Not Selected';
 
@@ -119,7 +122,7 @@ export class HeaderComponent implements OnDestroy, OnInit {
     private userService: UserService,
     private cdr: ChangeDetectorRef,
   ) {
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user: any) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
         this.username = user?.username || '';
         this.user_type = user?.user_type || '';
@@ -146,19 +149,19 @@ export class HeaderComponent implements OnDestroy, OnInit {
   ngOnInit() {
     this.getOrgData();
 
-    this.appStateService.canUndo$.pipe(takeUntil(this.destroy$)).subscribe((canUndoState) => {
+    this.appStateService.canUndo$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((canUndoState) => {
       this.canUndo = canUndoState;
       console.log('[HeaderComponent] Can Undo state updated:', this.canUndo);
     });
 
     this.activeBaseMap = this.mapService.getActiveBaseMap();
     // Subscribe to changes in the active base map from the service
-    this.mapService.activeBaseMap$.pipe(takeUntil(this.destroy$)).subscribe((type) => {
+    this.mapService.activeBaseMap$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((type) => {
       this.activeBaseMap = type;
     });
 
     combineLatest([this.layerService.allLayers$, this.layerService.currentLayerIdForDrawing$])
-      .pipe(takeUntil(this.destroy$))
+      .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(([_, layerId]) => {
         this.updateCurrentLayerName(layerId);
       });
@@ -172,8 +175,6 @@ export class HeaderComponent implements OnDestroy, OnInit {
   }
 
   ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
     if (this.dialogRef) {
       this.dialogRef.close();
       this.dialogRef = null;

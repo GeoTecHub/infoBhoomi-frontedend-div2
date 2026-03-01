@@ -42,38 +42,40 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let user of role_user">
-                <td>{{ user.username }}</td>
-                <td>{{ user.email }}</td>
-                <td>{{ user.first_name }}</td>
-                <td>
-                  <div
-                    [ngClass]="
-                      user.user_type === 'admin'
-                        ? 'admin-pill'
-                        : user.user_type === 'user'
-                          ? 'user-pill'
-                          : ''
-                    "
-                  >
-                    {{ user.user_type }}
-                  </div>
-                </td>
-                <td>{{ user.department }}</td>
-                <td class="checkbox-cell text-end">
-                  <input
-                    type="checkbox"
-                    class="styled-checkbox"
-                    [checked]="isSelected(user)"
-                    (change)="onToggleUser(user, $any($event.target).checked)"
-                    [disabled]="user.user_type !== adminService.getSelectedRoleType()"
-                    [ngClass]="{
-                      'green-checkbox': isSelected(user),
-                      'red-checkbox': !isSelected(user),
-                    }"
-                  />
-                </td>
-              </tr>
+              @for (user of role_user; track user) {
+                <tr>
+                  <td>{{ user.username }}</td>
+                  <td>{{ user.email }}</td>
+                  <td>{{ user.first_name }}</td>
+                  <td>
+                    <div
+                      [ngClass]="
+                        user.user_type === 'admin'
+                          ? 'admin-pill'
+                          : user.user_type === 'user'
+                            ? 'user-pill'
+                            : ''
+                      "
+                    >
+                      {{ user.user_type }}
+                    </div>
+                  </td>
+                  <td>{{ user.department }}</td>
+                  <td class="checkbox-cell text-end">
+                    <input
+                      type="checkbox"
+                      class="styled-checkbox"
+                      [checked]="isSelected(user)"
+                      (change)="onToggleUser(user, $any($event.target).checked)"
+                      [disabled]="user.user_type !== adminService.getSelectedRoleType()"
+                      [ngClass]="{
+                        'green-checkbox': isSelected(user),
+                        'red-checkbox': !isSelected(user),
+                      }"
+                    />
+                  </td>
+                </tr>
+              }
             </tbody>
           </table>
         </div>

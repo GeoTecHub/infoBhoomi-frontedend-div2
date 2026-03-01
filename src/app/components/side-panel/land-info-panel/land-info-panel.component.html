@@ -158,6 +158,33 @@
                   />
                 </td>
               </tr>
+              <!-- GND-derived administrative hierarchy — auto-computed from parcel geometry -->
+              <tr class="derived-header-row">
+                <td colspan="2" class="derived-section-label">
+                  <span>Administrative Hierarchy</span>
+                  <span class="derived-badge">auto</span>
+                </td>
+              </tr>
+              <tr>
+                <td class="label">GND</td>
+                <td class="value read-only">{{ parcelInfo()!.identification.gndName || '—' }}</td>
+              </tr>
+              <tr>
+                <td class="label">DSD</td>
+                <td class="value read-only">{{ parcelInfo()!.identification.dsd || '—' }}</td>
+              </tr>
+              <tr>
+                <td class="label">District</td>
+                <td class="value read-only">{{ parcelInfo()!.identification.district || '—' }}</td>
+              </tr>
+              <tr>
+                <td class="label">Province</td>
+                <td class="value read-only">{{ parcelInfo()!.identification.province || '—' }}</td>
+              </tr>
+              <tr>
+                <td class="label">Electoral Div.</td>
+                <td class="value read-only">{{ parcelInfo()!.identification.electoralDiv || '—' }}</td>
+              </tr>
             </table>
           </div>
         }

@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -23,7 +22,6 @@ declare var bootstrap: any;
     AdminSideBarComponent,
     MatIconModule,
     RouterModule,
-    CommonModule,
     FormsModule,
     ReactiveFormsModule,
     UserAuthenticatorComponent,

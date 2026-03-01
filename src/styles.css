@@ -61,6 +61,89 @@
   --color-blue-d1-4: #3c71a6;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   Semantic Tokens  (light theme defaults — wrap palette tokens)
+   ══════════════════════════════════════════════════════════════ */
+:root {
+  /* ── Surfaces ── */
+  --surface-app-bg: var(--color-background-l1); /* main page background */
+  --surface-panel: var(--color-secondary-l1); /* side panel, cards */
+  --surface-panel-alt: var(--color-neutral-l1); /* alternating rows, inset areas */
+  --surface-header: var(--color-primary-d1); /* toolbar, admin header bg */
+  --surface-dialog: var(--color-secondary-l1); /* standard dialog background */
+  --surface-overlay: rgba(49, 72, 92, 0.85); /* map overlay backdrops */
+  --surface-sidebar: var(--color-secondary-l1); /* side-panel shell */
+  --surface-sidebar-header: var(--color-neutral-l1); /* tab bar background */
+  --surface-sidebar-hover: rgba(119, 154, 184, 0.1); /* subtle tab/resize hover — --color-primary @ 10% */
+
+  /* ── Text ── */
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-inverse: var(--color-text-inverse);
+  --text-on-header: var(--color-secondary-l1);
+  --text-link: var(--color-blue-2);
+
+  /* ── Interactive ── */
+  --btn-primary-bg: var(--color-primary);
+  --btn-primary-text: var(--color-secondary-l1);
+  --btn-primary-hover-bg: var(--color-primary-d1);
+  --btn-danger-bg: var(--color-error);
+  --btn-danger-text: var(--color-secondary-l1);
+
+  /* ── Borders ── */
+  --border-default: var(--color-border-l1);
+  --border-strong: var(--color-border-d1);
+  --border-focus: var(--color-primary);
+
+  /* ── OL controls ── */
+  --ol-control-bg: rgba(102, 102, 102, 0.57);
+
+  /* ── OL map parcel styles ── */
+  --map-parcel-default-fill: rgba(119, 154, 184, 0.3); /* --color-primary @ 30% */
+  --map-parcel-default-stroke: var(--color-primary-d1);
+  --map-parcel-selected-fill: rgba(243, 156, 18, 0.35); /* accent highlight */
+  --map-parcel-selected-stroke: var(--color-accent-dark);
+  --map-parcel-label-color: var(--color-secondary-d3);
+  --map-parcel-label-bg: rgba(255, 255, 255, 0.85);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Dark Theme Overrides  (applied via <html data-theme="dark">)
+   ══════════════════════════════════════════════════════════════ */
+[data-theme='dark'] {
+  --surface-app-bg: #0f1923;
+  --surface-panel: #1e293b;
+  --surface-panel-alt: #162032;
+  --surface-header: #060e14;
+  --surface-dialog: #1e293b;
+  --surface-overlay: rgba(6, 14, 26, 0.92);
+  --surface-sidebar: rgba(22, 33, 52, 0.92);
+  --surface-sidebar-header: rgba(15, 23, 42, 0.8);
+  --surface-sidebar-hover: rgba(60, 113, 166, 0.15);
+
+  --text-primary: #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-inverse: #0f1923;
+  --text-on-header: #c8dae8;
+  --text-link: #60a5fa;
+
+  --btn-primary-bg: #3c71a6;
+  --btn-primary-text: #e2e8f0;
+  --btn-primary-hover-bg: #4a8ac4;
+  --border-default: #2d3f50;
+  --border-strong: #4a5568;
+  --border-focus: #60a5fa;
+
+  --ol-control-bg: rgba(102, 102, 102, 0.4);
+
+  --map-parcel-default-fill: rgba(60, 113, 166, 0.4);
+  --map-parcel-default-stroke: #60a5fa;
+  --map-parcel-selected-fill: rgba(243, 156, 18, 0.5);
+  --map-parcel-selected-stroke: #f39c12;
+  --map-parcel-label-color: #f1f5f9;
+  --map-parcel-label-bg: rgba(15, 25, 35, 0.85);
+}
+
 .ex {
   color: var(--color-accent);
 }
@@ -89,36 +172,36 @@ body {
 }
 
 .text-danger {
-  color: red;
+  color: var(--color-error); /* UI-only change */
 }
 
 .text-success {
-  color: #28a745;
+  color: var(--color-success); /* UI-only change */
 }
 
 .hr-divider {
   border: none;
-  /* Removes default border */
   height: 1px;
-  /* Height f the divider */
-  background-color: #1a1b1f;
-  /* Light grey color */
+  background-color: var(--border-strong); /* UI-only change — was #1a1b1f */
   margin: 10px 0;
-  /* Add spacing above and below the divider */
 }
 
 .primary-bg-btn {
   border-radius: 20px;
   border: none;
   width: 100px;
-  background-color: #779ab8;
-  color: white;
+  background-color: var(--btn-primary-bg); /* UI-only change — was #779ab8 */
+  color: var(--btn-primary-text); /* UI-only change — was white */
   display: flex;
   margin-top: 10px;
   align-items: center;
   justify-content: center;
   padding: 3px;
   font-size: 13px;
+  transition: background-color 0.2s ease;
+}
+.primary-bg-btn:hover {
+  background-color: var(--btn-primary-hover-bg); /* UI-only change */
 }
 
 .primary-bg-btn mat-icon {
@@ -130,14 +213,18 @@ body {
   border-radius: 20px;
   border: none;
   width: 100px;
-  background-color: #779ab8;
-  color: white;
+  background-color: var(--btn-primary-bg); /* UI-only change — was #779ab8 */
+  color: var(--btn-primary-text); /* UI-only change — was white */
   display: flex;
   margin-top: 10px;
   align-items: center;
   justify-content: center;
   padding: 2px;
   font-size: 11px;
+  transition: background-color 0.2s ease;
+}
+.primary-sm-btn:hover {
+  background-color: var(--btn-primary-hover-bg); /* UI-only change */
 }
 
 .primary-sm-btn mat-icon {
@@ -146,31 +233,38 @@ body {
 }
 
 .primary-sm-btn-2 {
-  background-color: #779ab8;
-  color: white;
+  background-color: var(--btn-primary-bg); /* UI-only change — was #779ab8 */
+  color: var(--btn-primary-text); /* UI-only change — was white */
   border: none;
   padding: 5px 10px;
   cursor: pointer;
   font-size: 14px;
-  /* margin-top: 10px; */
   border-radius: 5px;
   width: 100%;
   display: block;
   margin-left: auto;
+  transition: background-color 0.2s ease;
+}
+.primary-sm-btn-2:hover {
+  background-color: var(--btn-primary-hover-bg); /* UI-only change */
 }
 
 .primary-bg-lg-btn {
   border-radius: 20px;
   border: none;
   width: 125px;
-  background-color: #779ab8;
-  color: white;
+  background-color: var(--btn-primary-bg); /* UI-only change — was #779ab8 */
+  color: var(--btn-primary-text); /* UI-only change — was white */
   display: flex;
   margin-top: 10px;
   align-items: center;
   justify-content: center;
   padding: 3px;
   font-size: 13px;
+  transition: background-color 0.2s ease;
+}
+.primary-bg-lg-btn:hover {
+  background-color: var(--btn-primary-hover-bg); /* UI-only change */
 }
 
 .primary-bg-lg-btn mat-icon {
@@ -179,21 +273,25 @@ body {
 }
 
 .is-invalid {
-  border: 1px solid red;
+  border: 1px solid var(--color-error); /* UI-only change — was red */
 }
 
 .admin-primary-bg-btn {
   border-radius: 20px;
   border: none;
   width: auto;
-  background-color: #779ab8;
-  color: white;
+  background-color: var(--btn-primary-bg); /* UI-only change — was #779ab8 */
+  color: var(--btn-primary-text); /* UI-only change — was white */
   display: flex;
   margin-top: 10px;
   align-items: center;
   justify-content: center;
   padding: 2px 10px 2px 5px;
   font-size: 13px;
+  transition: background-color 0.2s ease;
+}
+.admin-primary-bg-btn:hover {
+  background-color: var(--btn-primary-hover-bg); /* UI-only change */
 }
 
 input[type='number']::-webkit-inner-spin-button,
@@ -209,7 +307,7 @@ input[type='number'] {
 
 .link-text {
   margin-top: 10px;
-  color: #2e2ee3;
+  color: var(--text-link); /* UI-only change — was #2e2ee3 (non-brand purple-blue) */
   font-size: 12px;
   cursor: pointer;
 }
@@ -218,14 +316,18 @@ input[type='number'] {
   border-radius: 20px;
   border: none;
   width: auto;
-  background-color: #779ab8;
-  color: white;
+  background-color: var(--btn-primary-bg); /* UI-only change — was #779ab8 */
+  color: var(--btn-primary-text); /* UI-only change — was white */
   display: flex;
   margin-top: 10px;
   align-items: center;
   justify-content: center;
   padding: 3px 25px 5px 15px;
   font-size: 13px;
+  transition: background-color 0.2s ease;
+}
+.primary-custom-sm-btn:hover {
+  background-color: var(--btn-primary-hover-bg); /* UI-only change */
 }
 
 /* BOOSTRAP MODAL CSS */
@@ -233,19 +335,15 @@ input[type='number'] {
 .modal-title {
   font-size: 19px;
   font-weight: bold;
-  color: #779ab8;
-  /* Blue color for the title */
+  color: var(--color-primary); /* UI-only change — was #779ab8 */
 }
 
 /* Custom styling for the close button with a red box */
 .close {
   font-size: 1.5rem;
-  color: #fff;
-  /* White text color */
-  background-color: #dc3545;
-  /* Red background color */
-  border: 2px solid #dc3545;
-  /* Red border */
+  color: var(--btn-danger-text); /* UI-only change — was #fff */
+  background-color: var(--btn-danger-bg); /* UI-only change — was #dc3545 */
+  border: 2px solid var(--btn-danger-bg); /* UI-only change — was #dc3545 */
   padding: 2px 7px;
   border-radius: 25%;
   cursor: pointer;
@@ -254,12 +352,9 @@ input[type='number'] {
 
 /* Hover effect for the close button */
 .close:hover {
-  background-color: #fff;
-  /* White background when hovered */
-  color: #dc3545;
-  /* Red color for the icon on hover */
-  border-color: #dc3545;
-  /* Keep the red border on hover */
+  background-color: var(--surface-panel); /* UI-only change — was #fff */
+  color: var(--btn-danger-bg); /* UI-only change — was #dc3545 */
+  border-color: var(--btn-danger-bg); /* UI-only change — was #dc3545 */
 }
 
 /* Optional: Styling for the close button's span to make it larger */
@@ -274,8 +369,8 @@ input[type='number'] {
 }
 
 .custom-back-button {
-  background-color: white !important;
-  border: 2px solid white;
+  background-color: var(--surface-panel) !important; /* UI-only change — was white */
+  border: 2px solid var(--surface-panel); /* UI-only change — was white */
   border-radius: 30%;
   width: 41px;
   height: 35px;
@@ -285,29 +380,31 @@ input[type='number'] {
 }
 
 .custom-back-button mat-icon {
-  color: #779ab8;
-  /* Blue arrow */
+  color: var(--color-primary); /* UI-only change — was #779ab8 */
   font-size: 20px;
-  /* Adjust icon size */
 }
 
 .table-striped > tbody > tr:nth-of-type(odd) {
-  color: rgb(67, 67, 67) !important;
-  --bs-table-accent-bg: #ffffff !important;
+  color: var(--text-primary) !important; /* UI-only change — was rgb(67,67,67) */
+  --bs-table-accent-bg: var(--surface-panel) !important; /* UI-only change — was #ffffff */
 }
 
 .primary-custom-sm-btn-2 {
   border-radius: 20px;
   border: none;
   width: 100px;
-  background-color: #779ab8;
-  color: white;
+  background-color: var(--btn-primary-bg); /* UI-only change — was #779ab8 */
+  color: var(--btn-primary-text); /* UI-only change — was white */
   display: flex;
   margin-top: 10px;
   align-items: center;
   justify-content: center;
   padding: 1px 20px 2px 15px;
   font-size: 13px;
+  transition: background-color 0.2s ease;
+}
+.primary-custom-sm-btn-2:hover {
+  background-color: var(--btn-primary-hover-bg); /* UI-only change */
 }
 
 th,
@@ -362,7 +459,7 @@ td {
   position: absolute !important;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  background: white;
+  background: var(--surface-dialog); /* UI-only change — was white */
   z-index: 9999;
   width: 420px;
   padding: 0;
@@ -414,7 +511,7 @@ td {
   right: 18px !important;
   top: auto !important;
   left: auto !important;
-  background: #66666691 !important;
+  background: var(--ol-control-bg) !important; /* UI-only change — was #66666691 */
 }
 
 @media (max-height: 750px) {
@@ -428,7 +525,7 @@ td {
 }
 
 .border-b-black {
-  border-bottom: 1px solid #000;
+  border-bottom: 1px solid var(--border-strong); /* UI-only change — was #000 */
   padding-bottom: 0.3rem;
 }
 
@@ -445,12 +542,12 @@ td {
 }
 
 .side-panel-tab-content::-webkit-scrollbar-thumb {
-  background: #888;
+  background: var(--color-neutral-d1); /* UI-only change — was #888 */
   border-radius: 6px;
 }
 
 .side-panel-tab-content::-webkit-scrollbar-track {
-  background: #fff;
+  background: var(--surface-app-bg); /* UI-only change — was #fff */
 }
 
 .side-panel-tabs::-webkit-scrollbar {
@@ -461,12 +558,12 @@ td {
 }
 
 .side-panel-tabs::-webkit-scrollbar-thumb {
-  background: #888;
+  background: var(--color-neutral-d1); /* UI-only change — was #888 */
   border-radius: 6px;
 }
 
 .side-panel-tabs::-webkit-scrollbar-track {
-  background: #fff;
+  background: var(--surface-app-bg); /* UI-only change — was #fff */
 }
 
 .inner-align .mat-mdc-menu-item-text {
@@ -495,18 +592,53 @@ td {
   color: inherit !important;
 }
 
-/* Dark green dialog panel for Land Parcel Report */
+/* Light dialog panel for Land Parcel Report */
 .lpr-dark-dialog .mat-mdc-dialog-surface {
-  background: #060e09 !important;
-  color: #d0ead8 !important;
+  background: var(--surface-dialog) !important;
+  color: var(--text-primary) !important;
   border-radius: 12px !important;
-  border: 1px solid #1a3a2a;
+  border: 1px solid var(--border-default);
   overflow: hidden;
   padding: 0 !important;
 }
 
 .lpr-dark-dialog .mat-mdc-dialog-content {
   max-height: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow-y: auto !important;
+  color: inherit !important;
+}
+
+/* Light dialog panel for the report launcher chooser */
+.gr-launcher-panel .mat-mdc-dialog-surface {
+  background: var(--surface-dialog) !important;
+  color: var(--text-primary) !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--border-default);
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+/* Light dialog panel for full report dialogs (Land Parcel & Building).
+   height: 100% is required so that :host { flex: 1 } has a definite
+   parent height to resolve against — this is what makes internal
+   tab-body scrolling work. */
+.report-dialog .mat-mdc-dialog-surface {
+  display: flex !important;
+  flex-direction: column !important;
+  background: var(--surface-dialog) !important;
+  color: var(--text-primary) !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--border-default);
+  overflow: hidden !important;
+  padding: 0 !important;
+  height: 100% !important;
+}
+
+.report-dialog .mat-mdc-dialog-content {
+  max-height: none !important;
+  min-height: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
   overflow-y: auto !important;

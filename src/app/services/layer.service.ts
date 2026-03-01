@@ -1,5 +1,6 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Map as OLMap } from 'ol';
 import Feature from 'ol/Feature';
 import GeoJSON from 'ol/format/GeoJSON';
@@ -8,7 +9,7 @@ import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import { BehaviorSubject, Observable, Subject, catchError, throwError } from 'rxjs';
-import { startWith, takeUntil, tap } from 'rxjs/operators'; // Added tap
+import { startWith, tap } from 'rxjs/operators'; // Added tap
 import { environment } from '../../../environments/environment'; // Adjust path if needed
 import {
   API_LAYER_GEOM_RESPONSE,
@@ -35,7 +36,6 @@ import { makePerFeatureStyleFn } from './style-factory.service';
 })
 export class LayerService {
   private userService = inject(UserService);
-  private destroy$ = new Subject<void>();
   public mapInstance: OLMap | null = null;
   private apiUrl = environment.API_URL; // Use the environment variable for the API URL
   // layerIdChanged = new ReplaySubject<number | null>(1); // Change to ReplaySubject(1)
@@ -49,6 +49,7 @@ export class LayerService {
   // Dependencies
   private http = inject(HttpClient);
   private mapService = inject(MapService);
+  private destroyRef = inject(DestroyRef);
   private apiService = inject(APIsService); // <-- INJECT
 
   // --- Private State ---
@@ -95,18 +96,18 @@ export class LayerService {
   }
 
   constructor() {
-    this.mapService.mapInstance$.pipe(takeUntil(this.destroy$)).subscribe((map) => {
+    this.mapService.mapInstance$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((map) => {
       this.mapInstance = map;
     });
 
     this.mapService.showLabels$
-      .pipe(startWith(this.mapService.showLabels), takeUntil(this.destroy$))
+      .pipe(startWith(this.mapService.showLabels), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         const map = this.mapService.getMapInstance?.();
         map?.getLayers().forEach((l) => l.changed?.());
       });
     this.mapService.showArea$
-      .pipe(startWith(this.mapService.showArea), takeUntil(this.destroy$))
+      .pipe(startWith(this.mapService.showArea), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
         const map = this.mapService.getMapInstance?.();
         map?.getLayers().forEach((l) => l.changed?.());
@@ -144,7 +145,7 @@ export class LayerService {
           this.isLoadingSubject.next(false);
           console.log('LayerService: Initial layer load process finished.');
         }),
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
         error: (err) => console.error('An error occurred during the layer loading chain:', err),
@@ -641,7 +642,5 @@ export class LayerService {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
   }
 }

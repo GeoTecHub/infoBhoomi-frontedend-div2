@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterModule } from '@angular/router';
-import { Subject, takeUntil } from 'rxjs';
+
 import { UserAuthenticatorComponent } from '../../../components/auth/user-authenticator/user-authenticator.component';
 import { ManageAssWardsComponent } from '../../../components/dialogs/manage-ass-wards/manage-ass-wards.component';
 import { ManageDepartmentsComponent } from '../../../components/dialogs/manage-departments/manage-departments.component';
@@ -32,12 +33,12 @@ import { AdminService, PermId } from '../../../services/admin.service';
   styleUrl: './users-list.component.css',
 })
 export class UsersListComponent {
+  private destroyRef = inject(DestroyRef);
   users_list: any = [];
   searchQuery = '';
   departments_list: any = [];
   departments_id = '';
   userType: string = '';
-  private destroy$ = new Subject<void>();
 
   get remainingUsersAllowed(): number {
     return (this.getUsersLimit() ?? 0) - this.totalUserAccounts;
@@ -63,7 +64,7 @@ export class UsersListComponent {
     private userService: UserService,
     private adminService: AdminService,
   ) {
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
       if (user) {
         this.userType = user.user_type;
       }

@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -16,7 +15,6 @@ import { LoaderComponent } from '../../side-panel/loader/loader.component';
     MatDialogModule,
     MatButtonModule,
     MatIconModule,
-    CommonModule,
     FormsModule,
     MatTooltipModule,
     MatDividerModule,

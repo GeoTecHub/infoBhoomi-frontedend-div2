@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common'; //
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -12,7 +13,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabsModule } from '@angular/material/tabs';
-import { Subject, takeUntil } from 'rxjs';
+
 import { APIsService } from '../../../services/api.service';
 import { NotificationService } from '../../../services/notifications.service';
 import { UserService } from '../../../services/user.service';
@@ -35,6 +36,7 @@ import { UserService } from '../../../services/user.service';
   styleUrl: './civilian.component.css',
 })
 export class CivilianComponent {
+  private destroyRef = inject(DestroyRef);
   // VALIDATION VARIABLES
   id_number_validation = true;
   ps_number_validation = true;
@@ -105,7 +107,6 @@ export class CivilianComponent {
   ownership_types_array: any = [];
   civilian_data__array: any = [];
   user_id: any;
-  private destroy$ = new Subject<void>();
 
   ngOnInit(): void {
     this.loadMortgageTypes();
@@ -127,7 +128,7 @@ export class CivilianComponent {
     private notificationService: NotificationService,
     private userService: UserService,
   ) {
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user: any) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
         this.user_id = user.user_id || '';
       }

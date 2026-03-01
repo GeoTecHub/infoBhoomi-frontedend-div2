@@ -55,70 +55,71 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr
-                      *ngFor="let role of roles_list"
-                      (click)="selectRole(role)"
-                      [class.selected-role]="role === selectedRole"
-                      [class.row-highlight]="role === highlightedRole"
-                      role="button"
-                      tabindex="0"
-                      (keydown.enter)="selectRole(role)"
-                      (keydown.space)="$event.preventDefault(); selectRole(role)"
-                    >
-                      <td width="50%">{{ role.role_name }}</td>
-
-                      <td>
-                        <div
-                          [ngClass]="
-                            role.role_type === 'admin'
-                              ? 'admin-pill'
-                              : role.role_type === 'user'
-                                ? 'user-pill'
-                                : ''
-                          "
-                        >
-                          {{ role.role_type }} Role
-                        </div>
-                      </td>
-
-                      <td class="text-center" width="25%">
-                        <mat-icon
-                          class="text-gray material-icons-edit"
-                          (click)="$event.stopPropagation(); addRole('edit', role)"
-                          *ngIf="getPermissionEdit(252)"
-                          >edit</mat-icon
-                        >
-
-                        <mat-icon
-                          class="text-danger material-icons-custom"
-                          (click)="$event.stopPropagation(); deleteRole(role, 'role')"
-                          *ngIf="getPermissionDelete(252)"
-                          >delete</mat-icon
-                        >
-                      </td>
-                    </tr>
+                    @for (role of roles_list; track role) {
+                      <tr
+                        (click)="selectRole(role)"
+                        [class.selected-role]="role === selectedRole"
+                        [class.row-highlight]="role === highlightedRole"
+                        role="button"
+                        tabindex="0"
+                        (keydown.enter)="selectRole(role)"
+                        (keydown.space)="$event.preventDefault(); selectRole(role)"
+                      >
+                        <td width="50%">{{ role.role_name }}</td>
+                        <td>
+                          <div
+                            [ngClass]="
+                              role.role_type === 'admin'
+                                ? 'admin-pill'
+                                : role.role_type === 'user'
+                                  ? 'user-pill'
+                                  : ''
+                            "
+                          >
+                            {{ role.role_type }} Role
+                          </div>
+                        </td>
+                        <td class="text-center" width="25%">
+                          @if (getPermissionEdit(252)) {
+                            <mat-icon
+                              class="text-gray material-icons-edit"
+                              (click)="$event.stopPropagation(); addRole('edit', role)"
+                              >edit</mat-icon
+                            >
+                          }
+                          @if (getPermissionDelete(252)) {
+                            <mat-icon
+                              class="text-danger material-icons-custom"
+                              (click)="$event.stopPropagation(); deleteRole(role, 'role')"
+                              >delete</mat-icon
+                            >
+                          }
+                        </td>
+                      </tr>
+                    }
                   </tbody>
                 </table>
-                <div
-                  class="d-grid gap-2 d-md-flex justify-content-md-end"
-                  *ngIf="getPermissionAdd(252)"
-                >
-                  <button
-                    mat-icon-button
-                    matSuffix
-                    (click)="addRole('create', 'null')"
-                    class="admin-primary-bg-btn cursor-pointer"
-                  >
-                    <mat-icon>add</mat-icon> Create Role
-                  </button>
-                </div>
+                @if (getPermissionAdd(252)) {
+                  <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button
+                      mat-icon-button
+                      matSuffix
+                      (click)="addRole('create', 'null')"
+                      class="admin-primary-bg-btn cursor-pointer"
+                    >
+                      <mat-icon>add</mat-icon> Create Role
+                    </button>
+                  </div>
+                }
               </div>
             </div>
 
             <!-- Remarks Card (Fixed Below) -->
-            <p *ngIf="selectedRole" class="remarks-box">
-              {{ selectedRole.remark || 'No remarks available' }}
-            </p>
+            @if (selectedRole) {
+              <p class="remarks-box">
+                {{ selectedRole.remark || 'No remarks available' }}
+              </p>
+            }
           </div>
 
           <!-- Users Table (Full Height) -->
@@ -156,35 +157,41 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr *ngFor="let user of filteredUsers">
-                      <td>{{ user.username }}</td>
-                      <td>{{ user.email }}</td>
-                      <td>{{ user.first_name }}</td>
-                      <td>{{ user.department }}</td>
-                      <td class="text-end">
-                        <mat-icon
-                          class="text-danger material-icons-custom"
-                          (click)="openDeleteModal(user, 'user')"
-                          *ngIf="getPermissionDelete(252)"
-                          >delete</mat-icon
-                        >
-                      </td>
-                    </tr>
+                    @for (user of filteredUsers; track user) {
+                      <tr>
+                        <td>{{ user.username }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.first_name }}</td>
+                        <td>{{ user.department }}</td>
+                        <td class="text-end">
+                          @if (getPermissionDelete(252)) {
+                            <mat-icon
+                              class="text-danger material-icons-custom"
+                              (click)="openDeleteModal(user, 'user')"
+                              >delete</mat-icon
+                            >
+                          }
+                        </td>
+                      </tr>
+                    }
                   </tbody>
                 </table>
 
                 <!-- Add User Button -->
-                <div class="d-flex justify-content-end" *ngIf="selectedRole">
-                  <button
-                    mat-icon-button
-                    (click)="addUsers()"
-                    class="admin-primary-bg-btn d-flex align-items-center"
-                    *ngIf="getPermissionAdd(252)"
-                  >
-                    <mat-icon>add</mat-icon>
-                    <span style="margin-left: 5px">Add User</span>
-                  </button>
-                </div>
+                @if (selectedRole) {
+                  <div class="d-flex justify-content-end">
+                    @if (getPermissionAdd(252)) {
+                      <button
+                        mat-icon-button
+                        (click)="addUsers()"
+                        class="admin-primary-bg-btn d-flex align-items-center"
+                      >
+                        <mat-icon>add</mat-icon>
+                        <span style="margin-left: 5px">Add User</span>
+                      </button>
+                    }
+                  </div>
+                }
               </div>
             </div>
           </div>
@@ -207,7 +214,9 @@
                       (change)="applyPermissionFilters()"
                     >
                       <option value="">All Categories</option>
-                      <option *ngFor="let cat of categoryList" [value]="cat">{{ cat }}</option>
+                      @for (cat of categoryList; track cat) {
+                        <option [value]="cat">{{ cat }}</option>
+                      }
                     </select>
                     <select
                       class="form-select form-select-sm me-3"
@@ -217,9 +226,11 @@
                       [disabled]="!selectedCategory"
                     >
                       <option value="">All Sub Categories</option>
-                      <option *ngFor="let sub of filteredSubCategoryList" [value]="sub">
-                        {{ sub }}
-                      </option>
+                      @for (sub of filteredSubCategoryList; track sub) {
+                        <option [value]="sub">
+                          {{ sub }}
+                        </option>
+                      }
                     </select>
 
                     <div class="input-group" style="width: 220px">
@@ -243,39 +254,47 @@
 
                   <!-- Unlock Button (Green) -->
                   <div>
-                    <button
-                      class="btn"
-                      *ngIf="selectedRole"
-                      [ngClass]="{ 'btn-danger ': !isUnlockClicked, 'btn-light': isUnlockClicked }"
-                      (click)="lockAction()"
-                      style="
-                        border-radius: 4px 0px 0px 4px;
-                        height: 28px;
-                        padding: 0 10px;
-                        border: 1px solid #ced4da !important;
-                        font-size: 12px;
-                      "
-                    >
-                      Lock
-                    </button>
+                    @if (selectedRole) {
+                      <button
+                        class="btn"
+                        [ngClass]="{
+                          'btn-danger ': !isUnlockClicked,
+                          'btn-light': isUnlockClicked,
+                        }"
+                        (click)="lockAction()"
+                        style="
+                          border-radius: 4px 0px 0px 4px;
+                          height: 28px;
+                          padding: 0 10px;
+                          border: 1px solid #ced4da !important;
+                          font-size: 12px;
+                        "
+                      >
+                        Lock
+                      </button>
+                    }
 
                     <!-- Unlock Button (Light by default) -->
-                    <button
-                      class="btn"
-                      *ngIf="selectedRole"
-                      [ngClass]="{ 'btn-light': !isUnlockClicked, 'btn-success': isUnlockClicked }"
-                      (click)="unlockAction()"
-                      style="
-                        border-radius: 0px 4px 4px 0px;
-                        height: 28px;
-                        padding: 0 10px;
-                        border: 1px solid #ced4da !important;
-                        font-size: 12px;
-                      "
-                      [disabled]="getPermissionEdit(252) ? false : true"
-                    >
-                      Unlock
-                    </button>
+                    @if (selectedRole) {
+                      <button
+                        class="btn"
+                        [ngClass]="{
+                          'btn-light': !isUnlockClicked,
+                          'btn-success': isUnlockClicked,
+                        }"
+                        (click)="unlockAction()"
+                        style="
+                          border-radius: 0px 4px 4px 0px;
+                          height: 28px;
+                          padding: 0 10px;
+                          border: 1px solid #ced4da !important;
+                          font-size: 12px;
+                        "
+                        [disabled]="getPermissionEdit(252) ? false : true"
+                      >
+                        Unlock
+                      </button>
+                    }
                   </div>
                 </div>
               </div>
@@ -293,55 +312,69 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr *ngFor="let item of permisions_list">
-                    <td>{{ item.category }}</td>
-                    <td>{{ item.sub_category }}</td>
-                    <td>{{ item.permission_name }}</td>
-                    <td class="text-center">
-                      <input
-                        *ngIf="!isNullValue(item, 'view')"
-                        type="checkbox"
-                        [checked]="item.view"
-                        [disabled]="!isUnlockClicked || isNullValue(item, 'view')"
-                        (change)="onCheckboxChange(item, 'view', $event)"
-                        class="custom-checkbox"
-                      />
-                      <span *ngIf="isNullValue(item, 'view')"> - </span>
-                    </td>
-                    <td class="text-center">
-                      <input
-                        *ngIf="!isNullValue(item, 'add')"
-                        type="checkbox"
-                        [checked]="item.add"
-                        [disabled]="!isUnlockClicked || isNullValue(item, 'add')"
-                        (change)="onCheckboxChange(item, 'add', $event)"
-                        class="custom-checkbox"
-                      />
-                      <span *ngIf="isNullValue(item, 'add')"> - </span>
-                    </td>
-                    <td class="text-center">
-                      <input
-                        *ngIf="!isNullValue(item, 'edit')"
-                        type="checkbox"
-                        [checked]="item.edit"
-                        [disabled]="!isUnlockClicked || isNullValue(item, 'edit')"
-                        (change)="onCheckboxChange(item, 'edit', $event)"
-                        class="custom-checkbox"
-                      />
-                      <span *ngIf="isNullValue(item, 'edit')"> - </span>
-                    </td>
-                    <td class="text-center">
-                      <input
-                        *ngIf="!isNullValue(item, 'delete')"
-                        type="checkbox"
-                        [checked]="item.delete"
-                        [disabled]="!isUnlockClicked || isNullValue(item, 'delete')"
-                        (change)="onCheckboxChange(item, 'delete', $event)"
-                        class="custom-checkbox"
-                      />
-                      <span *ngIf="isNullValue(item, 'delete')"> - </span>
-                    </td>
-                  </tr>
+                  @for (item of permisions_list; track item) {
+                    <tr>
+                      <td>{{ item.category }}</td>
+                      <td>{{ item.sub_category }}</td>
+                      <td>{{ item.permission_name }}</td>
+                      <td class="text-center">
+                        @if (!isNullValue(item, 'view')) {
+                          <input
+                            type="checkbox"
+                            [checked]="item.view"
+                            [disabled]="!isUnlockClicked || isNullValue(item, 'view')"
+                            (change)="onCheckboxChange(item, 'view', $event)"
+                            class="custom-checkbox"
+                          />
+                        }
+                        @if (isNullValue(item, 'view')) {
+                          <span> - </span>
+                        }
+                      </td>
+                      <td class="text-center">
+                        @if (!isNullValue(item, 'add')) {
+                          <input
+                            type="checkbox"
+                            [checked]="item.add"
+                            [disabled]="!isUnlockClicked || isNullValue(item, 'add')"
+                            (change)="onCheckboxChange(item, 'add', $event)"
+                            class="custom-checkbox"
+                          />
+                        }
+                        @if (isNullValue(item, 'add')) {
+                          <span> - </span>
+                        }
+                      </td>
+                      <td class="text-center">
+                        @if (!isNullValue(item, 'edit')) {
+                          <input
+                            type="checkbox"
+                            [checked]="item.edit"
+                            [disabled]="!isUnlockClicked || isNullValue(item, 'edit')"
+                            (change)="onCheckboxChange(item, 'edit', $event)"
+                            class="custom-checkbox"
+                          />
+                        }
+                        @if (isNullValue(item, 'edit')) {
+                          <span> - </span>
+                        }
+                      </td>
+                      <td class="text-center">
+                        @if (!isNullValue(item, 'delete')) {
+                          <input
+                            type="checkbox"
+                            [checked]="item.delete"
+                            [disabled]="!isUnlockClicked || isNullValue(item, 'delete')"
+                            (change)="onCheckboxChange(item, 'delete', $event)"
+                            class="custom-checkbox"
+                          />
+                        }
+                        @if (isNullValue(item, 'delete')) {
+                          <span> - </span>
+                        }
+                      </td>
+                    </tr>
+                  }
                 </tbody>
               </table>
             </div>
@@ -370,22 +403,16 @@
       </div>
       <div class="modal-footer py-2 d-flex justify-content-center">
         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">No</button>
-        <button
-          type="button"
-          class="btn btn-danger btn-sm"
-          (click)="confirmDeleteRole()"
-          *ngIf="opened_dialog_type == 'role'"
-        >
-          <i class="fa fa-trash"></i> Delete
-        </button>
-        <button
-          type="button"
-          class="btn btn-danger btn-sm"
-          (click)="confirmDelete()"
-          *ngIf="opened_dialog_type == 'user'"
-        >
-          <i class="fa fa-trash"></i> Delete
-        </button>
+        @if (opened_dialog_type == 'role') {
+          <button type="button" class="btn btn-danger btn-sm" (click)="confirmDeleteRole()">
+            <i class="fa fa-trash"></i> Delete
+          </button>
+        }
+        @if (opened_dialog_type == 'user') {
+          <button type="button" class="btn btn-danger btn-sm" (click)="confirmDelete()">
+            <i class="fa fa-trash"></i> Delete
+          </button>
+        }
       </div>
     </div>
   </div>

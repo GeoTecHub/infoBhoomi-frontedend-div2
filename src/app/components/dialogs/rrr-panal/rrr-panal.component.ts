@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common'; //
+//
 import { Component, Inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -29,7 +29,6 @@ import { LegalFirmComponent } from '../legal-firm/legal-firm.component';
     FormsModule,
     MatCardModule,
     MatIconModule,
-    CommonModule,
     MatFormFieldModule,
     MatInputModule,
   ],

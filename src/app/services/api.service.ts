@@ -644,6 +644,25 @@ export class APIsService {
     return this.http.get(`${this.baseUrl}lnd-utinet-info/su_id=${su_id_value}/`, { headers });
   }
 
+  // GET LAND PARCEL METADATA (la_spatial_source)
+  getLandMetadata(su_id: any) {
+    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
+    return this.http.get(`${this.baseUrl}la-spatial-source-retrive/su_id=${su_id}/`, { headers });
+  }
+
+  // PATCH LAND PARCEL METADATA (la_spatial_source)
+  updateLandMetadata(su_id: any, data: any) {
+    const headers = new HttpHeaders({
+      Authorization: `Token ${this.token}`,
+      'Content-Type': 'application/json',
+    });
+    const allowedKeys = ['spatial_source_type', 'source_id', 'description', 'date_accept', 'surveyor_name'];
+    const filteredData = Object.fromEntries(
+      Object.entries(data).filter(([k, v]) => allowedKeys.includes(k) && v !== '' && v !== null && v !== undefined),
+    );
+    return this.http.patch(`${this.baseUrl}la-spatial-source-update/su_id=${su_id}/`, filteredData, { headers });
+  }
+
   // GET BULD INFO
   getBuildItInfo(su_id_value: any) {
     const headers = new HttpHeaders({

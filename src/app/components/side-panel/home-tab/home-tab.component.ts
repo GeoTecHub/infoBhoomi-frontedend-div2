@@ -7,7 +7,6 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 
-import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { MapService } from '../../../services/map.service';
@@ -30,7 +29,6 @@ import { ImportDataComponent } from './../../shared/popups/import-data/import-da
     MatButtonModule,
     MatButtonModule,
     MatDialogModule,
-    CommonModule,
   ],
   templateUrl: './home-tab.component.html',
   styleUrl: './home-tab.component.css',

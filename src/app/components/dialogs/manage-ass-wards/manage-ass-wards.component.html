@@ -2,8 +2,8 @@
   <div class="header-content">
     <h2 class="header-title">Manage Assessment Wards</h2>
     <!-- <button class="close-btn">
-        <mat-icon>close</mat-icon> 
-      </button> -->
+    <mat-icon>close</mat-icon>
+  </button> -->
   </div>
 </div>
 
@@ -22,33 +22,40 @@
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let ass_ward of ass_wards_list">
-                  <td *ngIf="ass_ward.edit">
-                    <input
-                      type="text"
-                      [(ngModel)]="ass_ward.ward_name"
-                      class="form-control form-control-sm small-input"
-                      placeholder="Enter text"
-                    />
-                  </td>
-                  <td *ngIf="!ass_ward.edit">{{ ass_ward.ward_name }}</td>
-
-                  <td class="text-center">
-                    <mat-icon
-                      class="text-gray material-icons-edit"
-                      *ngIf="!ass_ward.edit"
-                      (click)="editAssWard(ass_ward)"
-                      >edit</mat-icon
-                    >
-                    &nbsp;
-                    <mat-icon
-                      class="text-gray material-icons-edit"
-                      *ngIf="ass_ward.edit"
-                      (click)="updateAssessmentWard(ass_ward)"
-                      >save</mat-icon
-                    >
-                  </td>
-                </tr>
+                @for (ass_ward of ass_wards_list; track ass_ward) {
+                  <tr>
+                    @if (ass_ward.edit) {
+                      <td>
+                        <input
+                          type="text"
+                          [(ngModel)]="ass_ward.ward_name"
+                          class="form-control form-control-sm small-input"
+                          placeholder="Enter text"
+                        />
+                      </td>
+                    }
+                    @if (!ass_ward.edit) {
+                      <td>{{ ass_ward.ward_name }}</td>
+                    }
+                    <td class="text-center">
+                      @if (!ass_ward.edit) {
+                        <mat-icon
+                          class="text-gray material-icons-edit"
+                          (click)="editAssWard(ass_ward)"
+                          >edit</mat-icon
+                        >
+                      }
+                      &nbsp;
+                      @if (ass_ward.edit) {
+                        <mat-icon
+                          class="text-gray material-icons-edit"
+                          (click)="updateAssessmentWard(ass_ward)"
+                          >save</mat-icon
+                        >
+                      }
+                    </td>
+                  </tr>
+                }
               </tbody>
             </table>
           </div>

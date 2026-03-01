@@ -1,4 +1,4 @@
-import { CommonModule } from '@angular/common'; //
+//
 import { Component, Inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -27,7 +27,6 @@ declare var bootstrap: any;
     FormsModule,
     MatCardModule,
     MatIconModule,
-    CommonModule,
     MatFormFieldModule,
     MatInputModule,
     NgSelectModule,

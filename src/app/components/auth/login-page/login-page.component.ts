@@ -1,6 +1,5 @@
 import { Component } from '@angular/core';
 
-import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { API_LOGIN_RESPONSE, LoginModel } from '../../../models/API';
@@ -13,7 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 @Component({
   selector: 'app-login-page',
   standalone: true,
-  imports: [FormsModule, CommonModule, MatIconModule],
+  imports: [FormsModule, MatIconModule],
   templateUrl: './login-page.component.html',
   styleUrl: './login-page.component.css',
 })

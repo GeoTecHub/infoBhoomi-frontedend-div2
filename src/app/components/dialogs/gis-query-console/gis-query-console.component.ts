@@ -1,4 +1,3 @@
-import { CommonModule } from '@angular/common';
 import { Component, HostListener, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -32,7 +31,7 @@ interface HistoryEntry {
 @Component({
   selector: 'app-gis-query-console',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatDialogModule, MatIconModule],
+  imports: [FormsModule, MatDialogModule, MatIconModule],
   templateUrl: './gis-query-console.component.html',
   styleUrls: ['./gis-query-console.component.css'],
 })
@@ -287,22 +286,42 @@ export class GisQueryConsoleComponent {
 
   highlightSQL(sql: string): SafeHtml {
     const keywords = [
-      'SELECT', 'FROM', 'WHERE', 'JOIN', 'ON', 'AND', 'OR', 'NOT',
-      'EXISTS', 'AS', 'LEFT', 'ORDER', 'BY', 'GROUP', 'LIMIT',
-      'SUM', 'COUNT', 'DESC', 'ILIKE', 'IN', 'INTERVAL',
+      'SELECT',
+      'FROM',
+      'WHERE',
+      'JOIN',
+      'ON',
+      'AND',
+      'OR',
+      'NOT',
+      'EXISTS',
+      'AS',
+      'LEFT',
+      'ORDER',
+      'BY',
+      'GROUP',
+      'LIMIT',
+      'SUM',
+      'COUNT',
+      'DESC',
+      'ILIKE',
+      'IN',
+      'INTERVAL',
     ];
     const functions = [
-      'ST_DWithin', 'ST_Within', 'ST_Intersects', 'ST_Distance',
-      'ST_SetSRID', 'ST_MakePoint', 'NOW\\(\\)',
+      'ST_DWithin',
+      'ST_Within',
+      'ST_Intersects',
+      'ST_Distance',
+      'ST_SetSRID',
+      'ST_MakePoint',
+      'NOW\\(\\)',
     ];
 
     const lines = sql.split('\n');
     const html = lines
       .map((line, i) => {
-        let escaped = line
-          .replace(/&/g, '&amp;')
-          .replace(/</g, '&lt;')
-          .replace(/>/g, '&gt;');
+        let escaped = line.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
         functions.forEach((fn) => {
           escaped = escaped.replace(
@@ -319,10 +338,7 @@ export class GisQueryConsoleComponent {
         });
 
         escaped = escaped.replace(/'([^']*)'/g, `<span class="sql-str">'$1'</span>`);
-        escaped = escaped.replace(
-          /(?<!["'>])\b(\d+\.?\d*)\b/g,
-          `<span class="sql-num">$1</span>`,
-        );
+        escaped = escaped.replace(/(?<!["'>])\b(\d+\.?\d*)\b/g, `<span class="sql-num">$1</span>`);
 
         const lineNum = `<span class="sql-ln">${i + 1}</span>`;
         return `<div class="sql-line">${lineNum}<span>${escaped}</span></div>`;

@@ -1,5 +1,5 @@
 import { Component, effect, inject, input, output, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 
@@ -50,7 +50,7 @@ import {
 @Component({
   selector: 'app-land-info-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './land-info-panel.component.html',
   styleUrls: ['./land-info-panel.component.css'],
 })

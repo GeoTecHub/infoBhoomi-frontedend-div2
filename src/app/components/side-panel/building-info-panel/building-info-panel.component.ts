@@ -1,5 +1,5 @@
 import { Component, inject, input, output, signal, computed, effect } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import {
@@ -70,7 +70,7 @@ type CollapsibleSection =
 @Component({
   selector: 'app-building-info-panel',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
   templateUrl: './building-info-panel.component.html',
   styleUrls: ['./building-info-panel.component.css'],
 })

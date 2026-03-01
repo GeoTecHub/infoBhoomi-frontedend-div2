@@ -200,7 +200,13 @@ export interface ParcelIdentification {
   landUse: LandUse; // Current land use classification
   tenureType: TenureType; // Tenure / ownership type
   registrationDate: string; // ISO 8601
-  localAuthority: string; // Governing municipality / district
+  localAuthority: string; // Governing municipality / district (user-editable override)
+  // Auto-derived from GND spatial intersection — read-only, never sent in save payloads
+  gndName?: string; // Grama Niladhari Division name
+  dsd?: string; // Divisional Secretariat Division
+  district?: string; // District
+  province?: string; // Provincial Division
+  electoralDiv?: string; // Electoral / ward
 }
 
 /**

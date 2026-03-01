@@ -1,4 +1,5 @@
-import { inject, Injectable, OnDestroy } from '@angular/core';
+import { inject, Injectable, OnDestroy, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { featureCollection } from '@turf/helpers';
 import * as turf from '@turf/turf'; // Make sure turf is imported
 import union from '@turf/union';
@@ -23,7 +24,7 @@ import VectorSource from 'ol/source/Vector';
 import { getArea, getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import { BehaviorSubject, firstValueFrom, Observable, Subject, throwError } from 'rxjs';
-import { filter, finalize, take, takeUntil } from 'rxjs/operators';
+import { filter, finalize, take } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import { DrawEndData, FeatureData, FeatureProperties } from '../models/geometry';
 import { FeatureService } from './feature.service';
@@ -166,8 +167,8 @@ function makeSketchStyle(hex: string): Style {
 @Injectable({ providedIn: 'root' })
 export class DrawService implements OnDestroy {
   private userService = inject(UserService);
+  private destroyRef = inject(DestroyRef);
   public mapInstance: OLMap | null = null;
-  private destroy$ = new Subject<void>();
   // This will hold the layers that the multi-select interaction should target.
   private selectableLayersForExport: VectorLayer<any>[] = [];
 
@@ -233,7 +234,7 @@ export class DrawService implements OnDestroy {
     private featureService: FeatureService,
     private notificationService: NotificationService,
   ) {
-    this.mapService.mapInstance$.pipe(takeUntil(this.destroy$)).subscribe((map) => {
+    this.mapService.mapInstance$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((map) => {
       this.mapInstance = map;
       // if (map && !this._interactionsReady.value) {
       //   this.initializeAllOlInteractions(map);
@@ -248,14 +249,14 @@ export class DrawService implements OnDestroy {
     });
 
     // Manages GLOBAL tools (Draw, Select, Modify).
-    this._activeTool.pipe(takeUntil(this.destroy$)).subscribe((tool) => {
+    this._activeTool.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((tool) => {
       this.handleActiveToolChange(tool);
     }); // whenever tool changed this will be called
 
     // Manages the SOURCE of the GLOBAL snap interaction.
     this.layerService.currentLayerIdForDrawing$
       .pipe(
-        takeUntil(this.destroy$),
+        takeUntilDestroyed(this.destroyRef),
         filter(() => this._isSnappingEnabled.value),
       )
       .subscribe((layerId) => {
@@ -302,8 +303,6 @@ export class DrawService implements OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
     this.cleanupAllOlInteractions(true); // Full cleanup on destroy
   }
 

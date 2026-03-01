@@ -1,5 +1,6 @@
-import { CommonModule } from '@angular/common'; //
-import { Component, Inject } from '@angular/core';
+//
+import { Component, Inject, inject, DestroyRef} from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -13,7 +14,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatTabsModule } from '@angular/material/tabs';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { Subject, takeUntil } from 'rxjs';
+
 import { APIsService } from '../../../services/api.service';
 import { NotificationService } from '../../../services/notifications.service';
 import { UserService } from '../../../services/user.service';
@@ -29,7 +30,6 @@ import { CompanyComponent } from '../company/company.component';
     FormsModule,
     MatCardModule,
     MatIconModule,
-    CommonModule,
     MatFormFieldModule,
     MatInputModule,
     NgSelectModule,
@@ -38,6 +38,7 @@ import { CompanyComponent } from '../company/company.component';
   styleUrl: './group.component.css',
 })
 export class GroupComponent {
+  private destroyRef = inject(DestroyRef);
   selectedGroup: any = null;
   filterValue: any;
   party_identification: any = {
@@ -84,8 +85,6 @@ export class GroupComponent {
     registration_number: '',
   };
 
-  private destroy$ = new Subject<void>();
-
   ngOnInit(): void {
     this.getGroupTypes();
     this.getGroupNames();
@@ -102,7 +101,7 @@ export class GroupComponent {
     private notificationService: NotificationService,
     private userService: UserService,
   ) {
-    this.userService.user$.pipe(takeUntil(this.destroy$)).subscribe((user: any) => {
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
         this.user_id = user.user_id || '';
       }
