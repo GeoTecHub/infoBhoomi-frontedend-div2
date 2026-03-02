@@ -313,6 +313,13 @@ export class LandInfoPanelComponent {
   }
 
   removeDocument(entryIndex: number, docIndex: number): void {
+    const doc = this.rrrEntries()[entryIndex]?.documents?.[docIndex];
+    // If this is a backend-stored additional doc, delete it immediately via API
+    if (doc?.docLinkId) {
+      this.apiService
+        .deleteRRRDocument(doc.docLinkId)
+        .subscribe({ error: (e) => console.error('Failed to delete document:', e) });
+    }
     const entries = this.rrrEntries().map((e, i) => {
       if (i !== entryIndex) return e;
       return { ...e, documents: (e.documents || []).filter((_, di) => di !== docIndex) };

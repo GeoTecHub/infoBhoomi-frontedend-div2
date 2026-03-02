@@ -329,7 +329,8 @@ export interface RRRDocument {
   size: number; // bytes
   file?: File; // client-side only, not serialised
   fileUrl?: string; // backend URL for already-saved documents
-  adminSourceId?: number; // backend admin_source_id
+  adminSourceId?: number; // backend admin_source_id (primary doc)
+  docLinkId?: number; // la_rrr_document.id for additional docs — used for deletion
 }
 
 export interface RRREntry {

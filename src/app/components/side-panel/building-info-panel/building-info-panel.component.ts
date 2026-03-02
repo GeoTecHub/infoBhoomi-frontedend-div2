@@ -3,6 +3,7 @@ import { BuildingSectionPermissions } from '../../../core/constant';
 
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
+import { APIsService } from '../../../services/api.service';
 import {
   BuildingInfo,
   BuildingSummary,
@@ -155,6 +156,7 @@ export class BuildingInfoPanelComponent {
   readonly partyTypeDisplayMap = PARTY_TYPE_DISPLAY;
 
   private dialog = inject(MatDialog);
+  private apiService = inject(APIsService);
 
   // Local RRR state (avoids parent round-trip delay)
   rrrEntries = signal<RRREntry[]>([]);
@@ -530,6 +532,13 @@ export class BuildingInfoPanelComponent {
   }
 
   removeDocument(entryIndex: number, docIndex: number): void {
+    const doc = this.rrrEntries()[entryIndex]?.documents?.[docIndex];
+    // If this is a backend-stored additional doc, delete it immediately via API
+    if (doc?.docLinkId) {
+      this.apiService
+        .deleteRRRDocument(doc.docLinkId)
+        .subscribe({ error: (e) => console.error('Failed to delete document:', e) });
+    }
     const entries = this.cloneEntries();
     if (!entries[entryIndex]?.documents?.[docIndex]) return;
     entries[entryIndex].documents.splice(docIndex, 1);

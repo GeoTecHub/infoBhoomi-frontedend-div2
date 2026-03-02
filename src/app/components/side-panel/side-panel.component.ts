@@ -704,16 +704,27 @@ export class SidePanelComponent {
           this.fetchedRRRMap.clear();
           const rrrEntries: RRREntry[] = [];
           const records = rrrData?.records || [];
+          console.log('[RRR Merge - Land] raw rrrData from backend:', rrrData);
+          console.log('[RRR Merge - Land] records count:', records.length);
           for (const record of records) {
             this.fetchedRRRBaUnitIds.add(record.ba_unit_id);
+            console.log(`[RRR Merge - Land] ba_unit_id=${record.ba_unit_id} admin_sources:`, record.admin_sources);
             // Map admin_sources → RRRDocument[] so uploaded docs appear in the panel
-            const docs = (record.admin_sources || []).map((src: any) => ({
-              name: src.admin_source_type || 'Document',
-              type: 'application/pdf',
-              size: 0,
-              fileUrl: src.file_url,
-              adminSourceId: src.admin_source_id,
-            }));
+            const docs = (record.admin_sources || []).map((src: any) => {
+              console.log(
+                `[RRR Merge - Land]   src admin_source_id=${src.admin_source_id} ` +
+                `type=${src.admin_source_type} file_url=${src.file_url} doc_link_id=${src.doc_link_id}`,
+              );
+              return {
+                name: src.admin_source_type || 'Document',
+                type: 'application/pdf',
+                size: 0,
+                fileUrl: src.file_url,
+                adminSourceId: src.admin_source_id,
+                docLinkId: src.doc_link_id ?? undefined,
+              };
+            });
+            console.log(`[RRR Merge - Land] ba_unit_id=${record.ba_unit_id} mapped docs:`, docs);
             for (const rrr of record.rrrs || []) {
               const entryId = `BU-${record.ba_unit_id}`;
               if (rrr.rrr_id) this.fetchedRRRMap.set(entryId, rrr.rrr_id);
@@ -733,6 +744,7 @@ export class SidePanelComponent {
               });
             }
           }
+          console.log('[RRR Merge - Land] final rrrEntries:', rrrEntries);
 
           // Merge zoning data
           const zoning = { ...current.zoning };
@@ -879,16 +891,27 @@ export class SidePanelComponent {
           this.fetchedRRRMap.clear();
           const rrrEntries: RRREntry[] = [];
           const records = rrrData?.records || [];
+          console.log('[RRR Merge - Building] raw rrrData from backend:', rrrData);
+          console.log('[RRR Merge - Building] records count:', records.length);
           for (const record of records) {
             this.fetchedRRRBaUnitIds.add(record.ba_unit_id);
+            console.log(`[RRR Merge - Building] ba_unit_id=${record.ba_unit_id} admin_sources:`, record.admin_sources);
             // Map admin_sources → RRRDocument[] so uploaded docs appear in the panel
-            const docs = (record.admin_sources || []).map((src: any) => ({
-              name: src.admin_source_type || 'Document',
-              type: 'application/pdf',
-              size: 0,
-              fileUrl: src.file_url,
-              adminSourceId: src.admin_source_id,
-            }));
+            const docs = (record.admin_sources || []).map((src: any) => {
+              console.log(
+                `[RRR Merge - Building]   src admin_source_id=${src.admin_source_id} ` +
+                `type=${src.admin_source_type} file_url=${src.file_url} doc_link_id=${src.doc_link_id}`,
+              );
+              return {
+                name: src.admin_source_type || 'Document',
+                type: 'application/pdf',
+                size: 0,
+                fileUrl: src.file_url,
+                adminSourceId: src.admin_source_id,
+                docLinkId: src.doc_link_id ?? undefined,
+              };
+            });
+            console.log(`[RRR Merge - Building] ba_unit_id=${record.ba_unit_id} mapped docs:`, docs);
             for (const rrr of record.rrrs || []) {
               const entryId = `BU-${record.ba_unit_id}`;
               if (rrr.rrr_id) this.fetchedRRRMap.set(entryId, rrr.rrr_id);
@@ -908,6 +931,7 @@ export class SidePanelComponent {
               });
             }
           }
+          console.log('[RRR Merge - Building] final rrrEntries:', rrrEntries);
 
           // Merge building utility data (LA_LS_Utinet_BU_Model)
           const utilities: UtilityInfo = {
@@ -1062,14 +1086,14 @@ export class SidePanelComponent {
     // Save new entries (identified by rrrId starting with 'BRRR-')
     const newEntries = currentEntries.filter((e) => e.rrrId.startsWith('BRRR-') && e.holderId);
     for (const entry of newEntries) {
+      const localFiles = (entry.documents || []).filter((d) => d.file);
       const fd = new FormData();
       fd.append('su_id', String(su_id));
       fd.append('sl_ba_unit_name', entry.holder);
       fd.append('sl_ba_unit_type', 'OWNERSHIP');
       fd.append('admin_source_type', entry.documentRef || 'Title Deed');
-      // Attach the first locally uploaded file (if any); backend supports one file per BA unit
-      const localFile = entry.documents?.find((d) => d.file)?.file;
-      if (localFile) fd.append('file', localFile);
+      // First file goes with the initial RRR creation
+      if (localFiles.length > 0) fd.append('file', localFiles[0].file as File);
       fd.append(
         'parties',
         JSON.stringify([
@@ -1090,7 +1114,20 @@ export class SidePanelComponent {
         .pipe(
           switchMap((res: any) => {
             const rrr_id = res?.created_rrr_ids?.[0];
+            const ba_unit_id = res?.ba_unit_id;
             if (rrr_id) this.syncRRRSubRecords(rrr_id, entry);
+            // Upload any additional files (index 1+) as extra docs on the new BA unit
+            if (ba_unit_id && localFiles.length > 1) {
+              for (const doc of localFiles.slice(1)) {
+                const extraFd = new FormData();
+                extraFd.append('file', doc.file as File);
+                extraFd.append('admin_source_type', doc.name || 'Document');
+                this.apiService
+                  .postRRRDocument(ba_unit_id, extraFd)
+                  .pipe(takeUntilDestroyed(this.destroyRef))
+                  .subscribe();
+              }
+            }
             return of(null);
           }),
           takeUntilDestroyed(this.destroyRef),
@@ -1104,18 +1141,17 @@ export class SidePanelComponent {
       if (!rrr_id) continue;
       this.syncRRRSubRecords(rrr_id, entry);
 
-      // If a new local file was uploaded, PATCH the existing admin source
-      const newLocalFile = entry.documents?.find((d) => d.file)?.file;
-      if (newLocalFile) {
-        const existingAdminSourceId = entry.documents?.find((d) => d.adminSourceId)?.adminSourceId;
-        if (existingAdminSourceId) {
-          const fd = new FormData();
-          fd.append('file', newLocalFile);
-          this.apiService
-            .patchAdminSource(existingAdminSourceId, fd)
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe();
-        }
+      // Upload every new local file as an additional doc on this BA unit
+      const baUnitId = Number(entry.rrrId.replace('BU-', ''));
+      const newLocalFiles = (entry.documents || []).filter((d) => d.file);
+      for (const doc of newLocalFiles) {
+        const fd = new FormData();
+        fd.append('file', doc.file as File);
+        fd.append('admin_source_type', doc.name || 'Document');
+        this.apiService
+          .postRRRDocument(baUnitId, fd)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe();
       }
     }
   }
@@ -1239,14 +1275,14 @@ export class SidePanelComponent {
     // Save new entries (those added client-side, identified by rrrId starting with 'LRRR-')
     const newEntries = currentEntries.filter((e) => e.rrrId.startsWith('LRRR-') && e.holderId);
     for (const entry of newEntries) {
+      const localFiles = (entry.documents || []).filter((d) => d.file);
       const fd = new FormData();
       fd.append('su_id', String(su_id));
       fd.append('sl_ba_unit_name', entry.holder);
       fd.append('sl_ba_unit_type', 'OWNERSHIP');
       fd.append('admin_source_type', entry.documentRef || 'Title Deed');
-      // Attach the first locally uploaded file (if any); backend supports one file per BA unit
-      const localFile = entry.documents?.find((d) => d.file)?.file;
-      if (localFile) fd.append('file', localFile);
+      // First file goes with the initial RRR creation
+      if (localFiles.length > 0) fd.append('file', localFiles[0].file as File);
       fd.append(
         'parties',
         JSON.stringify([
@@ -1267,7 +1303,20 @@ export class SidePanelComponent {
         .pipe(
           switchMap((res: any) => {
             const rrr_id = res?.created_rrr_ids?.[0];
+            const ba_unit_id = res?.ba_unit_id;
             if (rrr_id) this.syncRRRSubRecords(rrr_id, entry);
+            // Upload any additional files (index 1+) as extra docs on the new BA unit
+            if (ba_unit_id && localFiles.length > 1) {
+              for (const doc of localFiles.slice(1)) {
+                const extraFd = new FormData();
+                extraFd.append('file', doc.file as File);
+                extraFd.append('admin_source_type', doc.name || 'Document');
+                this.apiService
+                  .postRRRDocument(ba_unit_id, extraFd)
+                  .pipe(takeUntilDestroyed(this.destroyRef))
+                  .subscribe();
+              }
+            }
             return of(null);
           }),
           takeUntilDestroyed(this.destroyRef),
@@ -1281,18 +1330,17 @@ export class SidePanelComponent {
       if (!rrr_id) continue;
       this.syncRRRSubRecords(rrr_id, entry);
 
-      // If a new local file was uploaded, PATCH the existing admin source
-      const newLocalFile = entry.documents?.find((d) => d.file)?.file;
-      if (newLocalFile) {
-        const existingAdminSourceId = entry.documents?.find((d) => d.adminSourceId)?.adminSourceId;
-        if (existingAdminSourceId) {
-          const fd = new FormData();
-          fd.append('file', newLocalFile);
-          this.apiService
-            .patchAdminSource(existingAdminSourceId, fd)
-            .pipe(takeUntilDestroyed(this.destroyRef))
-            .subscribe();
-        }
+      // Upload every new local file as an additional doc on this BA unit
+      const baUnitId = Number(entry.rrrId.replace('BU-', ''));
+      const newLocalFiles = (entry.documents || []).filter((d) => d.file);
+      for (const doc of newLocalFiles) {
+        const extraFd = new FormData();
+        extraFd.append('file', doc.file as File);
+        extraFd.append('admin_source_type', doc.name || 'Document');
+        this.apiService
+          .postRRRDocument(baUnitId, extraFd)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe();
       }
     }
   }

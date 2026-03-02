@@ -1559,6 +1559,18 @@ export class APIsService {
     );
   }
 
+  /** Upload an additional document to an existing BA unit. */
+  postRRRDocument(baUnitId: number, formData: FormData): Observable<any> {
+    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
+    return this.http.post(`${this.baseUrl}rrr-add-document/ba_unit_id=${baUnitId}/`, formData, { headers });
+  }
+
+  /** Delete an additional document link (la_rrr_document row + its admin source). */
+  deleteRRRDocument(docLinkId: number): Observable<any> {
+    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
+    return this.http.delete(`${this.baseUrl}rrr-remove-document/${docLinkId}/`, { headers });
+  }
+
   // ADMIN APIS
   // GET USERS
 
