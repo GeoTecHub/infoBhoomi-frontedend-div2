@@ -33,3 +33,10 @@
   color: #779ab8;
   font-size: 11px;
 }
+
+.field-error {
+  display: block;
+  color: #dc3545;
+  font-size: 11px;
+  margin-top: 2px;
+}

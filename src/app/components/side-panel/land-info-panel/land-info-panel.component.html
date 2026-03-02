@@ -18,8 +18,9 @@
     </div>
   } @else {
     <div class="panel-content">
+      @if (canView(LAND_PERMS.IDENTIFICATION)) {
       <!-- ═══ Identification & Administrative ═══ -->
-      <div class="collapsible-section">
+      <div class="collapsible-section" [class.section-readonly]="!canEdit(LAND_PERMS.IDENTIFICATION)">
         <button
           class="section-header"
           [class.expanded]="isSectionExpanded('identification')"
@@ -190,8 +191,10 @@
         }
       </div>
 
+      }
+      @if (canView(LAND_PERMS.SPATIAL)) {
       <!-- ═══ Spatial / Geometric (2D) ═══ -->
-      <div class="collapsible-section">
+      <div class="collapsible-section" [class.section-readonly]="!canEdit(LAND_PERMS.SPATIAL)">
         <button
           class="section-header"
           [class.expanded]="isSectionExpanded('spatial')"
@@ -293,8 +296,10 @@
         }
       </div>
 
+      }
+      @if (canView(LAND_PERMS.PHYSICAL)) {
       <!-- ═══ Physical & Environmental ═══ -->
-      <div class="collapsible-section">
+      <div class="collapsible-section" [class.section-readonly]="!canEdit(LAND_PERMS.PHYSICAL)">
         <button
           class="section-header"
           [class.expanded]="isSectionExpanded('physical')"
@@ -476,8 +481,10 @@
         }
       </div>
 
+      }
+      @if (canView(LAND_PERMS.ZONING)) {
       <!-- ═══ Zoning & Restrictions ═══ -->
-      <div class="collapsible-section">
+      <div class="collapsible-section" [class.section-readonly]="!canEdit(LAND_PERMS.ZONING)">
         <button
           class="section-header"
           [class.expanded]="isSectionExpanded('zoning')"
@@ -624,8 +631,10 @@
         }
       </div>
 
+      }
+      @if (canView(LAND_PERMS.RRR)) {
       <!-- ═══ Rights, Restrictions & Responsibilities ═══ -->
-      <div class="collapsible-section">
+      <div class="collapsible-section" [class.section-readonly]="!canEdit(LAND_PERMS.RRR)">
         <button
           class="section-header"
           [class.expanded]="isSectionExpanded('rrr')"
@@ -811,7 +820,16 @@
                                       <polyline points="14 2 14 8 20 8" />
                                     </svg>
                                     <span class="doc-name">{{ doc.name }}</span>
-                                    <span class="doc-size">({{ formatFileSize(doc.size) }})</span>
+                                    @if (!doc.fileUrl) {
+                                      <span class="doc-size">({{ formatFileSize(doc.size) }})</span>
+                                    }
+                                    @if (doc.fileUrl) {
+                                      <button
+                                        class="rrr-view-doc-btn"
+                                        (click)="openDocument(doc)"
+                                        title="View document"
+                                      >&#128065;</button>
+                                    }
                                     <button
                                       class="rrr-remove-btn"
                                       (click)="removeDocument(i, di)"
@@ -988,8 +1006,10 @@
         }
       </div>
 
+      }
+      @if (canView(LAND_PERMS.VALUATION)) {
       <!-- ═══ Tax & Valuation ═══ -->
-      <div class="collapsible-section">
+      <div class="collapsible-section" [class.section-readonly]="!canEdit(LAND_PERMS.VALUATION)">
         <button
           class="section-header"
           [class.expanded]="isSectionExpanded('valuation')"
@@ -1091,8 +1111,10 @@
         }
       </div>
 
+      }
+      @if (canView(LAND_PERMS.RELATIONSHIPS)) {
       <!-- ═══ Relationships ═══ -->
-      <div class="collapsible-section">
+      <div class="collapsible-section" [class.section-readonly]="!canEdit(LAND_PERMS.RELATIONSHIPS)">
         <button
           class="section-header"
           [class.expanded]="isSectionExpanded('relationships')"
@@ -1194,8 +1216,10 @@
         }
       </div>
 
+      }
+      @if (canView(LAND_PERMS.METADATA)) {
       <!-- ═══ Metadata & Quality ═══ -->
-      <div class="collapsible-section">
+      <div class="collapsible-section" [class.section-readonly]="!canEdit(LAND_PERMS.METADATA)">
         <button
           class="section-header"
           [class.expanded]="isSectionExpanded('metadata')"
@@ -1298,6 +1322,7 @@
         }
       </div>
 
+      }
       <!-- ═══ Save / Delete Footer ═══ -->
       <div class="panel-footer">
         <button class="footer-btn save-btn" (click)="onSaveParcel()">

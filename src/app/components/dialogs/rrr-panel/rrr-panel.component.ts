@@ -688,7 +688,7 @@ export class RrrPanelComponent implements OnInit, AfterViewInit {
     fd.append('sl_ba_unit_name', this.administrative_source.sl_ba_unit_name);
     fd.append('sl_ba_unit_type', this.administrative_source.sl_ba_unit_type);
     fd.append('admin_source_type', this.administrative_source.admin_source_type);
-    fd.append('source', file);
+    fd.append('file', file as File);
     fd.append('parties', JSON.stringify(parties));
 
     this.apiService.postAdminSource(fd).subscribe(
@@ -775,17 +775,15 @@ export class RrrPanelComponent implements OnInit, AfterViewInit {
   }
 
   openPdfFromRow(row: any) {
-    console.log('Preview clicked row:', row);
-
     if (!row?.file_url) {
       console.warn('No file_url available on this row');
       return;
     }
 
-    // Call the new API method and just log the result for now
-    this.apiService.getRRRFile(row.file_url).subscribe({
+    this.apiService.getPDF(row.file_url).subscribe({
       next: (res) => {
-        console.log('RRR file response:', res);
+        const fileURL = URL.createObjectURL(res);
+        window.open(fileURL, '_blank');
       },
       error: (err) => {
         console.error('Error fetching RRR file:', err);

@@ -92,8 +92,9 @@
   <!-- ═══ STATE 3: Editing Building Details ═══ -->
   @if (panelState() === 'details' && buildingInfo(); as info) {
     <div class="panel-content">
+      @if (canView(BLDG_PERMS.SUMMARY)) {
       <!-- Summary & Administrative Section -->
-      <div class="collapsible-section">
+      <div class="collapsible-section" [class.section-readonly]="!canEdit(BLDG_PERMS.SUMMARY)">
         <button
           class="section-header"
           [class.expanded]="isSectionExpanded('summary')"
@@ -276,8 +277,10 @@
         }
       </div>
 
+      }
+      @if (canView(BLDG_PERMS.SPATIAL)) {
       <!-- Spatial/Geometric (3D) Section -->
-      <div class="collapsible-section">
+      <div class="collapsible-section" [class.section-readonly]="!canEdit(BLDG_PERMS.SPATIAL)">
         <button
           class="section-header"
           [class.expanded]="isSectionExpanded('spatial')"
@@ -361,8 +364,10 @@
         }
       </div>
 
+      }
+      @if (canView(BLDG_PERMS.RRR)) {
       <!-- Rights, Restrictions & Responsibilities (RRR) Section -->
-      <div class="collapsible-section">
+      <div class="collapsible-section" [class.section-readonly]="!canEdit(BLDG_PERMS.RRR)">
         <button
           class="section-header"
           [class.expanded]="isSectionExpanded('rrr')"
@@ -725,8 +730,10 @@
         }
       </div>
 
+      }
+      @if (canView(BLDG_PERMS.UNITS)) {
       <!-- Building Units / Strata Section -->
-      <div class="collapsible-section">
+      <div class="collapsible-section" [class.section-readonly]="!canEdit(BLDG_PERMS.UNITS)">
         <button
           class="section-header"
           [class.expanded]="isSectionExpanded('units')"
@@ -1345,8 +1352,10 @@
         }
       </div>
 
+      }
+      @if (canView(BLDG_PERMS.PHYSICAL)) {
       <!-- Physical Attributes Section -->
-      <div class="collapsible-section">
+      <div class="collapsible-section" [class.section-readonly]="!canEdit(BLDG_PERMS.PHYSICAL)">
         <button
           class="section-header"
           [class.expanded]="isSectionExpanded('physical')"
@@ -1459,8 +1468,10 @@
         }
       </div>
 
+      }
+      @if (canView(BLDG_PERMS.UTILITIES)) {
       <!-- Utilities & Services Section -->
-      <div class="collapsible-section">
+      <div class="collapsible-section" [class.section-readonly]="!canEdit(BLDG_PERMS.UTILITIES)">
         <button
           class="section-header"
           [class.expanded]="isSectionExpanded('utilities')"
@@ -1608,8 +1619,10 @@
         }
       </div>
 
+      }
+      @if (canView(BLDG_PERMS.RELATIONSHIPS)) {
       <!-- Relationships & Topology Section -->
-      <div class="collapsible-section">
+      <div class="collapsible-section" [class.section-readonly]="!canEdit(BLDG_PERMS.RELATIONSHIPS)">
         <button
           class="section-header"
           [class.expanded]="isSectionExpanded('relationships')"
@@ -1725,8 +1738,10 @@
         }
       </div>
 
+      }
+      @if (canView(BLDG_PERMS.METADATA)) {
       <!-- Metadata & Quality Section -->
-      <div class="collapsible-section">
+      <div class="collapsible-section" [class.section-readonly]="!canEdit(BLDG_PERMS.METADATA)">
         <button
           class="section-header"
           [class.expanded]="isSectionExpanded('metadata')"
@@ -1816,6 +1831,7 @@
         }
       </div>
 
+      }
       <!-- Tax & Valuation Section (only if data exists) -->
       @if (info.taxValuation) {
         <div class="collapsible-section">

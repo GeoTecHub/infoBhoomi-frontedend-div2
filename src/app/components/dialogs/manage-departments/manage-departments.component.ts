@@ -36,6 +36,7 @@ declare var bootstrap: any;
 })
 export class ManageDepartmentsComponent {
   departments_list: any = [];
+  private all_departments: any = [];
   searchQuery = '';
   admin_password = '';
   selected_department: any;
@@ -61,23 +62,18 @@ export class ManageDepartmentsComponent {
 
   getDepartmentList() {
     this.apiService.getDepartments().subscribe((res) => {
-      this.departments_list = res;
-      console.log(res);
-      for (let item of this.departments_list) {
-        item.edit = false;
-      }
+      this.all_departments = res.map((item: any) => ({ ...item, edit: false }));
       this.filterDepartments();
     });
   }
 
   filterDepartments() {
-    if (!this.searchQuery) {
-      this.departments_list = [...this.departments_list];
-    } else {
-      this.departments_list = this.departments_list.filter((department: { dep_name: string }) =>
-        department.dep_name.toLowerCase().includes(this.searchQuery.toLowerCase()),
-      );
-    }
+    const q = this.searchQuery.toLowerCase();
+    this.departments_list = q
+      ? this.all_departments.filter((d: { dep_name: string }) =>
+          d.dep_name.toLowerCase().includes(q),
+        )
+      : [...this.all_departments];
   }
   editDepartment(item: any) {
     item.edit = true;
@@ -123,14 +119,17 @@ export class ManageDepartmentsComponent {
   }
 
   updateDepartment(selected_department: any) {
+    if (!selected_department.dep_name?.trim()) {
+      this.notificationService.showError('Department name cannot be empty.');
+      return;
+    }
     selected_department.edit = false;
     let input_data = {
-      dep_name: selected_department.dep_name,
+      dep_name: selected_department.dep_name.trim(),
     };
     this.apiService.updateDepartment(input_data, selected_department.dep_id).subscribe(
-      (response: any) => {
-        console.log(response);
-        this.notificationService.showSuccess('Data saved successfully');
+      (_response: any) => {
+        this.notificationService.showSuccess('Department updated successfully.');
       },
       (error: any) => {
         console.error('Error saving administrative info:', error);
@@ -144,8 +143,12 @@ export class ManageDepartmentsComponent {
   }
 
   SubmitAll() {
+    if (!this.department_name?.trim()) {
+      this.notificationService.showError('Please enter a department name.');
+      return;
+    }
     let input_data = {
-      dep_name: this.department_name,
+      dep_name: this.department_name.trim(),
     };
     this.apiService.createDepartment(input_data).subscribe(
       (response: any) => {

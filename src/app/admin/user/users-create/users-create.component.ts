@@ -83,10 +83,6 @@ export class UsersCreateComponent {
     this.userForm.get('reEnterPassword')?.valueChanges.subscribe(() => {
       this.checkPasswordMatch();
     });
-    this.userForm.get('mobile')?.statusChanges.subscribe((status) => {
-      console.log('Mobile Field Status:', status);
-      console.log('Mobile Field Errors:', this.userForm.get('mobile')?.errors);
-    });
   }
 
   getDepartmentList() {
@@ -98,9 +94,8 @@ export class UsersCreateComponent {
   // Create New User
   createNewUser() {
     if (this.userForm.valid) {
-      this.userForm.value.password = 'user@user123';
-      const formValue = { ...this.userForm.value };
-      formValue.password = '12345678';
+      const { reEnterPassword, ...formValue } = { ...this.userForm.value };
+      formValue.password = 'user@user123';
       this.apiService.createNewUser(formValue).subscribe(
         (res) => {
           this.notificationService.showSuccess('Data saved successfully');
@@ -113,7 +108,8 @@ export class UsersCreateComponent {
         },
       );
     } else {
-      this.notificationService.showError('Please fill all required fields');
+      this.userForm.markAllAsTouched();
+      this.notificationService.showError('Please fill all required fields correctly.');
     }
   }
 

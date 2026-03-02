@@ -54,7 +54,9 @@ import { APIsService } from '../../services/api.service';
 import { DrawService, SelectedFeatureInfo } from '../../services/draw.service';
 import { MapService } from '../../services/map.service';
 import { NotificationService } from '../../services/notifications.service';
+import { PermissionService } from '../../services/permissions.service';
 import { SidebarControlService } from '../../services/sidebar-control.service';
+import { LandSectionPermissions, BuildingSectionPermissions } from '../../core/constant';
 import { BuildingInfoPanelComponent } from './building-info-panel/building-info-panel.component';
 import { HomeTabComponent } from './home-tab/home-tab.component';
 import { LandInfoPanelComponent } from './land-info-panel/land-info-panel.component';
@@ -95,6 +97,7 @@ export class SidePanelComponent {
   currentLandParcelInfo = signal<LandParcelInfo | null>(null);
   currentBuildingInfo = signal<BuildingInfo | null>(null);
   buildingModelLoaded = signal(false);
+  sectionPerms = signal<Record<number, any>>({});
 
   extendWidth = false;
 
@@ -105,6 +108,7 @@ export class SidePanelComponent {
     private sidebarService: SidebarControlService,
     private apiService: APIsService,
     private dialog: MatDialog,
+    private permissionService: PermissionService,
   ) {
     // Handle feature selection changes
     this.drawService.selectedFeatureInfo$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((info) => {
@@ -178,6 +182,23 @@ export class SidePanelComponent {
   switchTab(tab: SidebarTab): void {
     this.activeSidebarTab.set(tab);
     this.makeExtend();
+  }
+
+  ngOnInit(): void {
+    this.loadSectionPermissions();
+  }
+
+  private loadSectionPermissions(): void {
+    const roleId = parseInt(typeof window !== 'undefined' ? (localStorage.getItem('role_id') ?? '0') : '0', 10);
+    if (!roleId) return;
+    const allIds = [
+      ...Object.values(LandSectionPermissions),
+      ...Object.values(BuildingSectionPermissions),
+    ];
+    this.permissionService.loadPermissions(roleId, allIds).subscribe({
+      next: (perms) => this.sectionPerms.set(perms),
+      error: () => { /* keep default allow-all */ },
+    });
   }
 
   isTabEnabled(tab: SidebarTab): boolean {
@@ -685,6 +706,14 @@ export class SidePanelComponent {
           const records = rrrData?.records || [];
           for (const record of records) {
             this.fetchedRRRBaUnitIds.add(record.ba_unit_id);
+            // Map admin_sources → RRRDocument[] so uploaded docs appear in the panel
+            const docs = (record.admin_sources || []).map((src: any) => ({
+              name: src.admin_source_type || 'Document',
+              type: 'application/pdf',
+              size: 0,
+              fileUrl: src.file_url,
+              adminSourceId: src.admin_source_id,
+            }));
             for (const rrr of record.rrrs || []) {
               const entryId = `BU-${record.ba_unit_id}`;
               if (rrr.rrr_id) this.fetchedRRRMap.set(entryId, rrr.rrr_id);
@@ -698,7 +727,7 @@ export class SidePanelComponent {
                 validFrom: rrr.time_begin || '',
                 validTo: rrr.time_end || '',
                 documentRef: record.sl_ba_unit_name || '',
-                documents: [],
+                documents: docs,
                 restrictions: [],
                 responsibilities: [],
               });
@@ -852,6 +881,14 @@ export class SidePanelComponent {
           const records = rrrData?.records || [];
           for (const record of records) {
             this.fetchedRRRBaUnitIds.add(record.ba_unit_id);
+            // Map admin_sources → RRRDocument[] so uploaded docs appear in the panel
+            const docs = (record.admin_sources || []).map((src: any) => ({
+              name: src.admin_source_type || 'Document',
+              type: 'application/pdf',
+              size: 0,
+              fileUrl: src.file_url,
+              adminSourceId: src.admin_source_id,
+            }));
             for (const rrr of record.rrrs || []) {
               const entryId = `BU-${record.ba_unit_id}`;
               if (rrr.rrr_id) this.fetchedRRRMap.set(entryId, rrr.rrr_id);
@@ -865,7 +902,7 @@ export class SidePanelComponent {
                 validFrom: rrr.time_begin || '',
                 validTo: rrr.time_end || '',
                 documentRef: record.sl_ba_unit_name || '',
-                documents: [],
+                documents: docs,
                 restrictions: [],
                 responsibilities: [],
               });
@@ -1030,6 +1067,9 @@ export class SidePanelComponent {
       fd.append('sl_ba_unit_name', entry.holder);
       fd.append('sl_ba_unit_type', 'OWNERSHIP');
       fd.append('admin_source_type', entry.documentRef || 'Title Deed');
+      // Attach the first locally uploaded file (if any); backend supports one file per BA unit
+      const localFile = entry.documents?.find((d) => d.file)?.file;
+      if (localFile) fd.append('file', localFile);
       fd.append(
         'parties',
         JSON.stringify([
@@ -1058,11 +1098,25 @@ export class SidePanelComponent {
         .subscribe();
     }
 
-    // Sync restrictions & responsibilities for existing RRR entries (replace-all strategy)
+    // Sync restrictions, responsibilities, and new document uploads for existing RRR entries
     for (const entry of currentEntries.filter((e) => e.rrrId.startsWith('BU-'))) {
       const rrr_id = this.fetchedRRRMap.get(entry.rrrId);
       if (!rrr_id) continue;
       this.syncRRRSubRecords(rrr_id, entry);
+
+      // If a new local file was uploaded, PATCH the existing admin source
+      const newLocalFile = entry.documents?.find((d) => d.file)?.file;
+      if (newLocalFile) {
+        const existingAdminSourceId = entry.documents?.find((d) => d.adminSourceId)?.adminSourceId;
+        if (existingAdminSourceId) {
+          const fd = new FormData();
+          fd.append('file', newLocalFile);
+          this.apiService
+            .patchAdminSource(existingAdminSourceId, fd)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe();
+        }
+      }
     }
   }
 
@@ -1122,11 +1176,11 @@ export class SidePanelComponent {
     };
 
     forkJoin([
-      this.apiService.updateAdministrativeInfo(su_id, adminPayload, 'land'),
-      this.apiService.updateLandOverviewInfo(su_id, overviewPayload, 'land'),
-      this.apiService.updateTaxAndAssessmentInfo(su_id, taxPayload, 'land'),
-      this.apiService.updateZoningInfo(su_id, zoningPayload),
-      this.apiService.updatePhysicalEnvInfo(su_id, physicalEnvPayload),
+      this.apiService.updateAdministrativeInfo(su_id, adminPayload, 'land').pipe(catchError((e) => { console.error('[Save] admin info error:', e); return of(null); })),
+      this.apiService.updateLandOverviewInfo(su_id, overviewPayload, 'land').pipe(catchError((e) => { console.error('[Save] overview error:', e); return of(null); })),
+      this.apiService.updateTaxAndAssessmentInfo(su_id, taxPayload, 'land').pipe(catchError((e) => { console.error('[Save] tax error:', e); return of(null); })),
+      this.apiService.updateZoningInfo(su_id, zoningPayload).pipe(catchError((e) => { console.error('[Save] zoning error:', e); return of(null); })),
+      this.apiService.updatePhysicalEnvInfo(su_id, physicalEnvPayload).pipe(catchError((e) => { console.error('[Save] physical error:', e); return of(null); })),
     ])
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -1190,6 +1244,9 @@ export class SidePanelComponent {
       fd.append('sl_ba_unit_name', entry.holder);
       fd.append('sl_ba_unit_type', 'OWNERSHIP');
       fd.append('admin_source_type', entry.documentRef || 'Title Deed');
+      // Attach the first locally uploaded file (if any); backend supports one file per BA unit
+      const localFile = entry.documents?.find((d) => d.file)?.file;
+      if (localFile) fd.append('file', localFile);
       fd.append(
         'parties',
         JSON.stringify([
@@ -1218,11 +1275,25 @@ export class SidePanelComponent {
         .subscribe();
     }
 
-    // Sync restrictions & responsibilities for existing RRR entries (replace-all strategy)
+    // Sync restrictions, responsibilities, and new document uploads for existing RRR entries
     for (const entry of currentEntries.filter((e) => e.rrrId.startsWith('BU-'))) {
       const rrr_id = this.fetchedRRRMap.get(entry.rrrId);
       if (!rrr_id) continue;
       this.syncRRRSubRecords(rrr_id, entry);
+
+      // If a new local file was uploaded, PATCH the existing admin source
+      const newLocalFile = entry.documents?.find((d) => d.file)?.file;
+      if (newLocalFile) {
+        const existingAdminSourceId = entry.documents?.find((d) => d.adminSourceId)?.adminSourceId;
+        if (existingAdminSourceId) {
+          const fd = new FormData();
+          fd.append('file', newLocalFile);
+          this.apiService
+            .patchAdminSource(existingAdminSourceId, fd)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe();
+        }
+      }
     }
   }
 

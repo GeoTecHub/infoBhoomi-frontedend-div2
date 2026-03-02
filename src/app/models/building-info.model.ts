@@ -328,6 +328,8 @@ export interface RRRDocument {
   type: string; // MIME type
   size: number; // bytes
   file?: File; // client-side only, not serialised
+  fileUrl?: string; // backend URL for already-saved documents
+  adminSourceId?: number; // backend admin_source_id
 }
 
 export interface RRREntry {

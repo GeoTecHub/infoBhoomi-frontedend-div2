@@ -246,25 +246,25 @@ export class LayersListComponent implements OnInit, AfterViewInit {
       let input_data = {
         password: this.admin_password,
       };
-      this.apiService.postPassword(input_data).subscribe((res) => {
-        this.apiService.deleteLayer('input_data', this.selectLayerData.layer_id).subscribe(
-          (response: any) => {
-            this.notificationService.showSuccess('Layer removed successfully!');
-            const modal = bootstrap.Modal.getInstance(
-              document.getElementById('confirmDeleteModal'),
-            );
-            modal.hide();
-            this.getLayers();
-          },
-          (error: any) => {
-            console.error('Error saving administrative info:', error);
-            if (error?.error?.non_field_errors) {
+      this.apiService.postPassword(input_data).subscribe({
+        next: (_res: any) => {
+          this.apiService.deleteLayer({}, this.selectLayerData.layer_id).subscribe({
+            next: (_response: any) => {
+              this.notificationService.showSuccess('Layer removed successfully!');
+              const modal = bootstrap.Modal.getInstance(
+                document.getElementById('confirmDeleteModal'),
+              );
+              modal.hide();
+              this.getLayers();
+            },
+            error: (_error: any) => {
               this.notificationService.showError('Layer could not be removed');
-            } else {
-              this.notificationService.showError('Layer could not be removed');
-            }
-          },
-        );
+            },
+          });
+        },
+        error: (_err: any) => {
+          this.notificationService.showError('Incorrect password. Layer was not deleted.');
+        },
       });
     }
   }

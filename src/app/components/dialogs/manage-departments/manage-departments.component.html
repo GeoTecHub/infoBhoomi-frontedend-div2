@@ -23,7 +23,7 @@
                   type="text"
                   [(ngModel)]="searchQuery"
                   class="form-control form-control-sm"
-                  (input)="getDepartmentList()"
+                  (input)="filterDepartments()"
                   placeholder="Search..."
                   style="height: 28px; font-size: 14px; padding: 2px 6px"
                   name="search-input-8"
@@ -95,6 +95,7 @@
                 type="text"
                 class="keyValue__value"
                 [(ngModel)]="department_name"
+                name="department_name"
                 autocomplete="off"
               />
             </form>

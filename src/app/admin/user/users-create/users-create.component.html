@@ -24,9 +24,7 @@
               {{
                 userType === 'super_admin'
                   ? 'Create Admin Account'
-                  : userType === 'admin'
-                    ? 'Create User Account'
-                    : 'Create User Account'
+                  : 'Create User Account'
               }}
             </h6>
           </div>
@@ -46,162 +44,161 @@
 
               <form [formGroup]="userForm" class="w-100 px-4">
                 <div class="row">
+
                   <!-- Username -->
                   <div class="form-group mb-3 col-md-6">
-                    <label for="username">Username</label>
+                    <label for="username">Username <span class="text-danger">*</span></label>
                     <input
                       type="text"
                       class="form-control form-control-sm"
                       id="username"
                       placeholder="Enter Username"
                       formControlName="username"
-                      required
                     />
+                    @if (userForm.get('username')?.invalid && userForm.get('username')?.touched) {
+                      <small class="field-error">Username is required.</small>
+                    }
                   </div>
 
                   <!-- Email -->
                   <div class="form-group mb-3 col-md-6">
-                    <label for="email">Email</label>
+                    <label for="email">Email <span class="text-danger">*</span></label>
                     <input
                       type="email"
                       class="form-control form-control-sm"
                       id="email"
                       placeholder="Enter Email"
                       formControlName="email"
-                      required
                       (input)="formatEmail()"
                     />
                     @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
-                      <div class="text-danger">
-                        @if (userForm.get('email')?.errors?.['email']) {
-                          <small>Incorrect email format.</small>
-                        }
-                      </div>
+                      <small class="field-error">
+                        @if (userForm.get('email')?.errors?.['required']) { Email is required. }
+                        @if (userForm.get('email')?.errors?.['email']) { Enter a valid email address. }
+                      </small>
                     }
                   </div>
 
                   <!-- First Name -->
                   <div class="form-group mb-3 col-md-6">
-                    <label for="firstName">First Name</label>
+                    <label for="firstName">First Name <span class="text-danger">*</span></label>
                     <input
                       type="text"
                       class="form-control form-control-sm"
                       id="firstName"
                       placeholder="Enter First Name"
                       formControlName="first_name"
-                      required
                     />
+                    @if (userForm.get('first_name')?.invalid && userForm.get('first_name')?.touched) {
+                      <small class="field-error">First name is required.</small>
+                    }
                   </div>
 
                   <!-- Last Name -->
                   <div class="form-group mb-3 col-md-6">
-                    <label for="lastName">Last Name</label>
+                    <label for="lastName">Last Name <span class="text-danger">*</span></label>
                     <input
                       type="text"
                       class="form-control form-control-sm"
                       id="lastName"
                       placeholder="Enter Last Name"
                       formControlName="last_name"
-                      required
                     />
+                    @if (userForm.get('last_name')?.invalid && userForm.get('last_name')?.touched) {
+                      <small class="field-error">Last name is required.</small>
+                    }
                   </div>
 
                   <!-- Mobile -->
                   <div class="form-group mb-3 col-md-6">
-                    <label for="mobile">Mobile</label>
+                    <label for="mobile">Mobile <span class="text-danger">*</span></label>
                     <input
                       type="text"
                       class="form-control form-control-sm"
                       id="mobile"
-                      placeholder="Enter Mobile"
+                      placeholder="e.g. 0712345678"
                       formControlName="mobile"
-                      required
                     />
-                    @if (
-                      userForm.get('mobile')?.invalid &&
-                      (userForm.get('mobile')?.dirty || userForm.get('mobile')?.touched)
-                    ) {
-                      <div class="text-danger">
-                        @if (userForm.get('mobile')?.errors?.['pattern']) {
-                          <small> Enter a valid 10-digit mobile number starting with 0. </small>
-                        }
-                        @if (userForm.get('mobile')?.errors?.['required']) {
-                          <small> Mobile number is required. </small>
-                        }
-                      </div>
+                    @if (userForm.get('mobile')?.invalid && userForm.get('mobile')?.touched) {
+                      <small class="field-error">
+                        @if (userForm.get('mobile')?.errors?.['required']) { Mobile number is required. }
+                        @if (userForm.get('mobile')?.errors?.['pattern']) { Enter a valid 10-digit number starting with 0. }
+                      </small>
                     }
                   </div>
 
                   <!-- Address -->
                   <div class="form-group mb-3 col-md-6">
-                    <label for="address">Address</label>
+                    <label for="address">Address <span class="text-danger">*</span></label>
                     <input
                       type="text"
                       class="form-control form-control-sm"
                       id="address"
                       placeholder="Enter Address"
                       formControlName="address"
-                      required
                     />
+                    @if (userForm.get('address')?.invalid && userForm.get('address')?.touched) {
+                      <small class="field-error">Address is required.</small>
+                    }
                   </div>
 
                   <!-- NIC -->
                   <div class="form-group mb-3 col-md-6">
-                    <label for="nic">NIC</label>
+                    <label for="nic">NIC <span class="text-danger">*</span></label>
                     <input
                       type="text"
                       class="form-control form-control-sm"
                       id="nic"
-                      placeholder="Enter NIC"
+                      placeholder="e.g. 199012345678 or 901234567V"
                       formControlName="nic"
                       maxlength="12"
-                      required
                     />
                     @if (userForm.get('nic')?.invalid && userForm.get('nic')?.touched) {
-                      <div class="text-danger">
-                        @if (userForm.get('nic')?.errors?.['pattern']) {
-                          <small>NIC must be 12 digits or 9 digits followed by 'V' or 'X'.</small>
-                        }
-                      </div>
+                      <small class="field-error">
+                        @if (userForm.get('nic')?.errors?.['required']) { NIC is required. }
+                        @if (userForm.get('nic')?.errors?.['pattern']) { NIC must be 12 digits or 9 digits followed by V or X. }
+                      </small>
                     }
                   </div>
 
                   <!-- Birthday -->
                   <div class="form-group mb-3 col-md-6">
-                    <label for="birthday">Birthday</label>
+                    <label for="birthday">Birthday <span class="text-danger">*</span></label>
                     <input
                       type="date"
                       class="form-control form-control-sm"
                       id="birthday"
-                      placeholder="Enter Birthday"
                       formControlName="birthday"
-                      required
                     />
+                    @if (userForm.get('birthday')?.invalid && userForm.get('birthday')?.touched) {
+                      <small class="field-error">Birthday is required.</small>
+                    }
                   </div>
 
                   <!-- Sex -->
                   <div class="form-group mb-3 col-md-6">
-                    <label for="sex">Sex</label>
+                    <label for="sex">Sex <span class="text-danger">*</span></label>
                     <select
                       class="form-control form-control-sm"
                       id="sex"
                       formControlName="sex"
-                      required
                     >
+                      <option value="" disabled selected>Select Sex</option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>
                     </select>
+                    @if (userForm.get('sex')?.invalid && userForm.get('sex')?.touched) {
+                      <small class="field-error">Please select a sex.</small>
+                    }
                   </div>
 
                   <!-- Department -->
                   <div class="form-group mb-3 col-md-6">
-                    <label for="department">Department</label>
+                    <label for="department">Department <span class="text-danger">*</span></label>
                     <select
                       class="form-control form-control-sm"
-                      type="text"
                       id="department"
                       formControlName="dep_id"
-                      required
                     >
                       <option value="" disabled selected>Select Department</option>
                       @for (department of departments_list; track department) {
@@ -210,42 +207,49 @@
                         </option>
                       }
                     </select>
+                    @if (userForm.get('dep_id')?.invalid && userForm.get('dep_id')?.touched) {
+                      <small class="field-error">Please select a department.</small>
+                    }
                   </div>
 
                   <!-- Post -->
                   <div class="form-group mb-3 col-md-6">
-                    <label for="post">Position</label>
+                    <label for="post">Position <span class="text-danger">*</span></label>
                     <input
                       type="text"
                       class="form-control form-control-sm"
                       id="post"
-                      placeholder="Enter Post"
+                      placeholder="Enter Position"
                       formControlName="post"
-                      required
                     />
+                    @if (userForm.get('post')?.invalid && userForm.get('post')?.touched) {
+                      <small class="field-error">Position is required.</small>
+                    }
                   </div>
 
+                  <!-- Employee ID -->
                   <div class="form-group mb-3 col-md-6">
-                    <label for="emp_id">Employee ID</label>
+                    <label for="emp_id">Employee ID <span class="text-danger">*</span></label>
                     <input
                       type="text"
                       class="form-control form-control-sm"
                       id="emp_id"
                       placeholder="Enter Employee ID"
                       formControlName="emp_id"
-                      required
                     />
+                    @if (userForm.get('emp_id')?.invalid && userForm.get('emp_id')?.touched) {
+                      <small class="field-error">Employee ID is required.</small>
+                    }
                   </div>
 
                   <span class="default-pw-text">Default password : {{ default_pw }} </span>
 
-                  <div class="form-group d-flex justify-content-end">
+                  <div class="form-group d-flex justify-content-end mt-2">
                     <button
                       mat-icon-button
                       matSuffix
                       (click)="createNewUser()"
                       class="primary-bg-btn"
-                      [disabled]="userForm.invalid"
                     >
                       <mat-icon>save</mat-icon> Save
                     </button>

@@ -35,8 +35,6 @@ export class RolesListComponent {
   roles_list: any = [];
   searchQuery = '';
   searchQueryUser = '';
-  departments_list: any = [];
-  departments_id = '';
   selectedRole: any = null;
   role_users_list = {
     users: [
@@ -87,13 +85,6 @@ export class RolesListComponent {
 
   ngOnInit(): void {
     this.getRolesList();
-    this.getDepartmentList();
-  }
-
-  getDepartmentList() {
-    this.apiService.getDepartments().subscribe((res) => {
-      this.departments_list = res;
-    });
   }
 
   getPermissionsList(id: any) {

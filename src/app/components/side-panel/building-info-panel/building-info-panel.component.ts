@@ -1,4 +1,5 @@
 import { Component, inject, input, output, signal, computed, effect } from '@angular/core';
+import { BuildingSectionPermissions } from '../../../core/constant';
 
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -77,6 +78,24 @@ type CollapsibleSection =
 export class BuildingInfoPanelComponent {
   // Inputs
   buildingInfo = input<BuildingInfo | null>(null);
+  sectionPerms = input<Record<number, any>>({});
+
+  // Permission helpers
+  readonly BLDG_PERMS = BuildingSectionPermissions;
+
+  canView(permId: number): boolean {
+    const p = this.sectionPerms();
+    if (!p || Object.keys(p).length === 0) return true;
+    const perm = p[permId];
+    return !perm || perm.can_view !== false;
+  }
+
+  canEdit(permId: number): boolean {
+    const p = this.sectionPerms();
+    if (!p || Object.keys(p).length === 0) return true;
+    const perm = p[permId];
+    return !perm || perm.can_edit !== false;
+  }
   selectedUnitId = input<string | null>(null);
   modelLoaded = input<boolean>(false);
   availableRooms = input<string[]>([]);

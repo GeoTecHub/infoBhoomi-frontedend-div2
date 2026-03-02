@@ -1,4 +1,5 @@
 import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { LandSectionPermissions } from '../../../core/constant';
 
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -41,11 +42,13 @@ import {
   ParcelMetadata,
   RRREntry,
   RRRInfo,
+  RRRDocument,
 } from '../../../models/land-parcel.model';
 import {
   AddRightHolderComponent,
   AddRightHolderResult,
 } from '../../dialogs/add-right-holder/add-right-holder.component';
+import { APIsService } from '../../../services/api.service';
 
 @Component({
   selector: 'app-land-info-panel',
@@ -56,8 +59,27 @@ import {
 })
 export class LandInfoPanelComponent {
   private dialog = inject(MatDialog);
+  private apiService = inject(APIsService);
   // --- Inputs ---
   parcelInfo = input<LandParcelInfo | null>(null);
+  sectionPerms = input<Record<number, any>>({});
+
+  // --- Permission helpers ---
+  readonly LAND_PERMS = LandSectionPermissions;
+
+  canView(permId: number): boolean {
+    const p = this.sectionPerms();
+    if (!p || Object.keys(p).length === 0) return true;
+    const perm = p[permId];
+    return !perm || perm.can_view !== false;
+  }
+
+  canEdit(permId: number): boolean {
+    const p = this.sectionPerms();
+    if (!p || Object.keys(p).length === 0) return true;
+    const perm = p[permId];
+    return !perm || perm.can_edit !== false;
+  }
 
   // --- Outputs ---
   identificationChanged = output<ParcelIdentification>();
@@ -296,6 +318,17 @@ export class LandInfoPanelComponent {
       return { ...e, documents: (e.documents || []).filter((_, di) => di !== docIndex) };
     });
     this.updateRRR(entries);
+  }
+
+  openDocument(doc: RRRDocument): void {
+    if (!doc.fileUrl) return;
+    this.apiService.getPDF(doc.fileUrl).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      },
+      error: () => console.error('Failed to open document:', doc.fileUrl),
+    });
   }
 
   formatFileSize(bytes: number): string {

@@ -133,6 +133,7 @@
       <div class="sidebar-tab-content">
         <app-land-info-panel
           [parcelInfo]="currentLandParcelInfo()"
+          [sectionPerms]="sectionPerms()"
           (rrrChanged)="onLandRRRChanged($event)"
           (identificationChanged)="onLandIdentificationChanged($event)"
           (spatialChanged)="onLandSpatialChanged($event)"
@@ -151,6 +152,7 @@
         <app-building-info-panel
           [buildingInfo]="currentBuildingInfo()"
           [modelLoaded]="buildingModelLoaded()"
+          [sectionPerms]="sectionPerms()"
           (rrrChanged)="onBuildingRRRChanged($event)"
           (summaryChanged)="onBuildingSummaryChanged($event)"
           (unitsChanged)="onBuildingUnitsChanged($event)"

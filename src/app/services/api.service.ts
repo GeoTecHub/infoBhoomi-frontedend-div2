@@ -1023,6 +1023,7 @@ export class APIsService {
       'administrative_type',
       'land_name',
       'registration_date',
+      'parcel_status',
     ];
 
     // Filter the `data` object to keep only the allowed keys
@@ -1547,6 +1548,15 @@ export class APIsService {
     });
     const httpOptions = { headers };
     return this.http.post(`${this.baseUrl}rrr_data_save/`, formData, httpOptions);
+  }
+
+  patchAdminSource(adminSourceId: number, formData: FormData): Observable<any> {
+    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
+    return this.http.patch(
+      `${this.baseUrl}admin-source/update/${adminSourceId}/`,
+      formData,
+      { headers },
+    );
   }
 
   // ADMIN APIS
