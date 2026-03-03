@@ -1010,7 +1010,7 @@ export class APIsService {
       'sl_ba_unit_name',
       'pd',
       'dist',
-      'gnd_id',
+      // gnd_id intentionally excluded: auto-derived from parcel geometry on the backend
       'eletorate',
       'local_auth',
       'remark',
