@@ -1,4 +1,4 @@
-import { provideRouter, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 
 import { LoginPageComponent } from './components/auth/login-page/login-page.component';
 import { MainComponent } from './components/main/main.component';
@@ -86,4 +86,3 @@ export const routes: Routes = [
     data: { permission: { id: 252 as const, action: 'view' as const } },
   },
 ];
-export const appRoutingProviders = [provideRouter(routes)];
