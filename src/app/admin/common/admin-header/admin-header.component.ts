@@ -153,9 +153,14 @@ export class AdminHeaderComponent implements OnInit {
     const user = this.userService.getUser();
 
     if (user?.user_id) {
-      this.apiService.getCurrentLocation().subscribe((res) => {
-        // @ts-ignore
-        this.current_location = res.features[0].properties;
+      this.apiService.getCurrentLocation().subscribe({
+        next: (res) => {
+          // @ts-ignore
+          this.current_location = res.features[0].properties;
+        },
+        error: (err) => {
+          console.warn('Could not fetch org location:', err?.status, err?.message);
+        },
       });
     } else {
       console.warn('User ID not available in admin header, skipping location fetch.');

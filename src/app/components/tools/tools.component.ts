@@ -119,12 +119,24 @@ export class ToolsComponent implements OnInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.apiService.getToolbarPermission().subscribe((res: any) => {
-      this.add = res[0].add;
-      this.featureService.setAddPermission(res[0].add);
-      this.edit = res[0].edit;
-      this.delete = res[0].delete;
-      this.view = res[0].view;
+    this.apiService.getToolbarPermission().subscribe({
+      next: (res: any) => {
+        this.add = res[0].add;
+        this.featureService.setAddPermission(res[0].add);
+        this.edit = res[0].edit;
+        this.delete = res[0].delete;
+        this.view = res[0].view;
+      },
+      error: (err) => {
+        // If permissions can't be fetched, default to fully enabled so the
+        // toolbar doesn't silently vanish when the backend is temporarily down.
+        console.warn('Could not load toolbar permissions, defaulting to enabled:', err?.status);
+        this.view = true;
+        this.add = true;
+        this.edit = true;
+        this.delete = true;
+        this.featureService.setAddPermission(true);
+      },
     });
   }
 
@@ -444,20 +456,17 @@ export class ToolsComponent implements OnInit, OnDestroy {
     const polygonGeom = targetPolygon.getGeometry()!;
     let lineGeom = rawUserLine.getGeometry()!;
 
-    // === STEP 1: Geometric cleanup (snapping, extending) in MAP_PROJECTION ===
-    // All distance-based math (like closest point and vector extension) is reliable in EPSG:3857.
-    console.log('[Split Prep] Processing geometries in map projection (EPSG:3857).');
-
-    // A. Snap endpoints to the polygon boundary for precision.
+    // === STEP 1: Extend the drawn line well beyond the polygon ===
+    // We do NOT snap endpoints to the boundary here. Snapping a point exactly onto
+    // the boundary in EPSG:3857 and then transforming to EPSG:4326 causes the point
+    // to drift slightly off the boundary (Mercator is non-linear), so
+    // turf.lineIntersect finds 0–1 intersections instead of 2 and the split fails.
+    // Instead we extend both ends far outside the polygon so the line crosses the
+    // boundary cleanly from outside → inside → outside, and turf finds 2 crossings.
     const rawCoords = lineGeom.getCoordinates();
     if (rawCoords.length < 2) {
       throw new Error('Split line must have at least two points.');
     }
-    const preciseStart = polygonGeom.getClosestPoint(rawCoords[0]);
-    const preciseEnd = polygonGeom.getClosestPoint(rawCoords[rawCoords.length - 1]);
-    lineGeom = new LineString([preciseStart, ...rawCoords.slice(1, -1), preciseEnd]);
-
-    // B. Extend the now-precise line outwards to guarantee a clean intersection.
     lineGeom = this.extendLineGeometry(lineGeom, polygonGeom);
 
     // === STEP 2: Transform the finalized geometries to DATA_PROJECTION for the service ===
@@ -525,8 +534,13 @@ export class ToolsComponent implements OnInit, OnDestroy {
           ]
         : endPoint;
 
-    // Construct the new line: extended start + original full line + extended end
-    const extendedCoords = [extendedStart, ...coords, extendedEnd];
+    // Replace the original endpoints with the extended ones.
+    // We use slice(1, -1) to keep only the interior waypoints (if any), so the
+    // final line is [far_outside, ...intermediates, far_outside].
+    // This avoids having the original endpoint (which may be exactly on the polygon
+    // boundary) as an interior waypoint, which can cause turf.lineIntersect to
+    // detect a "touch" rather than a "crossing" after reprojection to EPSG:4326.
+    const extendedCoords = [extendedStart, ...coords.slice(1, -1), extendedEnd];
 
     console.log(`Extended line geometry from ${coords.length} to ${extendedCoords.length} points.`);
     return new LineString(extendedCoords);

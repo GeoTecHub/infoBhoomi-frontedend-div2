@@ -311,8 +311,8 @@ export class SidePanelComponent {
 
     // Map spatial properties (calculated from geometry)
     parcel.spatial = {
-      area: props['area'] || Math.round(area * 100) / 100,
-      perimeter: props['perimeter'] || Math.round(perimeter * 100) / 100,
+      area: Math.round(area * 100) / 100,
+      perimeter: Math.round(perimeter * 100) / 100,
       geometryType,
       boundaryType: this.resolveEnum(props['boundary_type'], BoundaryType, BoundaryType.GENERAL),
       coordinateCount,
@@ -643,6 +643,19 @@ export class SidePanelComponent {
               ParcelStatus,
               current.identification.parcelStatus,
             );
+          if (adminData.tenure_type)
+            identification.tenureType = this.resolveEnum(
+              adminData.tenure_type,
+              TenureType,
+              current.identification.tenureType,
+            );
+          // Parcel relationship fields
+          const relationships = { ...current.relationships };
+          if (adminData.adjacent_parcels != null) relationships.adjacentParcels = adminData.adjacent_parcels;
+          if (adminData.parent_parcel != null) relationships.parentParcel = adminData.parent_parcel;
+          if (adminData.child_parcels != null) relationships.childParcels = adminData.child_parcels;
+          if (adminData.part_of_estate != null) relationships.partOfEstate = adminData.part_of_estate;
+
           // GND-derived read-only administrative hierarchy
           identification.gndName = adminData.gnd ?? identification.gndName;
           identification.dsd = adminData.dsd ?? identification.dsd;
@@ -650,8 +663,8 @@ export class SidePanelComponent {
           identification.province = adminData.pd ?? identification.province;
           identification.electoralDiv = adminData.eletorate ?? identification.electoralDiv;
 
-          // Merge land overview data (area/perimeter/crs/boundary_type from la_ls_land_unit)
-          if (overviewData.area != null) spatial.area = Number(overviewData.area);
+          // Merge land overview data (crs/boundary_type from la_ls_land_unit)
+          // NOTE: area and perimeter are always taken from the OL-computed geometry, not the stored value
           if (overviewData.perimeter != null) spatial.perimeter = Number(overviewData.perimeter);
           if (overviewData.boundary_type)
             spatial.boundaryType = this.resolveEnum(
@@ -784,6 +797,7 @@ export class SidePanelComponent {
             rrr: { entries: rrrEntries },
             zoning,
             metadata,
+            relationships,
           });
 
           // Second phase: fetch restrictions & responsibilities per RRR entry
@@ -1167,10 +1181,15 @@ export class SidePanelComponent {
     const adminPayload = {
       local_auth: info.identification.localAuthority,
       sl_land_type: info.identification.parcelType,
+      tenure_type: info.identification.tenureType,
       land_name: info.identification.cadastralRef,
       access_road: info.physical.accessRoad ? 'Yes' : 'No',
       registration_date: info.identification.registrationDate || null,
       parcel_status: info.identification.parcelStatus,
+      adjacent_parcels: info.relationships.adjacentParcels || null,
+      parent_parcel: info.relationships.parentParcel || null,
+      child_parcels: info.relationships.childParcels || null,
+      part_of_estate: info.relationships.partOfEstate || null,
     };
     console.log('[Save] adminPayload being sent:', adminPayload);
 
@@ -1324,14 +1343,34 @@ export class SidePanelComponent {
         .subscribe();
     }
 
-    // Sync restrictions, responsibilities, and new document uploads for existing RRR entries
+    // Update + sync existing RRR entries (those fetched from backend, identified by 'BU-' prefix)
     for (const entry of currentEntries.filter((e) => e.rrrId.startsWith('BU-'))) {
-      const rrr_id = this.fetchedRRRMap.get(entry.rrrId);
-      if (!rrr_id) continue;
-      this.syncRRRSubRecords(rrr_id, entry);
-
-      // Upload every new local file as an additional doc on this BA unit
       const baUnitId = Number(entry.rrrId.replace('BU-', ''));
+      const rrr_id = this.fetchedRRRMap.get(entry.rrrId);
+
+      // PATCH core fields: BA unit name, share, dates, type, doc reference
+      const updatePayload = {
+        sl_ba_unit_name: entry.holder,
+        sl_ba_unit_type: 'OWNERSHIP',
+        admin_source_type: entry.documentRef || 'Title Deed',
+        time_begin: entry.validFrom || null,
+        time_end: entry.validTo || null,
+        share: entry.share,
+        share_type: entry.type,
+        party_role_type: entry.holderType || 'Owner',
+        rrr_type: 'RIGHT',
+      };
+      this.apiService
+        .patchRRREntry(baUnitId, updatePayload)
+        .pipe(catchError((e) => { console.error('[Save] RRR update error:', e); return of(null); }), takeUntilDestroyed(this.destroyRef))
+        .subscribe();
+
+      // Sync restrictions and responsibilities
+      if (rrr_id) {
+        this.syncRRRSubRecords(rrr_id, entry);
+      }
+
+      // Upload any new local documents
       const newLocalFiles = (entry.documents || []).filter((d) => d.file);
       for (const doc of newLocalFiles) {
         const extraFd = new FormData();

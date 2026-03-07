@@ -75,6 +75,7 @@ export class SplitService {
       const intersections = turf.lineIntersect(cutterLine, targetPolygon);
 
       if (intersections.features.length < 2) {
+        console.warn('[SplitService] turf.lineIntersect found < 2 intersections:', intersections.features.length);
         return null;
       }
 
@@ -83,6 +84,7 @@ export class SplitService {
       const sortedPoints = this.sortPointsAlongLine(intersectionPoints, cutterLine);
 
       if (sortedPoints.length < 2) {
+        console.warn('[SplitService] sortPointsAlongLine returned < 2 points');
         return null;
       }
 
@@ -93,6 +95,7 @@ export class SplitService {
       // i.e. the segment that truly crosses the polygon interior.
       const splitPair = this.selectSplitPair(sortedPoints, targetPolygon);
       if (!splitPair) {
+        console.warn('[SplitService] selectSplitPair returned null — no consecutive pair with interior midpoint');
         return null;
       }
       const { startPoint, endPoint } = splitPair;
@@ -109,6 +112,7 @@ export class SplitService {
       const splitResult = this.splitRingAtPoints(ring, startPoint, endPoint);
 
       if (!splitResult) {
+        console.warn('[SplitService] splitRingAtPoints returned null — could not locate intersection points on ring edges');
         return null;
       }
 
@@ -142,6 +146,12 @@ export class SplitService {
         !this.validateRingConstruction(poly1Ring, cutterCoords) ||
         !this.validateRingConstruction(poly2Ring, cutterCoords)
       ) {
+        console.warn('[SplitService] validateRingConstruction failed.',
+          'poly1Ring[0]=', poly1Ring[0], 'poly1Ring[-1]=', poly1Ring[poly1Ring.length-1],
+          'poly2Ring[0]=', poly2Ring[0], 'poly2Ring[-1]=', poly2Ring[poly2Ring.length-1],
+          'cutterStart=', cutterCoords[0], 'cutterEnd=', cutterCoords[cutterCoords.length-1],
+          'cutterCoords.length=', cutterCoords.length,
+        );
         return null;
       }
 
@@ -167,6 +177,7 @@ export class SplitService {
         const kinks2 = turf.kinks(newPoly2);
 
         if (kinks1.features.length > 0 || kinks2.features.length > 0) {
+          console.warn('[SplitService] Kinks detected — poly1 kinks:', kinks1.features.length, 'poly2 kinks:', kinks2.features.length);
           return null;
         }
 
@@ -175,6 +186,7 @@ export class SplitService {
         const area2 = turf.area(newPoly2);
 
         if (area1 <= 0 || area2 <= 0) {
+          console.warn('[SplitService] Zero/negative area — area1:', area1, 'area2:', area2);
           return null;
         }
 
@@ -216,20 +228,20 @@ export class SplitService {
   }
 
   /**
-   * Validates that a constructed ring's start and end connect to the cutter line endpoints.
+   * Validates that a constructed ring's START connects to a cutter endpoint.
+   *
+   * We only check the ring's first vertex because the ring may have interior
+   * cutter waypoints appended at the end (when the user drew a multi-vertex
+   * split line), making the last vertex an interior cutter point rather than
+   * an endpoint.  The start vertex is always the first intersection point
+   * regardless of cutter complexity, so checking it is sufficient.
    */
   private validateRingConstruction(segment: Position[], cutterCoords: Position[]): boolean {
     const segStart = segment[0];
-    const segEnd = segment[segment.length - 1];
     const cutterStart = cutterCoords[0];
     const cutterEnd = cutterCoords[cutterCoords.length - 1];
 
-    const startConnected =
-      this.pointsEqual(segEnd, cutterStart) || this.pointsEqual(segEnd, cutterEnd);
-    const endConnected =
-      this.pointsEqual(segStart, cutterStart) || this.pointsEqual(segStart, cutterEnd);
-
-    return startConnected && endConnected;
+    return this.pointsEqual(segStart, cutterStart) || this.pointsEqual(segStart, cutterEnd);
   }
 
   /** Compares two positions using the unified COORD_TOLERANCE. */

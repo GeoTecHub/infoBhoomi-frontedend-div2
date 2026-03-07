@@ -506,6 +506,9 @@ export class APIsService {
     const allowedKeys = [
       'dimension_2d_3d',
       'area',
+      'perimeter',
+      'boundary_type',
+      'crs',
       'ext_landuse_type',
       'ext_landuse_sub_type',
       'reference_coordinate',
@@ -1557,6 +1560,15 @@ export class APIsService {
       formData,
       { headers },
     );
+  }
+
+  /** Update an existing LADM RRR entry (BA unit + primary RRR + party role + admin source). */
+  patchRRREntry(baUnitId: number, data: any): Observable<any> {
+    const headers = new HttpHeaders({
+      Authorization: `Token ${this.token}`,
+      'Content-Type': 'application/json',
+    });
+    return this.http.patch(`${this.baseUrl}rrr/update/${baUnitId}/`, data, { headers });
   }
 
   /** Upload an additional document to an existing BA unit. */

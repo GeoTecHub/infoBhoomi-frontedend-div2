@@ -424,26 +424,31 @@ export class MapService {
       this.mapInstance?.getView().setCenter(fromLonLat(sriLankaLonLat));
       this.mapInstance?.getView().setZoom(sriLankaZoom);
 
-      this.apiService.getCurrentLocation().subscribe((res: any) => {
-        if (
-          res &&
-          res.features &&
-          res.features.length > 0 &&
-          res.features[0].geometry &&
-          res.features[0].geometry.type === 'Point'
-        ) {
-          const coords = res.features[0].geometry.coordinates as [number, number];
+      this.apiService.getCurrentLocation().subscribe({
+        next: (res: any) => {
+          if (
+            res &&
+            res.features &&
+            res.features.length > 0 &&
+            res.features[0].geometry &&
+            res.features[0].geometry.type === 'Point'
+          ) {
+            const coords = res.features[0].geometry.coordinates as [number, number];
 
-          this.mapInstance?.getView().animate({
-            center: fromLonLat(coords),
-            zoom: 16,
-            duration: 3000,
-          });
+            this.mapInstance?.getView().animate({
+              center: fromLonLat(coords),
+              zoom: 16,
+              duration: 3000,
+            });
 
-          this.notificationService.showSuccess('Map Projection Set Successfully.');
-        } else {
-          this.notificationService.showError('Could not determine user location from API.');
-        }
+            this.notificationService.showSuccess('Map Projection Set Successfully.');
+          } else {
+            this.notificationService.showError('Could not determine user location from API.');
+          }
+        },
+        error: (err) => {
+          console.warn('Could not fetch org location:', err?.status, err?.message);
+        },
       });
     }
   }

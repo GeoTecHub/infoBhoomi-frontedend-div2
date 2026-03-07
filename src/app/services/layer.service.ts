@@ -253,6 +253,11 @@ export class LayerService {
         continue;
       }
 
+      if (!item.geometry) {
+        console.warn(`Feature ${item.id ?? item.properties?.uuid} has null geometry. Skipping.`);
+        continue;
+      }
+
       // console.log('item:::::::', item);
 
       const color = this.layerCache.get(layerId)?.colour || '#000000';
