@@ -21,11 +21,7 @@
               <mat-icon>arrow_back</mat-icon></button
             >&nbsp;&nbsp; &nbsp;
             <h6 class="mb-0 main-title">
-              {{
-                userType === 'super_admin'
-                  ? 'Create Admin Account'
-                  : 'Create User Account'
-              }}
+              {{ userType === 'super_admin' ? 'Create Admin Account' : 'Create User Account' }}
             </h6>
           </div>
 
@@ -44,7 +40,6 @@
 
               <form [formGroup]="userForm" class="w-100 px-4">
                 <div class="row">
-
                   <!-- Username -->
                   <div class="form-group mb-3 col-md-6">
                     <label for="username">Username <span class="text-danger">*</span></label>
@@ -73,8 +68,12 @@
                     />
                     @if (userForm.get('email')?.invalid && userForm.get('email')?.touched) {
                       <small class="field-error">
-                        @if (userForm.get('email')?.errors?.['required']) { Email is required. }
-                        @if (userForm.get('email')?.errors?.['email']) { Enter a valid email address. }
+                        @if (userForm.get('email')?.errors?.['required']) {
+                          Email is required.
+                        }
+                        @if (userForm.get('email')?.errors?.['email']) {
+                          Enter a valid email address.
+                        }
                       </small>
                     }
                   </div>
@@ -89,7 +88,9 @@
                       placeholder="Enter First Name"
                       formControlName="first_name"
                     />
-                    @if (userForm.get('first_name')?.invalid && userForm.get('first_name')?.touched) {
+                    @if (
+                      userForm.get('first_name')?.invalid && userForm.get('first_name')?.touched
+                    ) {
                       <small class="field-error">First name is required.</small>
                     }
                   </div>
@@ -121,8 +122,12 @@
                     />
                     @if (userForm.get('mobile')?.invalid && userForm.get('mobile')?.touched) {
                       <small class="field-error">
-                        @if (userForm.get('mobile')?.errors?.['required']) { Mobile number is required. }
-                        @if (userForm.get('mobile')?.errors?.['pattern']) { Enter a valid 10-digit number starting with 0. }
+                        @if (userForm.get('mobile')?.errors?.['required']) {
+                          Mobile number is required.
+                        }
+                        @if (userForm.get('mobile')?.errors?.['pattern']) {
+                          Enter a valid 10-digit number starting with 0.
+                        }
                       </small>
                     }
                   </div>
@@ -155,8 +160,12 @@
                     />
                     @if (userForm.get('nic')?.invalid && userForm.get('nic')?.touched) {
                       <small class="field-error">
-                        @if (userForm.get('nic')?.errors?.['required']) { NIC is required. }
-                        @if (userForm.get('nic')?.errors?.['pattern']) { NIC must be 12 digits or 9 digits followed by V or X. }
+                        @if (userForm.get('nic')?.errors?.['required']) {
+                          NIC is required.
+                        }
+                        @if (userForm.get('nic')?.errors?.['pattern']) {
+                          NIC must be 12 digits or 9 digits followed by V or X.
+                        }
                       </small>
                     }
                   </div>
@@ -178,11 +187,7 @@
                   <!-- Sex -->
                   <div class="form-group mb-3 col-md-6">
                     <label for="sex">Sex <span class="text-danger">*</span></label>
-                    <select
-                      class="form-control form-control-sm"
-                      id="sex"
-                      formControlName="sex"
-                    >
+                    <select class="form-control form-control-sm" id="sex" formControlName="sex">
                       <option value="" disabled selected>Select Sex</option>
                       <option value="male">Male</option>
                       <option value="female">Female</option>

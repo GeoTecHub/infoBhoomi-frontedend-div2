@@ -75,7 +75,10 @@ export class SplitService {
       const intersections = turf.lineIntersect(cutterLine, targetPolygon);
 
       if (intersections.features.length < 2) {
-        console.warn('[SplitService] turf.lineIntersect found < 2 intersections:', intersections.features.length);
+        console.warn(
+          '[SplitService] turf.lineIntersect found < 2 intersections:',
+          intersections.features.length,
+        );
         return null;
       }
 
@@ -95,7 +98,9 @@ export class SplitService {
       // i.e. the segment that truly crosses the polygon interior.
       const splitPair = this.selectSplitPair(sortedPoints, targetPolygon);
       if (!splitPair) {
-        console.warn('[SplitService] selectSplitPair returned null — no consecutive pair with interior midpoint');
+        console.warn(
+          '[SplitService] selectSplitPair returned null — no consecutive pair with interior midpoint',
+        );
         return null;
       }
       const { startPoint, endPoint } = splitPair;
@@ -112,7 +117,9 @@ export class SplitService {
       const splitResult = this.splitRingAtPoints(ring, startPoint, endPoint);
 
       if (!splitResult) {
-        console.warn('[SplitService] splitRingAtPoints returned null — could not locate intersection points on ring edges');
+        console.warn(
+          '[SplitService] splitRingAtPoints returned null — could not locate intersection points on ring edges',
+        );
         return null;
       }
 
@@ -146,11 +153,22 @@ export class SplitService {
         !this.validateRingConstruction(poly1Ring, cutterCoords) ||
         !this.validateRingConstruction(poly2Ring, cutterCoords)
       ) {
-        console.warn('[SplitService] validateRingConstruction failed.',
-          'poly1Ring[0]=', poly1Ring[0], 'poly1Ring[-1]=', poly1Ring[poly1Ring.length-1],
-          'poly2Ring[0]=', poly2Ring[0], 'poly2Ring[-1]=', poly2Ring[poly2Ring.length-1],
-          'cutterStart=', cutterCoords[0], 'cutterEnd=', cutterCoords[cutterCoords.length-1],
-          'cutterCoords.length=', cutterCoords.length,
+        console.warn(
+          '[SplitService] validateRingConstruction failed.',
+          'poly1Ring[0]=',
+          poly1Ring[0],
+          'poly1Ring[-1]=',
+          poly1Ring[poly1Ring.length - 1],
+          'poly2Ring[0]=',
+          poly2Ring[0],
+          'poly2Ring[-1]=',
+          poly2Ring[poly2Ring.length - 1],
+          'cutterStart=',
+          cutterCoords[0],
+          'cutterEnd=',
+          cutterCoords[cutterCoords.length - 1],
+          'cutterCoords.length=',
+          cutterCoords.length,
         );
         return null;
       }
@@ -177,7 +195,12 @@ export class SplitService {
         const kinks2 = turf.kinks(newPoly2);
 
         if (kinks1.features.length > 0 || kinks2.features.length > 0) {
-          console.warn('[SplitService] Kinks detected — poly1 kinks:', kinks1.features.length, 'poly2 kinks:', kinks2.features.length);
+          console.warn(
+            '[SplitService] Kinks detected — poly1 kinks:',
+            kinks1.features.length,
+            'poly2 kinks:',
+            kinks2.features.length,
+          );
           return null;
         }
 

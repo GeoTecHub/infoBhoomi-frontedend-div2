@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -17,6 +17,7 @@ import { AdminHeaderComponent } from '../../common/admin-header/admin-header.com
 import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-bar.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-organizations-location-edit',
   standalone: true,
   imports: [
@@ -65,6 +66,8 @@ export class OrganizationsLocationEditComponent implements OnInit {
       this.orgId = id;
       await this.fetchDistList();
       await this.fetchOrganizationLocation(id);
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -80,6 +83,8 @@ export class OrganizationsLocationEditComponent implements OnInit {
       .subscribe({
         next: (org: any) => {
           this.distList = org;
+
+          this.cdr.markForCheck();
         },
         error: (error: any) => {
           console.error('Failed to load District list:', error);
@@ -126,6 +131,8 @@ export class OrganizationsLocationEditComponent implements OnInit {
           this.loading = false;
           this.cdr.detectChanges();
           console.log('loading=', this.loading, 'status=', this.organizationLocationForm.status);
+
+          this.cdr.markForCheck();
         },
         error: (error) => {
           console.error('Failed to load organization location:', error);
@@ -174,6 +181,8 @@ export class OrganizationsLocationEditComponent implements OnInit {
           this.loading = false;
           this.notificationService.showSuccess('Location updated successfully');
           this.goBack();
+
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.loading = false;

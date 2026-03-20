@@ -1,4 +1,10 @@
-import { Component, inject, DestroyRef} from '@angular/core';
+import {
+  Component,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AddLayerModel } from '../../../models/API';
@@ -23,6 +29,7 @@ import { NotificationService } from '../../../services/notifications.service';
 import { UserService } from '../../../services/user.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-create-layer',
   imports: [
     MatDialogActions,
@@ -43,6 +50,7 @@ import { UserService } from '../../../services/user.service';
   styleUrl: './create-layer.component.css',
 })
 export class CreateLayerComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
   layerObj: AddLayerModel = new AddLayerModel();
   showColorPicker: boolean = false;
@@ -69,6 +77,8 @@ export class CreateLayerComponent {
         this.user_id_number = user.user_id_number || null;
         this.organization_id = user.organization_id || '';
       }
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -102,6 +112,8 @@ export class CreateLayerComponent {
         console.log(res);
 
         this.dialogRef.close(true); // close the dialog and pass true to indicate update
+
+        this.cdr.markForCheck();
       },
       (error) => {
         this.isLoading = false; // Hide spinner on error

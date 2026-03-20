@@ -1,5 +1,9 @@
-<div class="lpr-dialog" cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragBoundary=".cdk-overlay-container">
-
+<div
+  class="lpr-dialog"
+  cdkDrag
+  cdkDragRootElement=".cdk-overlay-pane"
+  cdkDragBoundary=".cdk-overlay-container"
+>
   <!-- ═══ Header ═══ -->
   <div class="lpr-header" cdkDragHandle>
     <div class="lpr-header-left">
@@ -24,7 +28,9 @@
   <!-- ═══ Parcel Identity Bar ═══ -->
   <div class="lpr-identity-bar">
     <div class="lpr-identity-main">
-      <span class="lpr-parcel-id">{{ parcel.identification.parcelId || ('Feature #' + data.featureId) }}</span>
+      <span class="lpr-parcel-id">{{
+        parcel.identification.parcelId || 'Feature #' + data.featureId
+      }}</span>
       <span class="lpr-status-badge" [ngClass]="getStatusClass(parcel.identification.parcelStatus)">
         {{ PARCEL_STATUS_DISPLAY[parcel.identification.parcelStatus] }}
       </span>
@@ -33,9 +39,7 @@
       <span class="lpr-meta-item">
         <mat-icon>layers</mat-icon>Layer {{ data.layerId ?? '—' }}
       </span>
-      <span class="lpr-meta-item">
-        <mat-icon>schedule</mat-icon>Generated {{ generatedAt }}
-      </span>
+      <span class="lpr-meta-item"> <mat-icon>schedule</mat-icon>Generated {{ generatedAt }} </span>
     </div>
   </div>
 
@@ -53,7 +57,9 @@
     <div class="lpr-stat-divider"></div>
     <div class="lpr-stat">
       <span class="lpr-stat-label">Tenure</span>
-      <span class="lpr-stat-value">{{ TENURE_TYPE_DISPLAY[parcel.identification.tenureType] }}</span>
+      <span class="lpr-stat-value">{{
+        TENURE_TYPE_DISPLAY[parcel.identification.tenureType]
+      }}</span>
     </div>
     <div class="lpr-stat-divider"></div>
     <div class="lpr-stat">
@@ -86,7 +92,6 @@
 
   <!-- ═══ Tab Content ═══ -->
   <mat-dialog-content class="lpr-content">
-
     <!-- ── Overview Tab ── -->
     @if (activeTab() === 'overview') {
       <div class="lpr-tab-body">
@@ -101,23 +106,33 @@
           <div class="lpr-field-grid lpr-field-grid--3">
             <div class="lpr-field">
               <span class="lpr-field-label">Parcel ID</span>
-              <span class="lpr-field-value lpr-mono lpr-highlight">{{ parcel.identification.parcelId || '—' }}</span>
+              <span class="lpr-field-value lpr-mono lpr-highlight">{{
+                parcel.identification.parcelId || '—'
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Cadastral Reference</span>
-              <span class="lpr-field-value lpr-mono">{{ parcel.identification.cadastralRef || '—' }}</span>
+              <span class="lpr-field-value lpr-mono">{{
+                parcel.identification.cadastralRef || '—'
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Registration Date</span>
-              <span class="lpr-field-value lpr-mono">{{ formatDate(parcel.identification.registrationDate) }}</span>
+              <span class="lpr-field-value lpr-mono">{{
+                formatDate(parcel.identification.registrationDate)
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Parcel Type</span>
-              <span class="lpr-field-value">{{ PARCEL_TYPE_DISPLAY[parcel.identification.parcelType] }}</span>
+              <span class="lpr-field-value">{{
+                PARCEL_TYPE_DISPLAY[parcel.identification.parcelType]
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Status</span>
-              <span class="lpr-field-value">{{ PARCEL_STATUS_DISPLAY[parcel.identification.parcelStatus] }}</span>
+              <span class="lpr-field-value">{{
+                PARCEL_STATUS_DISPLAY[parcel.identification.parcelStatus]
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Local Authority</span>
@@ -125,11 +140,15 @@
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Land Use</span>
-              <span class="lpr-field-value">{{ LAND_USE_DISPLAY[parcel.identification.landUse] }}</span>
+              <span class="lpr-field-value">{{
+                LAND_USE_DISPLAY[parcel.identification.landUse]
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Tenure Type</span>
-              <span class="lpr-field-value">{{ TENURE_TYPE_DISPLAY[parcel.identification.tenureType] }}</span>
+              <span class="lpr-field-value">{{
+                TENURE_TYPE_DISPLAY[parcel.identification.tenureType]
+              }}</span>
             </div>
           </div>
         </div>
@@ -145,11 +164,15 @@
           <div class="lpr-field-grid lpr-field-grid--3">
             <div class="lpr-field">
               <span class="lpr-field-label">Centroid Longitude</span>
-              <span class="lpr-field-value lpr-mono">{{ formatCoord(parcel.spatial.centroidLon) }}</span>
+              <span class="lpr-field-value lpr-mono">{{
+                formatCoord(parcel.spatial.centroidLon)
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Centroid Latitude</span>
-              <span class="lpr-field-value lpr-mono">{{ formatCoord(parcel.spatial.centroidLat) }}</span>
+              <span class="lpr-field-value lpr-mono">{{
+                formatCoord(parcel.spatial.centroidLat)
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">CRS</span>
@@ -157,11 +180,15 @@
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Area</span>
-              <span class="lpr-field-value lpr-mono lpr-highlight">{{ formatAreaM2(parcel.spatial.area) }}</span>
+              <span class="lpr-field-value lpr-mono lpr-highlight">{{
+                formatAreaM2(parcel.spatial.area)
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Perimeter</span>
-              <span class="lpr-field-value lpr-mono">{{ parcel.spatial.perimeter ? (parcel.spatial.perimeter | number:'1.2-2') + ' m' : '—' }}</span>
+              <span class="lpr-field-value lpr-mono">{{
+                parcel.spatial.perimeter ? (parcel.spatial.perimeter | number: '1.2-2') + ' m' : '—'
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Geometry Type</span>
@@ -170,7 +197,11 @@
           </div>
         </div>
 
-        @if (parcel.relationships.buildingIds?.length || parcel.relationships.adjacentParcels || parcel.relationships.parentParcel) {
+        @if (
+          parcel.relationships.buildingIds?.length ||
+          parcel.relationships.adjacentParcels ||
+          parcel.relationships.parentParcel
+        ) {
           <div class="lpr-section">
             <div class="lpr-section-header">
               <div class="lpr-section-icon"><mat-icon>account_tree</mat-icon></div>
@@ -183,25 +214,33 @@
               @if (parcel.relationships.buildingIds?.length) {
                 <div class="lpr-field lpr-field--wide">
                   <span class="lpr-field-label">Buildings on Parcel</span>
-                  <span class="lpr-field-value lpr-mono">{{ parcel.relationships.buildingIds.join(', ') }}</span>
+                  <span class="lpr-field-value lpr-mono">{{
+                    parcel.relationships.buildingIds.join(', ')
+                  }}</span>
                 </div>
               }
               @if (parcel.relationships.adjacentParcels) {
                 <div class="lpr-field lpr-field--wide">
                   <span class="lpr-field-label">Adjacent Parcels</span>
-                  <span class="lpr-field-value lpr-mono">{{ parcel.relationships.adjacentParcels }}</span>
+                  <span class="lpr-field-value lpr-mono">{{
+                    parcel.relationships.adjacentParcels
+                  }}</span>
                 </div>
               }
               @if (parcel.relationships.parentParcel) {
                 <div class="lpr-field">
                   <span class="lpr-field-label">Parent Parcel</span>
-                  <span class="lpr-field-value lpr-mono">{{ parcel.relationships.parentParcel }}</span>
+                  <span class="lpr-field-value lpr-mono">{{
+                    parcel.relationships.parentParcel
+                  }}</span>
                 </div>
               }
               @if (parcel.relationships.partOfEstate) {
                 <div class="lpr-field">
                   <span class="lpr-field-label">Estate / Complex</span>
-                  <span class="lpr-field-value lpr-mono">{{ parcel.relationships.partOfEstate }}</span>
+                  <span class="lpr-field-value lpr-mono">{{
+                    parcel.relationships.partOfEstate
+                  }}</span>
                 </div>
               }
             </div>
@@ -229,21 +268,25 @@
             </div>
             <div class="lpr-metric-card">
               <span class="lpr-metric-label">Perimeter</span>
-              <span class="lpr-metric-value">{{ parcel.spatial.perimeter ? (parcel.spatial.perimeter | number:'1.1-1') + ' m' : '—' }}</span>
+              <span class="lpr-metric-value">{{
+                parcel.spatial.perimeter ? (parcel.spatial.perimeter | number: '1.1-1') + ' m' : '—'
+              }}</span>
             </div>
             <div class="lpr-metric-card">
               <span class="lpr-metric-label">Vertices</span>
               <span class="lpr-metric-value">{{ parcel.spatial.coordinateCount || '—' }}</span>
             </div>
           </div>
-          <div class="lpr-field-grid lpr-field-grid--3" style="margin-top:16px">
+          <div class="lpr-field-grid lpr-field-grid--3" style="margin-top: 16px">
             <div class="lpr-field">
               <span class="lpr-field-label">Geometry Type</span>
               <span class="lpr-field-value lpr-mono">{{ parcel.spatial.geometryType }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Boundary Type</span>
-              <span class="lpr-field-value">{{ BOUNDARY_TYPE_DISPLAY[parcel.spatial.boundaryType] }}</span>
+              <span class="lpr-field-value">{{
+                BOUNDARY_TYPE_DISPLAY[parcel.spatial.boundaryType]
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">CRS</span>
@@ -278,7 +321,9 @@
             <div class="lpr-section-icon"><mat-icon>crop_free</mat-icon></div>
             <div>
               <div class="lpr-section-title">Cadastral Sketch</div>
-              <div class="lpr-section-sub">To-scale reference diagram — not for legal survey use</div>
+              <div class="lpr-section-sub">
+                To-scale reference diagram — not for legal survey use
+              </div>
             </div>
           </div>
 
@@ -309,12 +354,18 @@
                 <defs>
                   <!-- Road / access hatch pattern -->
                   <pattern id="lprRoadHatch" patternUnits="userSpaceOnUse" width="7" height="7">
-                    <line x1="0" y1="7" x2="7" y2="0" stroke="#9e9e9e" stroke-width="1.5"/>
+                    <line x1="0" y1="7" x2="7" y2="0" stroke="#9e9e9e" stroke-width="1.5" />
                   </pattern>
                 </defs>
 
                 <!-- Paper background -->
-                <rect x="0" y="0" [attr.width]="sketch.svgW" [attr.height]="sketch.svgH" fill="#f5f9f6"/>
+                <rect
+                  x="0"
+                  y="0"
+                  [attr.width]="sketch.svgW"
+                  [attr.height]="sketch.svgH"
+                  fill="#f5f9f6"
+                />
 
                 <!-- Neighbour parcels (drawn first, behind selected) -->
                 @for (p of sketch.parcels; track p.id) {
@@ -360,7 +411,9 @@
                     font-size="8"
                     fill="#757575"
                     font-family="sans-serif"
-                  >Road Access</text>
+                  >
+                    Road Access
+                  </text>
                 }
 
                 <!-- Parcel labels (ID + area) -->
@@ -374,7 +427,9 @@
                     font-weight="700"
                     [attr.fill]="p.isSelected ? '#0d3c7a' : '#37474f'"
                     font-family="monospace"
-                  >{{ p.idLine }}</text>
+                  >
+                    {{ p.idLine }}
+                  </text>
                   <text
                     [attr.x]="p.textX"
                     [attr.y]="p.textY + 8"
@@ -383,7 +438,9 @@
                     font-size="8"
                     [attr.fill]="p.isSelected ? '#1565c0' : '#546e7a'"
                     font-family="sans-serif"
-                  >{{ p.areaLine }}</text>
+                  >
+                    {{ p.areaLine }}
+                  </text>
                 }
 
                 <!-- Scale bar -->
@@ -403,14 +460,31 @@
                   stroke="#37474f"
                   stroke-width="0.8"
                 />
-                <line [attr.x1]="sketch.scaleBarX" [attr.y1]="sketch.scaleBarY - 10"
-                      [attr.x2]="sketch.scaleBarX" [attr.y2]="sketch.scaleBarY"
-                      stroke="#37474f" stroke-width="1"/>
-                <line [attr.x1]="sketch.scaleBarX + sketch.scaleBarW" [attr.y1]="sketch.scaleBarY - 10"
-                      [attr.x2]="sketch.scaleBarX + sketch.scaleBarW" [attr.y2]="sketch.scaleBarY"
-                      stroke="#37474f" stroke-width="1"/>
-                <text [attr.x]="sketch.scaleBarX" [attr.y]="sketch.scaleBarY + 8"
-                      font-size="8" fill="#546e7a" font-family="sans-serif">0</text>
+                <line
+                  [attr.x1]="sketch.scaleBarX"
+                  [attr.y1]="sketch.scaleBarY - 10"
+                  [attr.x2]="sketch.scaleBarX"
+                  [attr.y2]="sketch.scaleBarY"
+                  stroke="#37474f"
+                  stroke-width="1"
+                />
+                <line
+                  [attr.x1]="sketch.scaleBarX + sketch.scaleBarW"
+                  [attr.y1]="sketch.scaleBarY - 10"
+                  [attr.x2]="sketch.scaleBarX + sketch.scaleBarW"
+                  [attr.y2]="sketch.scaleBarY"
+                  stroke="#37474f"
+                  stroke-width="1"
+                />
+                <text
+                  [attr.x]="sketch.scaleBarX"
+                  [attr.y]="sketch.scaleBarY + 8"
+                  font-size="8"
+                  fill="#546e7a"
+                  font-family="sans-serif"
+                >
+                  0
+                </text>
                 <text
                   [attr.x]="sketch.scaleBarX + sketch.scaleBarW"
                   [attr.y]="sketch.scaleBarY + 8"
@@ -418,45 +492,86 @@
                   font-size="8"
                   fill="#546e7a"
                   font-family="sans-serif"
-                >{{ sketch.scaleBarLabel }}</text>
+                >
+                  {{ sketch.scaleBarLabel }}
+                </text>
                 <!-- North arrow (top-right) -->
                 <g [attr.transform]="'translate(' + sketch.northX + ',' + sketch.northY + ')'">
-                  <polygon points="0,-16 -5,5 0,2 5,5" fill="#37474f"/>
-                  <polygon points="0,-16 5,5 0,2 -5,5" fill="white" stroke="#37474f" stroke-width="0.8"/>
-                  <text x="0" y="22" text-anchor="middle" font-size="10" font-weight="700"
-                        fill="#37474f" font-family="sans-serif">N</text>
+                  <polygon points="0,-16 -5,5 0,2 5,5" fill="#37474f" />
+                  <polygon
+                    points="0,-16 5,5 0,2 -5,5"
+                    fill="white"
+                    stroke="#37474f"
+                    stroke-width="0.8"
+                  />
+                  <text
+                    x="0"
+                    y="22"
+                    text-anchor="middle"
+                    font-size="10"
+                    font-weight="700"
+                    fill="#37474f"
+                    font-family="sans-serif"
+                  >
+                    N
+                  </text>
                 </g>
 
                 <!-- Frame border -->
-                <rect x="1" y="1" [attr.width]="sketch.svgW - 2" [attr.height]="sketch.svgH - 2"
-                      fill="none" stroke="#b0bec5" stroke-width="1"/>
+                <rect
+                  x="1"
+                  y="1"
+                  [attr.width]="sketch.svgW - 2"
+                  [attr.height]="sketch.svgH - 2"
+                  fill="none"
+                  stroke="#b0bec5"
+                  stroke-width="1"
+                />
               </svg>
             </div>
 
             <!-- Legend -->
             <div class="lpr-sketch-legend">
               <div class="lpr-sketch-legend-item">
-                <span class="lpr-sketch-swatch" style="background:rgba(21,101,192,0.20);border:2px dashed #1565c0"></span>
+                <span
+                  class="lpr-sketch-swatch"
+                  style="background: rgba(21, 101, 192, 0.2); border: 2px dashed #1565c0"
+                ></span>
                 <span>Selected Parcel</span>
               </div>
               <div class="lpr-sketch-legend-item">
-                <span class="lpr-sketch-swatch" style="background:#b2dfdb;border:1px solid #00796b"></span>
+                <span
+                  class="lpr-sketch-swatch"
+                  style="background: #b2dfdb; border: 1px solid #00796b"
+                ></span>
                 <span>Residential</span>
               </div>
               <div class="lpr-sketch-legend-item">
-                <span class="lpr-sketch-swatch" style="background:#fff59d;border:1px solid #f9a825"></span>
+                <span
+                  class="lpr-sketch-swatch"
+                  style="background: #fff59d; border: 1px solid #f9a825"
+                ></span>
                 <span>Commercial</span>
               </div>
               <div class="lpr-sketch-legend-item">
-                <span class="lpr-sketch-swatch" style="background:#c8e6c9;border:1px solid #388e3c"></span>
+                <span
+                  class="lpr-sketch-swatch"
+                  style="background: #c8e6c9; border: 1px solid #388e3c"
+                ></span>
                 <span>Agricultural</span>
               </div>
               <div class="lpr-sketch-legend-item">
-                <span class="lpr-sketch-swatch" style="background:#ffccbc;border:1px solid #bf360c"></span>
+                <span
+                  class="lpr-sketch-swatch"
+                  style="background: #ffccbc; border: 1px solid #bf360c"
+                ></span>
                 <span>Industrial</span>
               </div>
               <div class="lpr-sketch-legend-item">
-                <span class="lpr-sketch-swatch" style="background:#e1bee7;border:1px solid #7b1fa2"></span>
+                <span
+                  class="lpr-sketch-swatch"
+                  style="background: #e1bee7; border: 1px solid #7b1fa2"
+                ></span>
                 <span>Mixed Use</span>
               </div>
               @if (sketchData()!.hasRoad) {
@@ -469,7 +584,17 @@
 
             <!-- Adjacency Table -->
             @if (adjRows().length) {
-              <div class="lpr-section-sub" style="margin-top:16px;margin-bottom:8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.4px">
+              <div
+                class="lpr-section-sub"
+                style="
+                  margin-top: 16px;
+                  margin-bottom: 8px;
+                  font-size: 11px;
+                  font-weight: 700;
+                  text-transform: uppercase;
+                  letter-spacing: 0.4px;
+                "
+              >
                 Adjoining Parcels ({{ adjRows().length }})
               </div>
               <div class="lpr-adj-table-wrap">
@@ -518,11 +643,15 @@
           <div class="lpr-field-grid lpr-field-grid--3">
             <div class="lpr-field">
               <span class="lpr-field-label">Elevation</span>
-              <span class="lpr-field-value lpr-mono">{{ parcel.physical.elevation ? parcel.physical.elevation + ' m MSL' : '—' }}</span>
+              <span class="lpr-field-value lpr-mono">{{
+                parcel.physical.elevation ? parcel.physical.elevation + ' m MSL' : '—'
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Slope</span>
-              <span class="lpr-field-value lpr-mono">{{ parcel.physical.slope ? parcel.physical.slope + '°' : '—' }}</span>
+              <span class="lpr-field-value lpr-mono">{{
+                parcel.physical.slope ? parcel.physical.slope + '°' : '—'
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Soil Type</span>
@@ -582,16 +711,22 @@
           </div>
           <div class="lpr-zoning-banner">
             <span class="lpr-zoning-code">{{ parcel.zoning.zoningCategory }}</span>
-            <span class="lpr-zoning-desc">{{ ZONING_CATEGORY_DISPLAY[parcel.zoning.zoningCategory] }}</span>
+            <span class="lpr-zoning-desc">{{
+              ZONING_CATEGORY_DISPLAY[parcel.zoning.zoningCategory]
+            }}</span>
           </div>
-          <div class="lpr-field-grid lpr-field-grid--3" style="margin-top:16px">
+          <div class="lpr-field-grid lpr-field-grid--3" style="margin-top: 16px">
             <div class="lpr-field">
               <span class="lpr-field-label">Max Building Height</span>
-              <span class="lpr-field-value lpr-mono">{{ parcel.zoning.maxBuildingHeight ? parcel.zoning.maxBuildingHeight + ' m' : '—' }}</span>
+              <span class="lpr-field-value lpr-mono">{{
+                parcel.zoning.maxBuildingHeight ? parcel.zoning.maxBuildingHeight + ' m' : '—'
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Max Coverage</span>
-              <span class="lpr-field-value lpr-mono">{{ parcel.zoning.maxCoverage ? parcel.zoning.maxCoverage + '%' : '—' }}</span>
+              <span class="lpr-field-value lpr-mono">{{
+                parcel.zoning.maxCoverage ? parcel.zoning.maxCoverage + '%' : '—'
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Floor Area Ratio</span>
@@ -611,19 +746,25 @@
           <div class="lpr-setback-grid">
             <div class="lpr-setback-card">
               <span class="lpr-setback-dir">Front</span>
-              <span class="lpr-setback-val">{{ parcel.zoning.setbackFront ? parcel.zoning.setbackFront + ' m' : '—' }}</span>
+              <span class="lpr-setback-val">{{
+                parcel.zoning.setbackFront ? parcel.zoning.setbackFront + ' m' : '—'
+              }}</span>
             </div>
             <div class="lpr-setback-card">
               <span class="lpr-setback-dir">Rear</span>
-              <span class="lpr-setback-val">{{ parcel.zoning.setbackRear ? parcel.zoning.setbackRear + ' m' : '—' }}</span>
+              <span class="lpr-setback-val">{{
+                parcel.zoning.setbackRear ? parcel.zoning.setbackRear + ' m' : '—'
+              }}</span>
             </div>
             <div class="lpr-setback-card">
               <span class="lpr-setback-dir">Side</span>
-              <span class="lpr-setback-val">{{ parcel.zoning.setbackSide ? parcel.zoning.setbackSide + ' m' : '—' }}</span>
+              <span class="lpr-setback-val">{{
+                parcel.zoning.setbackSide ? parcel.zoning.setbackSide + ' m' : '—'
+              }}</span>
             </div>
           </div>
           @if (parcel.zoning.specialOverlay) {
-            <div class="lpr-field" style="margin-top:14px">
+            <div class="lpr-field" style="margin-top: 14px">
               <span class="lpr-field-label">Special Overlay</span>
               <span class="lpr-field-value lpr-warning">{{ parcel.zoning.specialOverlay }}</span>
             </div>
@@ -646,28 +787,38 @@
           <div class="lpr-metric-cards">
             <div class="lpr-metric-card lpr-metric-card--accent">
               <span class="lpr-metric-label">Market Value</span>
-              <span class="lpr-metric-value">LKR {{ formatCurrency(parcel.valuation.marketValue) }}</span>
+              <span class="lpr-metric-value"
+                >LKR {{ formatCurrency(parcel.valuation.marketValue) }}</span
+              >
             </div>
             <div class="lpr-metric-card">
               <span class="lpr-metric-label">Land Value</span>
-              <span class="lpr-metric-value">LKR {{ formatCurrency(parcel.valuation.landValue) }}</span>
+              <span class="lpr-metric-value"
+                >LKR {{ formatCurrency(parcel.valuation.landValue) }}</span
+              >
             </div>
             <div class="lpr-metric-card">
               <span class="lpr-metric-label">Annual Tax</span>
-              <span class="lpr-metric-value">LKR {{ formatCurrency(parcel.valuation.annualTax) }}</span>
+              <span class="lpr-metric-value"
+                >LKR {{ formatCurrency(parcel.valuation.annualTax) }}</span
+              >
             </div>
           </div>
-          <div class="lpr-field-grid lpr-field-grid--2" style="margin-top:16px">
+          <div class="lpr-field-grid lpr-field-grid--2" style="margin-top: 16px">
             <div class="lpr-field">
               <span class="lpr-field-label">Last Assessment Date</span>
-              <span class="lpr-field-value lpr-mono">{{ formatDate(parcel.valuation.lastAssessmentDate) }}</span>
+              <span class="lpr-field-value lpr-mono">{{
+                formatDate(parcel.valuation.lastAssessmentDate)
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Tax Status</span>
-              <span class="lpr-field-value"
+              <span
+                class="lpr-field-value"
                 [class.lpr-success]="parcel.valuation.taxStatus === 'paid'"
                 [class.lpr-warning]="parcel.valuation.taxStatus === 'pending'"
-                [class.lpr-danger]="parcel.valuation.taxStatus === 'overdue'">
+                [class.lpr-danger]="parcel.valuation.taxStatus === 'overdue'"
+              >
                 {{ parcel.valuation.taxStatus | titlecase }}
               </span>
             </div>
@@ -698,7 +849,9 @@
                 </div>
                 <div class="lpr-field">
                   <span class="lpr-field-label">Share</span>
-                  <span class="lpr-field-value lpr-mono lpr-highlight">{{ entry.share || '—' }}</span>
+                  <span class="lpr-field-value lpr-mono lpr-highlight">{{
+                    entry.share || '—'
+                  }}</span>
                 </div>
                 <div class="lpr-field">
                   <span class="lpr-field-label">Valid From</span>
@@ -715,7 +868,9 @@
               </div>
               @if (entry.restrictions?.length) {
                 <div class="lpr-rrr-sub-section">
-                  <span class="lpr-rrr-sub-title">Restrictions ({{ entry.restrictions.length }})</span>
+                  <span class="lpr-rrr-sub-title"
+                    >Restrictions ({{ entry.restrictions.length }})</span
+                  >
                   @for (r of entry.restrictions; track $index) {
                     <div class="lpr-rrr-sub-row">
                       <span class="lpr-tag lpr-tag--warn">{{ r.type }}</span>
@@ -744,19 +899,27 @@
           <div class="lpr-field-grid lpr-field-grid--2">
             <div class="lpr-field">
               <span class="lpr-field-label">Data Quality ID</span>
-              <span class="lpr-field-value lpr-mono">{{ parcel.metadata.dataQualityId || '—' }}</span>
+              <span class="lpr-field-value lpr-mono">{{
+                parcel.metadata.dataQualityId || '—'
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Accuracy Level</span>
-              <span class="lpr-field-value">{{ ACCURACY_LEVEL_DISPLAY[parcel.metadata.accuracyLevel] }}</span>
+              <span class="lpr-field-value">{{
+                ACCURACY_LEVEL_DISPLAY[parcel.metadata.accuracyLevel]
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Survey Method</span>
-              <span class="lpr-field-value">{{ SURVEY_METHOD_DISPLAY[parcel.metadata.surveyMethod] }}</span>
+              <span class="lpr-field-value">{{
+                SURVEY_METHOD_DISPLAY[parcel.metadata.surveyMethod]
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Last Updated</span>
-              <span class="lpr-field-value lpr-mono">{{ formatDate(parcel.metadata.lastUpdated) }}</span>
+              <span class="lpr-field-value lpr-mono">{{
+                formatDate(parcel.metadata.lastUpdated)
+              }}</span>
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Responsible Party</span>
@@ -764,19 +927,21 @@
             </div>
             <div class="lpr-field">
               <span class="lpr-field-label">Source Document</span>
-              <span class="lpr-field-value lpr-mono">{{ parcel.metadata.sourceDocument || '—' }}</span>
+              <span class="lpr-field-value lpr-mono">{{
+                parcel.metadata.sourceDocument || '—'
+              }}</span>
             </div>
           </div>
         </div>
       </div>
     }
-
   </mat-dialog-content>
 
   <!-- ═══ Footer ═══ -->
   <div class="lpr-footer">
     <span>InfoBhoomi Land Information System — LADM ISO 19152 Compliant Report</span>
-    <span class="lpr-footer-right">Parcel: <strong>{{ parcel.identification.parcelId || data.featureId }}</strong></span>
+    <span class="lpr-footer-right"
+      >Parcel: <strong>{{ parcel.identification.parcelId || data.featureId }}</strong></span
+    >
   </div>
-
 </div>

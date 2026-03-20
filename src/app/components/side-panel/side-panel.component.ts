@@ -1,11 +1,21 @@
-import {Component, EventEmitter, Output, inject, signal, NgZone, DestroyRef} from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Output,
+  inject,
+  signal,
+  NgZone,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { Feature } from 'ol';
 import { Geometry, Polygon, MultiPolygon } from 'ol/geom';
 import { getArea, getLength } from 'ol/sphere';
-import {forkJoin, of } from 'rxjs';
-import {catchError, switchMap } from 'rxjs/operators';
+import { forkJoin, of } from 'rxjs';
+import { catchError, switchMap } from 'rxjs/operators';
 import {
   LandParcelInfo,
   createDefaultLandParcel,
@@ -68,6 +78,7 @@ import {
 type SidebarTab = 'home' | 'land' | 'building';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-side-panel',
   standalone: true,
   imports: [BuildingInfoPanelComponent, HomeTabComponent, LandInfoPanelComponent],
@@ -75,6 +86,7 @@ type SidebarTab = 'home' | 'land' | 'building';
   styleUrl: './side-panel.component.css',
 })
 export class SidePanelComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   private ngZone = inject(NgZone);
   private destroyRef = inject(DestroyRef);
 
@@ -111,57 +123,61 @@ export class SidePanelComponent {
     private permissionService: PermissionService,
   ) {
     // Handle feature selection changes
-    this.drawService.selectedFeatureInfo$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((info) => {
-      if (!info || (Array.isArray(info) && info.length === 0) || info.length > 1) {
-        this.selected_feature_ID = null;
-        this.currentLandParcelInfo.set(null);
-        this.currentBuildingInfo.set(null);
-        this.buildingModelLoaded.set(false);
-        this.activeSidebarTab.set('home');
-        this.removeExtend();
-        return;
-      }
-
-      const featureInfo = Array.isArray(info) ? info[0] : info;
-
-      if (typeof featureInfo.featureId !== 'number' || isNaN(featureInfo.featureId)) {
-        this.notificationService.showError('Please save features.');
-        return;
-      }
-
-      this.selected_featureInfo = featureInfo;
-      this.selected_feature_ID = featureInfo.featureId || '';
-      this.selected_layer_ID = featureInfo.layerId || '';
-
-      // Auto-switch tabs based on the selected layer and populate data
-      switch (this.selected_layer_ID) {
-        case 1:
-        case 6:
-          this.activeSidebarTab.set('land');
-          this.currentBuildingInfo.set(null);
-          this.buildingModelLoaded.set(false);
-          this.currentLandParcelInfo.set(this.createLandParcelFromFeature(featureInfo));
-          this.fetchAndMergeLandParcelData(featureInfo.featureId);
-          this.makeExtend();
-          break;
-        case 3:
-        case 12:
-          this.activeSidebarTab.set('building');
+    this.drawService.selectedFeatureInfo$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((info) => {
+        if (!info || (Array.isArray(info) && info.length === 0) || info.length > 1) {
+          this.selected_feature_ID = null;
           this.currentLandParcelInfo.set(null);
-          this.currentBuildingInfo.set(this.createBuildingFromFeature(featureInfo));
-          this.buildingModelLoaded.set(true);
-          this.fetchAndMergeBuildingData(featureInfo.featureId);
-          this.makeExtend();
-          break;
-        default:
-          this.activeSidebarTab.set('land');
           this.currentBuildingInfo.set(null);
           this.buildingModelLoaded.set(false);
-          this.currentLandParcelInfo.set(this.createLandParcelFromFeature(featureInfo));
-          this.fetchAndMergeLandParcelData(featureInfo.featureId);
-          this.makeExtend();
-      }
-    });
+          this.activeSidebarTab.set('home');
+          this.removeExtend();
+          return;
+        }
+
+        const featureInfo = Array.isArray(info) ? info[0] : info;
+
+        if (typeof featureInfo.featureId !== 'number' || isNaN(featureInfo.featureId)) {
+          this.notificationService.showError('Please save features.');
+          return;
+        }
+
+        this.selected_featureInfo = featureInfo;
+        this.selected_feature_ID = featureInfo.featureId || '';
+        this.selected_layer_ID = featureInfo.layerId || '';
+
+        // Auto-switch tabs based on the selected layer and populate data
+        switch (this.selected_layer_ID) {
+          case 1:
+          case 6:
+            this.activeSidebarTab.set('land');
+            this.currentBuildingInfo.set(null);
+            this.buildingModelLoaded.set(false);
+            this.currentLandParcelInfo.set(this.createLandParcelFromFeature(featureInfo));
+            this.fetchAndMergeLandParcelData(featureInfo.featureId);
+            this.makeExtend();
+            break;
+          case 3:
+          case 12:
+            this.activeSidebarTab.set('building');
+            this.currentLandParcelInfo.set(null);
+            this.currentBuildingInfo.set(this.createBuildingFromFeature(featureInfo));
+            this.buildingModelLoaded.set(true);
+            this.fetchAndMergeBuildingData(featureInfo.featureId);
+            this.makeExtend();
+            break;
+          default:
+            this.activeSidebarTab.set('land');
+            this.currentBuildingInfo.set(null);
+            this.buildingModelLoaded.set(false);
+            this.currentLandParcelInfo.set(this.createLandParcelFromFeature(featureInfo));
+            this.fetchAndMergeLandParcelData(featureInfo.featureId);
+            this.makeExtend();
+        }
+
+        this.cdr.markForCheck();
+      });
 
     // Handle explicit deselection
     this.drawService.deselectedFeature$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
@@ -171,6 +187,8 @@ export class SidePanelComponent {
       this.buildingModelLoaded.set(false);
       this.activeSidebarTab.set('home');
       this.removeExtend();
+
+      this.cdr.markForCheck();
     });
 
     // Handle sidebar open/close events
@@ -189,7 +207,10 @@ export class SidePanelComponent {
   }
 
   private loadSectionPermissions(): void {
-    const roleId = parseInt(typeof window !== 'undefined' ? (localStorage.getItem('role_id') ?? '0') : '0', 10);
+    const roleId = parseInt(
+      typeof window !== 'undefined' ? (localStorage.getItem('role_id') ?? '0') : '0',
+      10,
+    );
     if (!roleId) return;
     const allIds = [
       ...Object.values(LandSectionPermissions),
@@ -197,7 +218,9 @@ export class SidePanelComponent {
     ];
     this.permissionService.loadPermissions(roleId, allIds).subscribe({
       next: (perms) => this.sectionPerms.set(perms),
-      error: () => { /* keep default allow-all */ },
+      error: () => {
+        /* keep default allow-all */
+      },
     });
   }
 
@@ -482,6 +505,8 @@ export class SidePanelComponent {
         roofType: this.resolveEnum(props['roof_type'], RoofType, RoofType.FLAT),
         wallType: props['wall_type'] || '',
         grossArea: props['gross_area'] || Math.round(footprintArea * 100) / 100,
+        extBuildUseType: props['ext_builduse_type'] || '',
+        extBuildUseSubType: props['ext_builduse_sub_type'] || '',
       },
       utilities: {
         electricity: '',
@@ -605,16 +630,16 @@ export class SidePanelComponent {
     ])
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(
-        ([adminData, overviewData, taxData, rrrData, zoningData, physicalData, utilData, metaData]: [
-          any,
-          any,
-          any,
-          any,
-          any,
-          any,
-          any,
-          any,
-        ]) => {
+        ([
+          adminData,
+          overviewData,
+          taxData,
+          rrrData,
+          zoningData,
+          physicalData,
+          utilData,
+          metaData,
+        ]: [any, any, any, any, any, any, any, any]) => {
           console.log('[Fetch] adminData from backend:', adminData);
           const current = this.currentLandParcelInfo();
           if (!current) return;
@@ -651,10 +676,12 @@ export class SidePanelComponent {
             );
           // Parcel relationship fields
           const relationships = { ...current.relationships };
-          if (adminData.adjacent_parcels != null) relationships.adjacentParcels = adminData.adjacent_parcels;
+          if (adminData.adjacent_parcels != null)
+            relationships.adjacentParcels = adminData.adjacent_parcels;
           if (adminData.parent_parcel != null) relationships.parentParcel = adminData.parent_parcel;
           if (adminData.child_parcels != null) relationships.childParcels = adminData.child_parcels;
-          if (adminData.part_of_estate != null) relationships.partOfEstate = adminData.part_of_estate;
+          if (adminData.part_of_estate != null)
+            relationships.partOfEstate = adminData.part_of_estate;
 
           // GND-derived read-only administrative hierarchy
           identification.gndName = adminData.gnd ?? identification.gndName;
@@ -717,20 +744,13 @@ export class SidePanelComponent {
           this.fetchedRRRMap.clear();
           const rrrEntries: RRREntry[] = [];
           const records = rrrData?.records || [];
-          console.log('[RRR Merge - Land] raw rrrData from backend:', rrrData);
-          console.log('[RRR Merge - Land] records count:', records.length);
           for (const record of records) {
             this.fetchedRRRBaUnitIds.add(record.ba_unit_id);
-            console.log(`[RRR Merge - Land] ba_unit_id=${record.ba_unit_id} admin_sources:`, record.admin_sources);
             // Map admin_sources → RRRDocument[] so uploaded docs appear in the panel
             const docs = (record.admin_sources || []).map((src: any) => {
-              console.log(
-                `[RRR Merge - Land]   src admin_source_id=${src.admin_source_id} ` +
-                `type=${src.admin_source_type} file_url=${src.file_url} doc_link_id=${src.doc_link_id}`,
-              );
               return {
                 name: src.admin_source_type || 'Document',
-                type: 'application/pdf',
+                type: 'application/octet-stream',
                 size: 0,
                 fileUrl: src.file_url,
                 adminSourceId: src.admin_source_id,
@@ -752,12 +772,23 @@ export class SidePanelComponent {
                 validTo: rrr.time_end || '',
                 documentRef: record.sl_ba_unit_name || '',
                 documents: docs,
-                restrictions: [],
-                responsibilities: [],
+                restrictions: (rrr.restrictions || []).map((r: any) => ({
+                  id: r.id,
+                  type: r.rrr_restriction_type,
+                  description: r.description || '',
+                  validFrom: r.time_begin || '',
+                  validTo: r.time_end || '',
+                })),
+                responsibilities: (rrr.responsibilities || []).map((r: any) => ({
+                  id: r.id,
+                  type: r.rrr_responsibility_type,
+                  description: r.description || '',
+                  validFrom: r.time_begin || '',
+                  validTo: r.time_end || '',
+                })),
               });
             }
           }
-          console.log('[RRR Merge - Land] final rrrEntries:', rrrEntries);
 
           // Merge zoning data
           const zoning = { ...current.zoning };
@@ -781,11 +812,13 @@ export class SidePanelComponent {
           // Merge metadata (la_spatial_source)
           const metadata = { ...current.metadata };
           if (metaData) {
-            if (metaData.spatial_source_type) metadata.surveyMethod = metaData.spatial_source_type as SurveyMethod;
+            if (metaData.spatial_source_type)
+              metadata.surveyMethod = metaData.spatial_source_type as SurveyMethod;
             if (metaData.source_id) metadata.sourceDocument = metaData.source_id;
             if (metaData.surveyor_name) metadata.responsibleParty = metaData.surveyor_name;
             if (metaData.date_accept) metadata.lastUpdated = metaData.date_accept;
-            if (metaData.description) metadata.accuracyLevel = metaData.description as AccuracyLevel;
+            if (metaData.description)
+              metadata.accuracyLevel = metaData.description as AccuracyLevel;
           }
 
           this.currentLandParcelInfo.set({
@@ -885,10 +918,14 @@ export class SidePanelComponent {
           if (adminData.condition) physicalAttributes.condition = adminData.condition as Condition;
           if (adminData.wall_type) physicalAttributes.wallType = adminData.wall_type;
 
-          // Merge overview data (roof type, gross area)
+          // Merge overview data (roof type, gross area, building use type)
           if (overviewData.roof_type)
             physicalAttributes.roofType = overviewData.roof_type as RoofType;
           if (overviewData.area != null) physicalAttributes.grossArea = Number(overviewData.area);
+          if (overviewData.ext_builduse_type)
+            physicalAttributes.extBuildUseType = overviewData.ext_builduse_type;
+          if (overviewData.ext_builduse_sub_type)
+            physicalAttributes.extBuildUseSubType = overviewData.ext_builduse_sub_type;
 
           // Merge tax/assessment data
           if (taxData.assessment_annual_value != null)
@@ -905,27 +942,19 @@ export class SidePanelComponent {
           this.fetchedRRRMap.clear();
           const rrrEntries: RRREntry[] = [];
           const records = rrrData?.records || [];
-          console.log('[RRR Merge - Building] raw rrrData from backend:', rrrData);
-          console.log('[RRR Merge - Building] records count:', records.length);
           for (const record of records) {
             this.fetchedRRRBaUnitIds.add(record.ba_unit_id);
-            console.log(`[RRR Merge - Building] ba_unit_id=${record.ba_unit_id} admin_sources:`, record.admin_sources);
             // Map admin_sources → RRRDocument[] so uploaded docs appear in the panel
             const docs = (record.admin_sources || []).map((src: any) => {
-              console.log(
-                `[RRR Merge - Building]   src admin_source_id=${src.admin_source_id} ` +
-                `type=${src.admin_source_type} file_url=${src.file_url} doc_link_id=${src.doc_link_id}`,
-              );
               return {
                 name: src.admin_source_type || 'Document',
-                type: 'application/pdf',
+                type: 'application/octet-stream',
                 size: 0,
                 fileUrl: src.file_url,
                 adminSourceId: src.admin_source_id,
                 docLinkId: src.doc_link_id ?? undefined,
               };
             });
-            console.log(`[RRR Merge - Building] ba_unit_id=${record.ba_unit_id} mapped docs:`, docs);
             for (const rrr of record.rrrs || []) {
               const entryId = `BU-${record.ba_unit_id}`;
               if (rrr.rrr_id) this.fetchedRRRMap.set(entryId, rrr.rrr_id);
@@ -940,12 +969,23 @@ export class SidePanelComponent {
                 validTo: rrr.time_end || '',
                 documentRef: record.sl_ba_unit_name || '',
                 documents: docs,
-                restrictions: [],
-                responsibilities: [],
+                restrictions: (rrr.restrictions || []).map((r: any) => ({
+                  id: r.id,
+                  type: r.rrr_restriction_type,
+                  description: r.description || '',
+                  validFrom: r.time_begin || '',
+                  validTo: r.time_end || '',
+                })),
+                responsibilities: (rrr.responsibilities || []).map((r: any) => ({
+                  id: r.id,
+                  type: r.rrr_responsibility_type,
+                  description: r.description || '',
+                  validFrom: r.time_begin || '',
+                  validTo: r.time_end || '',
+                })),
               });
             }
           }
-          console.log('[RRR Merge - Building] final rrrEntries:', rrrEntries);
 
           // Merge building utility data (LA_LS_Utinet_BU_Model)
           const utilities: UtilityInfo = {
@@ -1044,6 +1084,8 @@ export class SidePanelComponent {
     const overviewPayload = {
       roof_type: info.physicalAttributes.roofType || null,
       area: info.physicalAttributes.grossArea || null,
+      ext_builduse_type: info.physicalAttributes.extBuildUseType || null,
+      ext_builduse_sub_type: info.physicalAttributes.extBuildUseSubType || null,
     };
 
     forkJoin([
@@ -1093,7 +1135,10 @@ export class SidePanelComponent {
     );
     for (const baUnitId of this.fetchedRRRBaUnitIds) {
       if (!currentBaUnitIds.has(baUnitId)) {
-        this.apiService.deleteRrr(String(baUnitId)).pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+        this.apiService
+          .deleteRrr(String(baUnitId))
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe();
       }
     }
 
@@ -1191,7 +1236,6 @@ export class SidePanelComponent {
       child_parcels: info.relationships.childParcels || null,
       part_of_estate: info.relationships.partOfEstate || null,
     };
-    console.log('[Save] adminPayload being sent:', adminPayload);
 
     const overviewPayload = {
       area: info.spatial.area,
@@ -1231,11 +1275,36 @@ export class SidePanelComponent {
     };
 
     forkJoin([
-      this.apiService.updateAdministrativeInfo(su_id, adminPayload, 'land').pipe(catchError((e) => { console.error('[Save] admin info error:', e); return of(null); })),
-      this.apiService.updateLandOverviewInfo(su_id, overviewPayload, 'land').pipe(catchError((e) => { console.error('[Save] overview error:', e); return of(null); })),
-      this.apiService.updateTaxAndAssessmentInfo(su_id, taxPayload, 'land').pipe(catchError((e) => { console.error('[Save] tax error:', e); return of(null); })),
-      this.apiService.updateZoningInfo(su_id, zoningPayload).pipe(catchError((e) => { console.error('[Save] zoning error:', e); return of(null); })),
-      this.apiService.updatePhysicalEnvInfo(su_id, physicalEnvPayload).pipe(catchError((e) => { console.error('[Save] physical error:', e); return of(null); })),
+      this.apiService.updateAdministrativeInfo(su_id, adminPayload, 'land').pipe(
+        catchError((e) => {
+          console.error('[Save] admin info error:', e);
+          return of(null);
+        }),
+      ),
+      this.apiService.updateLandOverviewInfo(su_id, overviewPayload, 'land').pipe(
+        catchError((e) => {
+          console.error('[Save] overview error:', e);
+          return of(null);
+        }),
+      ),
+      this.apiService.updateTaxAndAssessmentInfo(su_id, taxPayload, 'land').pipe(
+        catchError((e) => {
+          console.error('[Save] tax error:', e);
+          return of(null);
+        }),
+      ),
+      this.apiService.updateZoningInfo(su_id, zoningPayload).pipe(
+        catchError((e) => {
+          console.error('[Save] zoning error:', e);
+          return of(null);
+        }),
+      ),
+      this.apiService.updatePhysicalEnvInfo(su_id, physicalEnvPayload).pipe(
+        catchError((e) => {
+          console.error('[Save] physical error:', e);
+          return of(null);
+        }),
+      ),
     ])
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
@@ -1287,7 +1356,10 @@ export class SidePanelComponent {
     );
     for (const baUnitId of this.fetchedRRRBaUnitIds) {
       if (!currentBaUnitIds.has(baUnitId)) {
-        this.apiService.deleteRrr(String(baUnitId)).pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
+        this.apiService
+          .deleteRrr(String(baUnitId))
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe();
       }
     }
 
@@ -1362,7 +1434,13 @@ export class SidePanelComponent {
       };
       this.apiService
         .patchRRREntry(baUnitId, updatePayload)
-        .pipe(catchError((e) => { console.error('[Save] RRR update error:', e); return of(null); }), takeUntilDestroyed(this.destroyRef))
+        .pipe(
+          catchError((e) => {
+            console.error('[Save] RRR update error:', e);
+            return of(null);
+          }),
+          takeUntilDestroyed(this.destroyRef),
+        )
         .subscribe();
 
       // Sync restrictions and responsibilities
@@ -1385,18 +1463,30 @@ export class SidePanelComponent {
   }
 
   // ─── RRR Sub-record Sync Helper ────────────────────────
+  // Diff-based sync: only deletes removed records and only creates new ones.
+  // Records that already have an `id` (fetched from backend) and are still
+  // present in the local list are left untouched.
   private syncRRRSubRecords(rrr_id: number, entry: RRREntry): void {
+    const localRestrictionIds = new Set(
+      entry.restrictions.map((r) => r.id).filter((id) => id != null),
+    );
+    const localResponsibilityIds = new Set(
+      entry.responsibilities.map((r) => r.id).filter((id) => id != null),
+    );
+
     this.apiService
       .getRRRRestrictions(rrr_id)
       .pipe(
         switchMap((existing: any) => {
-          const delObs = (existing as any[]).map((r: any) =>
+          const toDelete = (existing as any[]).filter((r: any) => !localRestrictionIds.has(r.id));
+          const delObs = toDelete.map((r: any) =>
             this.apiService.deleteRRRRestriction(rrr_id, r.id).pipe(catchError(() => of(null))),
           );
           return delObs.length > 0 ? forkJoin(delObs) : of([]);
         }),
         switchMap(() => {
-          const createObs = entry.restrictions.map((r) =>
+          const toCreate = entry.restrictions.filter((r) => r.id == null);
+          const createObs = toCreate.map((r) =>
             this.apiService
               .postRRRRestriction(rrr_id, {
                 rrr_restriction_type: r.type,
@@ -1416,15 +1506,17 @@ export class SidePanelComponent {
       .getRRRResponsibilities(rrr_id)
       .pipe(
         switchMap((existing: any) => {
-          const delObs = (existing as any[]).map((r: any) =>
-            this.apiService
-              .deleteRRRResponsibility(rrr_id, r.id)
-              .pipe(catchError(() => of(null))),
+          const toDelete = (existing as any[]).filter(
+            (r: any) => !localResponsibilityIds.has(r.id),
+          );
+          const delObs = toDelete.map((r: any) =>
+            this.apiService.deleteRRRResponsibility(rrr_id, r.id).pipe(catchError(() => of(null))),
           );
           return delObs.length > 0 ? forkJoin(delObs) : of([]);
         }),
         switchMap(() => {
-          const createObs = entry.responsibilities.map((r) =>
+          const toCreate = entry.responsibilities.filter((r) => r.id == null);
+          const createObs = toCreate.map((r) =>
             this.apiService
               .postRRRResponsibility(rrr_id, {
                 rrr_responsibility_type: r.type,
@@ -1505,5 +1597,4 @@ export class SidePanelComponent {
       panelClass: 'gr-launcher-panel',
     });
   }
-
 }

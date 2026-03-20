@@ -1,5 +1,5 @@
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { Component, Inject, PLATFORM_ID, signal } from '@angular/core';
+import { Component, Inject, PLATFORM_ID, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -70,6 +70,7 @@ export interface AdjRow {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-land-parcel-report',
   standalone: true,
   imports: [CommonModule, MatDialogModule, MatIconModule, CdkDrag, CdkDragHandle],
@@ -704,8 +705,8 @@ ${
     const scale = Math.min((SVG_W - 2 * MARG) / extW, (SVG_H - 2 * MARG) / extH);
 
     // Center the drawing within the SVG canvas
-    const oX = MARG + ((SVG_W - 2 * MARG) - extW * scale) / 2;
-    const oY = MARG + ((SVG_H - 2 * MARG) - extH * scale) / 2;
+    const oX = MARG + (SVG_W - 2 * MARG - extW * scale) / 2;
+    const oY = MARG + (SVG_H - 2 * MARG - extH * scale) / 2;
 
     const toX = (x: number) => oX + (x - buffExt[0]) * scale;
     const toY = (y: number) => SVG_H - oY - (y - buffExt[1]) * scale; // Y-axis flip
@@ -780,11 +781,7 @@ ${
         f.getId() ?? f.get('su_id_id') ?? f.get('su_id') ?? f.get('feature_Id') ?? '?',
       );
       const fLandUse =
-        f.get('sl_land_type') ||
-        f.get('land_type') ||
-        f.get('land_use') ||
-        f.get('landUse') ||
-        '—';
+        f.get('sl_land_type') || f.get('land_type') || f.get('land_use') || f.get('landUse') || '—';
 
       // Cardinal direction from selected centroid to this neighbour
       const ext = geom.getExtent();

@@ -749,7 +749,9 @@
 }
 
 @keyframes lpr-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .lpr-sketch-error {

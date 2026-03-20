@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, inject, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  inject,
+  OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,6 +21,7 @@ import { AdminHeaderComponent } from '../common/admin-header/admin-header.compon
 import { AdminSideBarComponent } from '../common/admin-side-bar/admin-side-bar.component';
 import { OnlineUsersComponent } from '../../components/dialogs/online-users/online-users.component';
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home-page',
   standalone: true,
   imports: [
@@ -31,6 +39,7 @@ import { OnlineUsersComponent } from '../../components/dialogs/online-users/onli
   styleUrl: './home-page.component.css',
 })
 export class HomePageComponent implements OnInit, AfterViewInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   loading = false;
 
   dialog = inject(MatDialog);
@@ -99,6 +108,8 @@ export class HomePageComponent implements OnInit, AfterViewInit {
           this.users_limit = res.users_limit ? res.users_limit : 'Unlimited';
           this.userService.setUserLimit(res.users_limit);
           resolve(true);
+
+          this.cdr.markForCheck();
         },
         error: (err) => reject(err),
       });
@@ -114,6 +125,8 @@ export class HomePageComponent implements OnInit, AfterViewInit {
           this.registeredUsers = res.registered;
           this.onlineUsers = res.online;
           resolve(true);
+
+          this.cdr.markForCheck();
         },
         error: (err) => {
           console.error(err.error.error);
@@ -129,6 +142,8 @@ export class HomePageComponent implements OnInit, AfterViewInit {
         next: (res: any) => {
           this.logins = res;
           resolve(true);
+
+          this.cdr.markForCheck();
         },
         error: (err) => reject(err),
       });
@@ -151,6 +166,8 @@ export class HomePageComponent implements OnInit, AfterViewInit {
       // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
+
+        this.cdr.markForCheck();
       });
     }
   }
@@ -215,6 +232,8 @@ export class HomePageComponent implements OnInit, AfterViewInit {
 
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
+
+        this.cdr.markForCheck();
       });
     }
   }

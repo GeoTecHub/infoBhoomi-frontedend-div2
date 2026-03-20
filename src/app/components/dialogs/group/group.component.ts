@@ -1,5 +1,12 @@
 //
-import { Component, Inject, inject, DestroyRef} from '@angular/core';
+import {
+  Component,
+  Inject,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -21,6 +28,7 @@ import { UserService } from '../../../services/user.service';
 import { CivilianComponent } from '../civilian/civilian.component';
 import { CompanyComponent } from '../company/company.component';
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-group',
   standalone: true,
   imports: [
@@ -38,6 +46,7 @@ import { CompanyComponent } from '../company/company.component';
   styleUrl: './group.component.css',
 })
 export class GroupComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
   selectedGroup: any = null;
   filterValue: any;
@@ -105,6 +114,8 @@ export class GroupComponent {
       if (user) {
         this.user_id = user.user_id || '';
       }
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -113,6 +124,8 @@ export class GroupComponent {
   getGroupNames() {
     this.apiService.getGroupNames().subscribe((res) => {
       this.group_names_array = res;
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -121,6 +134,8 @@ export class GroupComponent {
     this.apiService.getGroupTypes().subscribe((res) => {
       console.log(res);
       this.group_types_array = res;
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -128,6 +143,8 @@ export class GroupComponent {
     this.apiService.loadPartySubTypes().subscribe((res) => {
       console.log(res);
       this.party_sub_types_array = res;
+
+      this.cdr.markForCheck();
     });
   }
   onPartySubTypeChange(type: any) {}
@@ -177,6 +194,8 @@ export class GroupComponent {
           this.party_already_existing = false;
           this.data_not_found = true;
         }
+
+        this.cdr.markForCheck();
       });
     }
   }

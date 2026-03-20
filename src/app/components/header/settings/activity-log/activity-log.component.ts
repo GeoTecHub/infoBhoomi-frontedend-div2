@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -13,6 +13,7 @@ import { LayerService } from '../../../../services/layer.service';
 import { ProVersionMessageComponent } from '../../../helpers/pro-version-message/pro-version-message.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-activity-log',
   standalone: true,
   imports: [
@@ -31,6 +32,7 @@ import { ProVersionMessageComponent } from '../../../helpers/pro-version-message
   styleUrl: './activity-log.component.css',
 })
 export class ActivityLogComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   showProOverlay = true;
 
   displayedColumns: string[] = []; // Dynamic columns
@@ -222,6 +224,8 @@ export class ActivityLogComponent {
 
         this.dataSource.data = this.filteredData;
         console.error('Error occurred:', this.dataSource.data);
+
+        this.cdr.markForCheck();
       },
       (error) => {
         console.error('Error occurred:', error);

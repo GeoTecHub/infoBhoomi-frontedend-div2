@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -18,6 +18,7 @@ import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-ba
 import { AdminService, PermId } from '../../../services/admin.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-user-edit',
   standalone: true,
   imports: [
@@ -34,6 +35,7 @@ import { AdminService, PermId } from '../../../services/admin.service';
   styleUrl: './user-edit.component.css',
 })
 export class UserEditComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   userForm!: FormGroup;
   adminDetailsForm!: FormGroup;
   user: any;
@@ -92,6 +94,8 @@ export class UserEditComponent {
   getDepartmentList() {
     this.apiService.getDepartments().subscribe((res) => {
       this.departments_list = res;
+
+      this.cdr.markForCheck();
     });
   }
 

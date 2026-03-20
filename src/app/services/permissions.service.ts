@@ -9,7 +9,7 @@ import { APIsService } from './api.service';
   providedIn: 'root',
 })
 export class PermissionService {
-  private userToken = localStorage.getItem('Token');
+  private userToken = typeof window !== 'undefined' ? localStorage.getItem('Token') : null;
 
   constructor(
     private http: HttpClient,

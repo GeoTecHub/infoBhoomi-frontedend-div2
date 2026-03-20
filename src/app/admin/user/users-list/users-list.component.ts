@@ -1,6 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, DestroyRef} from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  Component,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Signal,
+} from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,6 +24,7 @@ import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-ba
 import { AdminService, PermId } from '../../../services/admin.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-users-list',
   standalone: true,
   imports: [
@@ -33,15 +41,17 @@ import { AdminService, PermId } from '../../../services/admin.service';
   styleUrl: './users-list.component.css',
 })
 export class UsersListComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
   users_list: any = [];
   searchQuery = '';
   departments_list: any = [];
   departments_id = '';
   userType: string = '';
+  readonly usersLimit: Signal<number | null>;
 
   get remainingUsersAllowed(): number {
-    return (this.getUsersLimit() ?? 0) - this.totalUserAccounts;
+    return (this.usersLimit() ?? 0) - this.totalUserAccounts;
   }
 
   get hasReachedLimit(): boolean {
@@ -53,7 +63,7 @@ export class UsersListComponent {
   }
 
   get canShowUserLimitInfo(): boolean {
-    return this.getUsersLimit() !== null && Array.isArray(this.users_list);
+    return this.usersLimit() !== null && Array.isArray(this.users_list);
   }
 
   constructor(
@@ -64,10 +74,13 @@ export class UsersListComponent {
     private userService: UserService,
     private adminService: AdminService,
   ) {
+    this.usersLimit = toSignal(this.userService.orgUserLimit$, { initialValue: null });
     this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
       if (user) {
         this.userType = user.user_type;
       }
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -83,6 +96,8 @@ export class UsersListComponent {
   getDepartmentList() {
     this.apiService.getDepartments().subscribe((res) => {
       this.departments_list = res;
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -135,6 +150,8 @@ export class UsersListComponent {
             )) &&
           (!departmentId || user.dep_id == departmentId),
       );
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -160,12 +177,8 @@ export class UsersListComponent {
     );
   }
 
-  getUsersLimit() {
-    return this.userService.getUserLimit();
-  }
-
   canCreateUser(): boolean {
-    const limit = this.getUsersLimit();
+    const limit = this.usersLimit();
     return limit === null || this.totalUserAccounts < limit;
   }
 }

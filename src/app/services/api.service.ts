@@ -1,7 +1,7 @@
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpEvent, HttpHeaders } from '@angular/common/http';
 import { Inject, inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { Observable, throwError } from 'rxjs';
+import { Observable, shareReplay, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AreaRow } from './org-area-define.service';
 import { UserService } from './user.service';
@@ -15,12 +15,20 @@ export class APIsService {
   user_id: any;
   org_id: any;
 
+  private readonly _permCache = new Map<string, Observable<any>>();
+  private _layersPermCache: Observable<any> | null = null;
+
+  clearPermissionsCache(): void {
+    this._permCache.clear();
+    this._layersPermCache = null;
+  }
+
   constructor(
     private http: HttpClient,
     @Inject(PLATFORM_ID) private platformId: Object,
   ) {}
 
-  private readonly baseUrl = environment.API_URL; // 'https://infobhoomiback.geoinfobox.com/api/user/',
+  private readonly baseUrl = environment.API_URL;
 
   loadFromStorage() {
     if (isPlatformBrowser(this.platformId)) {
@@ -35,980 +43,266 @@ export class APIsService {
     }
   }
 
-  // Load GND
-
-  // =================================================================
-  // NEW METHOD: Add this to fetch the GND GeoJSON data
-  // =================================================================
-  getGndData(): Observable<GeoJSON.FeatureCollection> {
-    // 'any' is fine, or you can create a GeoJSON interface
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-
-    const url = `${this.baseUrl}org_area/`;
-    return this.http.get<GeoJSON.FeatureCollection>(url, { headers });
+  /** Returns an HttpHeaders object with Authorization and optional Content-Type. */
+  private h(json = true): HttpHeaders {
+    const hdrs: Record<string, string> = { Authorization: `Token ${this.token}` };
+    if (json) hdrs['Content-Type'] = 'application/json';
+    return new HttpHeaders(hdrs);
   }
 
-  //   export const environment = {
-  //   production: false,
-  //   API_URL: 'https://infobhoomiback.geoinfobox.com/api/user/',
-  // };
+  /** Filters a data object to only allowed keys, removing null/undefined/empty values. */
+  private filterKeys(data: Record<string, any>, keys: string[]): Record<string, any> {
+    return Object.fromEntries(
+      Object.entries(data).filter(
+        ([k, v]) => keys.includes(k) && v !== '' && v !== null && v !== undefined,
+      ),
+    );
+  }
 
-  // *** Endpoints ***
-  /****************** Data import panel *********** */
-  // import Rater Data
+  // =============================================================================
+  // PERMISSIONS
+  // =============================================================================
+
+  public readonly GET_PERMISSIONS = `${this.baseUrl}role-permission/`;
+
+  /** Base permission method — post a list of permission IDs to the role-permission endpoint.
+   * Results are cached per unique ID set for the lifetime of the session. */
+  getPermissions(ids: number[]): Observable<any> {
+    const key = ids.join(',');
+    if (!this._permCache.has(key)) {
+      this._permCache.set(
+        key,
+        this.http
+          .post(this.GET_PERMISSIONS, { permission_id: ids }, { headers: this.h() })
+          .pipe(shareReplay(1)),
+      );
+    }
+    return this._permCache.get(key)!;
+  }
+
+  getSummaryPermission() {
+    return this.getPermissions([10, 11, 24]);
+  }
+  getBuildingSummaryPermission() {
+    return this.getPermissions([111, 113, 131, 108]);
+  }
+  getBuildingTabAdminPermisions() {
+    return this.getPermissions([
+      101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114,
+    ]);
+  }
+  getResidentialPermisions() {
+    return this.getPermissions([145, 146, 147, 148, 149]);
+  }
+  getLandTenurePermisions() {
+    return this.getPermissions([25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 15]);
+  }
+  getBuldingTenurePermisions() {
+    return this.getPermissions([212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 174]);
+  }
+  getLandTabAdminPermisions() {
+    return this.getPermissions([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+  }
+  getTaxandAssessmentPermisions() {
+    return this.getPermissions([24, 25, 26, 27, 28, 29, 30, 31, 32]);
+  }
+  getTaxInformationPermisions() {
+    return this.getPermissions([33, 34, 35, 36, 37]);
+  }
+  getBuildingTaxandAssessPermisions() {
+    return this.getPermissions([131, 132, 133, 134, 135, 136, 137, 138, 139]);
+  }
+  getBuildingTaxInfoPermisions() {
+    return this.getPermissions([140, 141, 142, 143, 144]);
+  }
+  getLandTabUtilityPermisions() {
+    return this.getPermissions([19, 20, 21, 22, 23, 24]);
+  }
+  getBuildingTabUtilityPermisions() {
+    return this.getPermissions([122, 123, 124, 125, 126, 127, 128, 129, 130]);
+  }
+  getLandOverViewPermisions() {
+    return this.getPermissions([12, 13, 14, 15, 16, 17, 18]);
+  }
+  getBuildingOverViewPermisions() {
+    return this.getPermissions([115, 116, 117, 118, 119, 120, 121]);
+  }
+  getDefaultLayersPermisions() {
+    return this.getPermissions([80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92]);
+  }
+  getToolbarPermission() {
+    return this.getPermissions([201]);
+  }
+  getAdminPermissions() {
+    return this.getPermissions([251, 252, 253]);
+  }
+  getLayersPopPermissions() {
+    return this.getPermissions([94]);
+  }
+  getRRRPermisions() {
+    return this.getPermissions([38]);
+  }
+
+  /** Layer panel permissions — uses a separate endpoint. Cached for the session. */
+  getLayersPermisions() {
+    if (!this._layersPermCache) {
+      this._layersPermCache = this.http
+        .get(`${this.baseUrl}role-permission-layerpanel/`, { headers: this.h() })
+        .pipe(shareReplay(1));
+    }
+    return this._layersPermCache;
+  }
+
+  /** All permissions for a role — uses a separate endpoint. */
+  getPermisionsList(role_id: any) {
+    return this.http.get(`${this.baseUrl}role-permission-all/role_id=${role_id}/`, {
+      headers: this.h(),
+    });
+  }
+
+  // =============================================================================
+  // IMPORT / EXPORT — URL CONSTANTS
+  // =============================================================================
 
   public readonly IMPORT_RASTER_DATA = `${this.baseUrl}import_raster_data/`;
-
-  //IMPORT DATA
-  importRasterData(formData: FormData): Observable<HttpEvent<any>> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      // Don't set Content-Type for FormData - browser will set it automatically
-      // with the correct boundary parameter
-    });
-
-    return this.http.post(this.IMPORT_RASTER_DATA, formData, {
-      headers,
-      reportProgress: true, // Enable progress tracking
-      observe: 'events', // Get full event stream
-    });
-  }
-
-  // Import temporary data
   public readonly IMPORT_TEMP_VECTOR_DATA = `${this.baseUrl}import_vector_data/`;
-
-  // Load temporary data
   public readonly LOAD_TEMP_VECTOR_DATA = (user_id: string) =>
     `${this.baseUrl}import_vector_data/user=${user_id}/`;
-
-  // Remove temporary data from table
   public readonly REMOVE_TEMP_VECTOR_DATA = (record_id: string) =>
     `${this.baseUrl}import_vector_data/update/id=${record_id}/`;
 
-  /******************** Tools ******************** */
-  // Save drawings
-  public readonly POST_SURVEY_REP_DATA = `${this.baseUrl}survey_rep_data/`;
+  importRasterData(formData: FormData): Observable<HttpEvent<any>> {
+    return this.http.post(this.IMPORT_RASTER_DATA, formData, {
+      headers: this.h(false),
+      reportProgress: true,
+      observe: 'events',
+    });
+  }
 
-  // Update Chages
+  // =============================================================================
+  // SURVEY REP / TOOLS — URL CONSTANTS
+  // =============================================================================
+
+  public readonly POST_SURVEY_REP_DATA = `${this.baseUrl}survey_rep_data/`;
   public readonly UPDATE_SURVEY_REP_DATA = (uuid: string) =>
     `${this.baseUrl}survey_rep_data/update/id=${uuid}/`;
-  // Delete features
   public readonly DELETE_SURVEY_BATCH_DATA = `${this.baseUrl}survey_rep_data/bulk_delete/`;
 
-  // Get permissions
-  /**@response all permisssions for requested permission Ids */
-  public readonly GET_PERMISSIONS = `${this.baseUrl}role-permission/`;
+  queryParcels(
+    layerId: number,
+    conditions: { field: string; operator: string; value: string }[],
+    logic: 'AND' | 'OR',
+  ) {
+    this.loadFromStorage();
+    return this.http.post<{ count: number; layer_id: number; features: any[] }>(
+      `${this.baseUrl}query-parcels/`,
+      { layer_id: layerId, conditions, logic },
+      { headers: this.h() },
+    );
+  }
 
-  /**********************LAND TAB****************** */
-  // Get land info
-  /**@response values of all the data field in land tab */
+  exportQueryShp(
+    layerId: number,
+    conditions: { field: string; operator: string; value: string }[],
+    logic: 'AND' | 'OR',
+  ) {
+    this.loadFromStorage();
+    return this.http.post(
+      `${this.baseUrl}query-parcels/export-shp/`,
+      { layer_id: layerId, conditions, logic },
+      { headers: this.h(), responseType: 'blob' },
+    );
+  }
+
+  // =============================================================================
+  // LAND TAB — URL CONSTANTS
+  // =============================================================================
+
   public readonly GET_LAND_INFO = (su_id: string) => `${this.baseUrl}admin-info/su_id=${su_id}/`;
-
   public readonly GET_LAND_OVERVIEW = (su_id: string) =>
     `${this.baseUrl}land-overview-info/su_id=${su_id}/`;
-
   public readonly GET_LAND_UTIL_INFO = (su_id: string) =>
     `${this.baseUrl}utinet-info/su_id=${su_id}/`;
-
   public readonly GET_ASSES_TAX_INFO = (su_id: string) =>
     `${this.baseUrl}tax-assess-info/su_id=${su_id}/`;
-
   public readonly GET_LAND_TENURE = (su_id: string) =>
     `${this.baseUrl}ownership-rights-info/su_id=${su_id}/`;
-
-  // ---------------------------------------------------
-  // save and update land information tale
-  // admin info
   public readonly UPDATE_LT_ADMIN_INFO = (su_id: string) =>
     `${this.baseUrl}admin-info/update/su_id=${su_id}/`;
-
   public readonly UPDATE_LT_LAND_OVERVIEW = (su_id: string) =>
     `${this.baseUrl}land-overview-info/update/su_id=${su_id}/`;
-
   public readonly UPDATE_LT_UTIL_INFO = (su_id: string) =>
     `${this.baseUrl}utinet-info/update/su_id=${su_id}/`;
-
   public readonly UPDATE_TAX_ASSES_INFO = (su_id: string) =>
     `${this.baseUrl}tax-assess-info/update/su_id=${su_id}/`;
-
-  /***********************DROPDOWNS****************** */
-  // get admin unit type dropdown content
-  public readonly ADMIN_UNIT_TYPES_DD = (ddListID: string) => `${this.baseUrl}${ddListID}/`; // temp
-
-  /***********************PANEL IMAGE****************** */
   public readonly SIDE_PANEL_IMG = (su_id: string) =>
     `${this.baseUrl}attrib-image-retrive/su_id=${su_id}/`;
+  public readonly ADMIN_UNIT_TYPES_DD = (ddListID: string) => `${this.baseUrl}${ddListID}/`;
 
-  // LAND TAB ADMINISTRATIVE
-  // getAdministrativeInfo(su_id_value: any) {
-  //   console.log(su_id_value,this.token )
-  //   const headers = new HttpHeaders({
-  //     Authorization: `Token ${this.token}`,
-  //     'Content-Type': 'application/json'
-  //   });
-
-  //   const requestBody = { su_id: su_id_value };
-
-  //   return this.http.get(`${this.baseUrl}admin-info/su_id=${su_id_value}/`, { headers });
-  // }
-
-  getSummaryPermission() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [10, 11, 24],
-      },
-      { headers },
-    );
-  }
-
-  // GET BUILDING TAB PERMISIONS
-
-  getBuildingSummaryPermission() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [111, 113, 131, 108],
-      },
-      { headers },
-    );
-  }
-
-  // GET ADMIN PERMISIONS
-  getBuildingTabAdminPermisions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114],
-      },
-      { headers },
-    );
-  }
-
-  getResidentialPermisions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [145, 146, 147, 148, 149],
-      },
-      { headers },
-    );
-  }
-
-  // GET LAND TAB PERMISIONS
-  // LAND TAB TENURE PERMISIONS
-  getLandTenurePermisions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 15],
-      },
-      { headers },
-    );
-  }
-
-  // GET CURRENT LOCATION
-
-  getCurrentLocation() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}org_loc_get/`, { headers });
-  }
-
-  // BUILDING TENRE
-  getBuldingTenurePermisions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 174],
-      },
-      { headers },
-    );
-  }
-
-  // GET LAND TAB ADMIN PERMISIONS
-  getLandTabAdminPermisions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-      },
-      { headers },
-    );
-  }
-
-  getTaxandAssessmentPermisions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [24, 25, 26, 27, 28, 29, 30, 31, 32],
-      },
-      { headers },
-    );
-  }
-
-  getTaxInformationPermisions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [33, 34, 35, 36, 37],
-      },
-      { headers },
-    );
-  }
-
-  getBuildingTaxandAssessPermisions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [131, 132, 133, 134, 135, 136, 137, 138, 139],
-      },
-      { headers },
-    );
-  }
-
-  getBuildingTaxInfoPermisions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [140, 141, 142, 143, 144],
-      },
-      { headers },
-    );
-  }
-
-  getLandTabUtilityPermisions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [19, 20, 21, 22, 23, 24],
-      },
-      { headers },
-    );
-  }
-
-  getBuildingTabUtilityPermisions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [122, 123, 124, 125, 126, 127, 128, 129, 130],
-      },
-      { headers },
-    );
-  }
-
-  getLandOverViewPermisions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [12, 13, 14, 15, 16, 17, 18],
-      },
-      { headers },
-    );
-  }
-
-  getBuildingOverViewPermisions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [115, 116, 117, 118, 119, 120, 121],
-      },
-      { headers },
-    );
-  }
-
-  // GET ADMINISTRATIVE TYPES
+  // =============================================================================
+  // LAND TAB — GET
+  // =============================================================================
 
   getAdministrativeTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-sl-baunittype-10/`, { headers });
-  }
-
-  deleteParcelImage(su_id_value: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.delete(`${this.baseUrl}attrib-image-delete/su_id=${su_id_value}/`, {
-      headers,
-    });
-  }
-
-  getCreatedByDetails(su_id_value: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(`${this.baseUrl}create_by/`, { su_id: su_id_value }, { headers });
-  }
-
-  getSummaryDetails(su_id_value: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lnd-summary/su_id=${su_id_value}/`, { headers });
-  }
-
-  getAssessWardList() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}assess_ward_lst/`, { headers });
+    return this.http.get(`${this.baseUrl}lst-sl-baunittype-10/`, { headers: this.h() });
   }
 
   getAdministrativeInfo(su_id_value: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
+    return this.http.get(`${this.baseUrl}lnd-admin-info/su_id=${su_id_value}/`, {
+      headers: this.h(),
     });
-    return this.http.get(`${this.baseUrl}lnd-admin-info/su_id=${su_id_value}/`, { headers });
-  }
-  // LAND TAB ADMINISTRATIVE
-  // ADMINISTRATIVE GET DATA
-  loadLandUseCategories() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-ec-extlandusetype-28/`, { headers });
   }
 
-  // SUB CATEGORY GET DATA
-  loadSubCategory() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-ec-extlandusesubtype-29/`, { headers });
+  getSummaryDetails(su_id_value: any) {
+    return this.http.get(`${this.baseUrl}lnd-summary/su_id=${su_id_value}/`, { headers: this.h() });
   }
 
-  electricityOptions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-ec-extlandusetype-28/`, { headers });
-  }
-
-  // LAND TAB LANDOVERVIEW
-  // LANDOVERVIEW GET DATA
   getLandOverViewInfo(su_id_value: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
+    return this.http.get(`${this.baseUrl}land-overview-info/su_id=${su_id_value}/`, {
+      headers: this.h(),
     });
-    return this.http.get(`${this.baseUrl}land-overview-info/su_id=${su_id_value}/`, { headers });
   }
 
-  getBuildingSummaryDetails(su_id_value: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}bld-summary/su_id=${su_id_value}/`, { headers });
-  }
-
-  // LANDOVERVIEW GET DATA
-  getBuildingOverViewInfo(su_id_value: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}bld-overview-info/su_id=${su_id_value}/`, { headers });
-  }
-
-  // GND GET LIST
-
-  // SUB CATEGORY GET DATA
-  GNDListdData() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-gnd-area/`, { headers });
-  }
-
-  // LANDOVERVIEW PATCH DATA
-  updateLandOverviewInfo(su_id: any, data: any, tab: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    const allowedKeys = [
-      'dimension_2d_3d',
-      'area',
-      'perimeter',
-      'boundary_type',
-      'crs',
-      'ext_landuse_type',
-      'ext_landuse_sub_type',
-      'reference_coordinate',
-    ];
-    // Filter the `data` object to keep only the allowed keys
-    // Filter the `data` object to keep only the allowed keys and remove empty values
-    const filteredData = Object.keys(data)
-      .filter(
-        (key) =>
-          allowedKeys.includes(key) &&
-          data[key] !== '' &&
-          data[key] !== null &&
-          data[key] !== undefined,
-      )
-      .reduce(
-        (obj, key) => {
-          obj[key] = data[key];
-          return obj;
-        },
-        {} as Record<string, any>,
-      );
-
-    // Add `user_id` and `category`
-    // filteredData['user_id'] = this.userService.getUser()?.user_id;
-    // filteredData['category'] = tab;
-    return this.http.patch(
-      `${this.baseUrl}land-overview-info/update/su_id=${su_id}/`,
-      filteredData, // Send only filtered data
-      { headers },
-    );
-  }
-
-  // UPDATE BUILDING OVERVIEW
-  updateBuildOverviewInfo(su_id: any, data: any, tab: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    const allowedKeys = [
-      'dimension_2d_3d',
-      'area',
-      'reference_coordinate',
-      'hight',
-      'surface_relation',
-      'ext_builduse_type',
-      'ext_builduse_sub_type',
-      'roof_type',
-      'wall_type',
-      'no_floors',
-    ];
-    // Filter the `data` object to keep only the allowed keys
-    // Filter the `data` object to keep only the allowed keys and remove empty values
-    const filteredData = Object.keys(data)
-      .filter(
-        (key) =>
-          allowedKeys.includes(key) &&
-          data[key] !== '' &&
-          data[key] !== null &&
-          data[key] !== undefined,
-      )
-      .reduce(
-        (obj, key) => {
-          obj[key] = data[key];
-          return obj;
-        },
-        {} as Record<string, any>,
-      );
-
-    // Add `user_id` and `category`
-    // filteredData['user_id'] = this.userService.getUser()?.user_id;
-    // filteredData['category'] = tab;
-    return this.http.patch(
-      `${this.baseUrl}bld-overview-info/update/su_id=${su_id}/`,
-      filteredData, // Send only filtered data
-      { headers },
-    );
-  }
-
-  updateTaxAndAssessmentInfo(su_id: any, data: any, type: string) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    const allowedKeys = [
-      'assessment_annual_value',
-      'assessment_no',
-      'assessment_percentage',
-      'date_of_valuation',
-      'outstanding_balance',
-      'property_type',
-      'tax_date',
-      'tax_annual_value',
-      'tax_type',
-      'tax_percentage',
-      'year_of_assessment',
-      'land_value',
-      'market_value',
-      'tax_status',
-    ];
-    // Filter the `data` object to keep only the allowed keys and remove empty values
-    const filteredData = Object.keys(data)
-      .filter(
-        (key) =>
-          allowedKeys.includes(key) &&
-          data[key] !== '' &&
-          data[key] !== null &&
-          data[key] !== undefined,
-      )
-      .reduce(
-        (obj, key) => {
-          obj[key] = data[key];
-          return obj;
-        },
-        {} as Record<string, any>,
-      );
-    if (data.tax_date) {
-      filteredData['tax_date'] = data.tax_date;
-    }
-    if (data.date_of_valuation) {
-      filteredData['date_of_valuation'] = data.date_of_valuation;
-    }
-
-    return this.http.patch(
-      `${this.baseUrl}tax-assess-info/update/su_id=${su_id}/`,
-      filteredData, // Send only filtered data
-      { headers },
-    );
-  }
-
-  // GET IT UNIT INFO
   getItInfo(su_id_value: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
+    return this.http.get(`${this.baseUrl}lnd-utinet-info/su_id=${su_id_value}/`, {
+      headers: this.h(),
     });
-    return this.http.get(`${this.baseUrl}lnd-utinet-info/su_id=${su_id_value}/`, { headers });
   }
 
-  // GET LAND PARCEL METADATA (la_spatial_source)
   getLandMetadata(su_id: any) {
-    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
-    return this.http.get(`${this.baseUrl}la-spatial-source-retrive/su_id=${su_id}/`, { headers });
-  }
-
-  // PATCH LAND PARCEL METADATA (la_spatial_source)
-  updateLandMetadata(su_id: any, data: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
+    return this.http.get(`${this.baseUrl}la-spatial-source-retrive/su_id=${su_id}/`, {
+      headers: this.h(),
     });
-    const allowedKeys = ['spatial_source_type', 'source_id', 'description', 'date_accept', 'surveyor_name'];
-    const filteredData = Object.fromEntries(
-      Object.entries(data).filter(([k, v]) => allowedKeys.includes(k) && v !== '' && v !== null && v !== undefined),
-    );
-    return this.http.patch(`${this.baseUrl}la-spatial-source-update/su_id=${su_id}/`, filteredData, { headers });
   }
 
-  // GET BULD INFO
-  getBuildItInfo(su_id_value: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}bld-utinet-info/su_id=${su_id_value}/`, { headers });
-  }
-
-  // GET IT UNIT INFO
-  getltAssesAndTaxInfo(su_id_value: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}tax-assess-info/su_id=${su_id_value}/`, { headers });
-  }
-
-  // GET LAND TENURE INFO
   getLandTenureInfo(su_id_value: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
+    return this.http.get(`${this.baseUrl}ownership-rights-info/su_id=${su_id_value}/`, {
+      headers: this.h(),
     });
-    return this.http.get(`${this.baseUrl}ownership-rights-info/su_id=${su_id_value}/`, { headers });
   }
 
-  // GET RRR DATA
-  getRRRData(su_id_value: any) {
-    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
-    return this.http.get(`${this.baseUrl}rrr_data_get/?su_id=${su_id_value}`, { headers });
+  getltAssesAndTaxInfo(su_id_value: any) {
+    return this.http.get(`${this.baseUrl}tax-assess-info/su_id=${su_id_value}/`, {
+      headers: this.h(),
+    });
   }
 
-  // GET ZONING INFO
   getZoningInfo(su_id_value: any) {
-    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
-    return this.http.get(`${this.baseUrl}lnd-zoning-info/su_id=${su_id_value}/`, { headers });
-  }
-
-  // UPDATE ZONING INFO
-  updateZoningInfo(su_id: any, data: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
+    return this.http.get(`${this.baseUrl}lnd-zoning-info/su_id=${su_id_value}/`, {
+      headers: this.h(),
     });
-    return this.http.patch(`${this.baseUrl}lnd-zoning-info/update/su_id=${su_id}/`, data, { headers });
   }
 
-  // GET PHYSICAL / ENVIRONMENTAL INFO (Land)
   getPhysicalEnvInfo(su_id: any) {
-    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
-    return this.http.get(`${this.baseUrl}lnd-physical-env/su_id=${su_id}/`, { headers });
+    return this.http.get(`${this.baseUrl}lnd-physical-env/su_id=${su_id}/`, { headers: this.h() });
   }
 
-  // UPDATE PHYSICAL / ENVIRONMENTAL INFO (Land)
-  updatePhysicalEnvInfo(su_id: any, data: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.patch(`${this.baseUrl}lnd-physical-env/update/su_id=${su_id}/`, data, { headers });
-  }
+  // =============================================================================
+  // LAND TAB — PATCH / UPDATE
+  // =============================================================================
 
-  // GET RRR RESTRICTIONS
-  getRRRRestrictions(rrr_id: number | string) {
-    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
-    return this.http.get(`${this.baseUrl}rrr-restrictions/rrr_id=${rrr_id}/`, { headers });
-  }
-
-  // POST RRR RESTRICTION
-  postRRRRestriction(rrr_id: number | string, data: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(`${this.baseUrl}rrr-restrictions/rrr_id=${rrr_id}/`, data, { headers });
-  }
-
-  // DELETE RRR RESTRICTION
-  deleteRRRRestriction(rrr_id: number | string, id: number | string) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.delete(`${this.baseUrl}rrr-restrictions/rrr_id=${rrr_id}/`, {
-      headers,
-      body: { id },
-    });
-  }
-
-  // GET RRR RESPONSIBILITIES
-  getRRRResponsibilities(rrr_id: number | string) {
-    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
-    return this.http.get(`${this.baseUrl}rrr-responsibilities/rrr_id=${rrr_id}/`, { headers });
-  }
-
-  // POST RRR RESPONSIBILITY
-  postRRRResponsibility(rrr_id: number | string, data: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(`${this.baseUrl}rrr-responsibilities/rrr_id=${rrr_id}/`, data, { headers });
-  }
-
-  // DELETE RRR RESPONSIBILITY
-  deleteRRRResponsibility(rrr_id: number | string, id: number | string) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.delete(`${this.baseUrl}rrr-responsibilities/rrr_id=${rrr_id}/`, {
-      headers,
-      body: { id },
-    });
-  }
-
-  // GET LAND TENURE PDF
-  getlandTenurePDF(API: string): Observable<Blob> {
-    let pdf_api = 'http://192.168.11.55:82/secure-media/documents/admin_source/11.pdf';
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-
-    return this.http.get(pdf_api, { headers, responseType: 'blob' });
-  }
-
-  // WATER SUPPLY GET DATA
-
-  getWaterSupply() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-su-sl-water-22/`, { headers });
-  }
-
-  // SANITATION SEWERGE GET DATA
-
-  getSanitationSewerage() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-su-sl-sanitation-23/`, { headers });
-  }
-
-  // GULLY GET DATA
-
-  getgully() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-su-sl-sanitation-23/`, { headers });
-  }
-
-  // LOAD ROOF TYPES
-  loadRoofTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-su-sl-roof-type-24/`, { headers });
-  }
-
-  // LOAD TELECOM TYPES
-  loadTelecomTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-tele-providers-38/`, { headers });
-  }
-
-  // LOAD INTERNET TYPES
-  loadInternetTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-int-providers-39/`, { headers });
-  }
-
-  // LOAD WALL TYPES
-  loadWallType() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-su-sl-wall-type-25/`, { headers });
-  }
-  //LAND TENURE INFO PATCH DATA
-
-  updateLandTenureInfo(su_id: any, data: any, tabs: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    const allowedKeys = [
-      'drainage_system',
-      'electricity',
-      'garbage_disposal',
-      'sanitation_gully',
-      'sanitation_sewerage',
-      'water_supply',
-    ];
-
-    const filteredData = Object.keys(data)
-      .filter(
-        (key) =>
-          allowedKeys.includes(key) &&
-          data[key] !== '' &&
-          data[key] !== null &&
-          data[key] !== undefined,
-      )
-      .reduce(
-        (obj, key) => {
-          obj[key] = data[key];
-          return obj;
-        },
-        {} as Record<string, any>,
-      );
-
-    // Add `user_id` and `category`
-    filteredData['user_id'] = this.userService.getUser()?.user_id;
-    filteredData['category'] = tabs;
-    return this.http.patch(
-      `${this.baseUrl}utinet-info/update/su_id=${su_id}/`,
-      filteredData, // Send only filtered data
-      { headers },
-    );
-  }
-
-  // LAND IT UNIT INFO PATCH DATA
-
-  updateITUtilInfo(su_id: any, data: any, tab: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    const allowedKeys = [
-      'drainage_system',
-      'electricity',
-      'garbage_disposal',
-      'sanitation_gully',
-      'sanitation_sewerage',
-      'water_supply',
-    ];
-
-    const filteredData = Object.keys(data)
-      .filter(
-        (key) =>
-          allowedKeys.includes(key) &&
-          data[key] !== '' &&
-          data[key] !== null &&
-          data[key] !== undefined,
-      )
-      .reduce(
-        (obj, key) => {
-          obj[key] = data[key];
-          return obj;
-        },
-        {} as Record<string, any>,
-      );
-
-    // Add `user_id` and `category`
-    // filteredData['user_id'] = this.userService.getUser()?.user_id;
-    // filteredData['category'] = tab;
-    return this.http.patch(
-      `${this.baseUrl}lnd-utinet-info/update/su_id=${su_id}/`,
-      filteredData, // Send only filtered data
-      { headers },
-    );
-  }
-
-  updateltassesAndTaxInfo(su_id: any, data: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    const allowedKeys = [
-      'drainage_system',
-      'electricity',
-      'garbage_disposal',
-      'sanitation_gully',
-      'sanitation_sewerage',
-      'water_supply',
-    ];
-
-    const filteredData = Object.keys(data)
-      .filter(
-        (key) =>
-          allowedKeys.includes(key) &&
-          data[key] !== '' &&
-          data[key] !== null &&
-          data[key] !== undefined,
-      )
-      .reduce(
-        (obj, key) => {
-          obj[key] = data[key];
-          return obj;
-        },
-        {} as Record<string, any>,
-      );
-
-    // Add `user_id` and `category`
-    filteredData['user_id'] = this.userService.getUser()?.user_id;
-    filteredData['category'] = 'LND';
-    return this.http.patch(
-      `${this.baseUrl}/tax-assess-info/update/su_id=${su_id}/`,
-      filteredData, // Send only filtered data
-      { headers },
-    );
-  }
-
-  // BUILDING TAB GET PATCH START
-  // ADMINISTRATIVE GET DATA
-  getBuildingAdministrativeInfo(su_id_value: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}bld-admin-info/su_id=${su_id_value}/`, { headers });
-  }
-
-  getBAUnitID(su_id_value: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}ba-unit-id/su_id=${su_id_value}/`, { headers });
-  }
-
-  // ADMINISTRATIVE PATCH DATA
   updateAdministrativeInfo(su_id: any, data: any, tab: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-
-    const allowedKeys = [
+    const filteredData = this.filterKeys(data, [
       'sl_ba_unit_type',
       'sl_ba_unit_name',
       'pd',
@@ -1027,43 +321,150 @@ export class APIsService {
       'land_name',
       'registration_date',
       'parcel_status',
-    ];
+      // Relationship & tenure fields — backend reads these directly from request.data
+      'tenure_type',
+      'part_of_estate',
+    ]);
+    return this.http.patch(`${this.baseUrl}lnd-admin-info/update/su_id=${su_id}/`, filteredData, {
+      headers: this.h(),
+    });
+  }
 
-    // Filter the `data` object to keep only the allowed keys
-    // Filter the `data` object to keep only the allowed keys and remove empty values
-    const filteredData = Object.keys(data)
-      .filter(
-        (key) =>
-          allowedKeys.includes(key) &&
-          data[key] !== '' &&
-          data[key] !== null &&
-          data[key] !== undefined,
-      )
-      .reduce(
-        (obj, key) => {
-          obj[key] = data[key];
-          return obj;
-        },
-        {} as Record<string, any>,
-      );
-
-    // Add `user_id` and `category`
-    // filteredData['user_id'] = this.userService.getUser()?.user_id;
-    // filteredData['category'] = tab;
+  updateLandOverviewInfo(su_id: any, data: any, tab: any) {
+    const filteredData = this.filterKeys(data, [
+      'dimension_2d_3d',
+      'area',
+      'perimeter',
+      'boundary_type',
+      'crs',
+      'ext_landuse_type',
+      'ext_landuse_sub_type',
+      'reference_coordinate',
+    ]);
     return this.http.patch(
-      `${this.baseUrl}lnd-admin-info/update/su_id=${su_id}/`,
-      filteredData, // Send only filtered data
-      { headers },
+      `${this.baseUrl}land-overview-info/update/su_id=${su_id}/`,
+      filteredData,
+      { headers: this.h() },
     );
   }
 
-  updateBuildingAdministrativeInfo(su_id: any, data: any, tab: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
+  updateITUtilInfo(su_id: any, data: any, tab: any) {
+    const filteredData = this.filterKeys(data, [
+      'drainage_system',
+      'electricity',
+      'garbage_disposal',
+      'sanitation_gully',
+      'sanitation_sewerage',
+      'water_supply',
+    ]);
+    return this.http.patch(`${this.baseUrl}lnd-utinet-info/update/su_id=${su_id}/`, filteredData, {
+      headers: this.h(),
     });
+  }
 
-    const allowedKeys = [
+  updateLandTenureInfo(su_id: any, data: any, tabs: any) {
+    const filteredData = this.filterKeys(data, [
+      'drainage_system',
+      'electricity',
+      'garbage_disposal',
+      'sanitation_gully',
+      'sanitation_sewerage',
+      'water_supply',
+    ]);
+    filteredData['user_id'] = this.userService.getUser()?.user_id;
+    filteredData['category'] = tabs;
+    return this.http.patch(`${this.baseUrl}utinet-info/update/su_id=${su_id}/`, filteredData, {
+      headers: this.h(),
+    });
+  }
+
+  updateTaxAndAssessmentInfo(su_id: any, data: any, type: string) {
+    const filteredData = this.filterKeys(data, [
+      'assessment_annual_value',
+      'assessment_no',
+      'assessment_percentage',
+      'date_of_valuation',
+      'outstanding_balance',
+      'property_type',
+      'tax_date',
+      'tax_annual_value',
+      'tax_type',
+      'tax_percentage',
+      'year_of_assessment',
+      'land_value',
+      'market_value',
+      'tax_status',
+    ]);
+    if (data.tax_date) filteredData['tax_date'] = data.tax_date;
+    if (data.date_of_valuation) filteredData['date_of_valuation'] = data.date_of_valuation;
+    return this.http.patch(`${this.baseUrl}tax-assess-info/update/su_id=${su_id}/`, filteredData, {
+      headers: this.h(),
+    });
+  }
+
+  updateLandMetadata(su_id: any, data: any) {
+    const filteredData = this.filterKeys(data, [
+      'spatial_source_type',
+      'source_id',
+      'description',
+      'date_accept',
+      'surveyor_name',
+    ]);
+    return this.http.patch(
+      `${this.baseUrl}la-spatial-source-update/su_id=${su_id}/`,
+      filteredData,
+      { headers: this.h() },
+    );
+  }
+
+  updateZoningInfo(su_id: any, data: any) {
+    return this.http.patch(`${this.baseUrl}lnd-zoning-info/update/su_id=${su_id}/`, data, {
+      headers: this.h(),
+    });
+  }
+
+  updatePhysicalEnvInfo(su_id: any, data: any) {
+    return this.http.patch(`${this.baseUrl}lnd-physical-env/update/su_id=${su_id}/`, data, {
+      headers: this.h(),
+    });
+  }
+
+  // =============================================================================
+  // BUILDING TAB — GET
+  // =============================================================================
+
+  getBuildingSummaryDetails(su_id_value: any) {
+    return this.http.get(`${this.baseUrl}bld-summary/su_id=${su_id_value}/`, { headers: this.h() });
+  }
+
+  getBuildingOverViewInfo(su_id_value: any) {
+    return this.http.get(`${this.baseUrl}bld-overview-info/su_id=${su_id_value}/`, {
+      headers: this.h(),
+    });
+  }
+
+  getBuildingAdministrativeInfo(su_id_value: any) {
+    return this.http.get(`${this.baseUrl}bld-admin-info/su_id=${su_id_value}/`, {
+      headers: this.h(),
+    });
+  }
+
+  getBAUnitID(su_id_value: any) {
+    return this.http.get(`${this.baseUrl}ba-unit-id/su_id=${su_id_value}/`, { headers: this.h() });
+  }
+
+  getBuildItInfo(su_id_value: any) {
+    return this.http.get(`${this.baseUrl}bld-utinet-info/su_id=${su_id_value}/`, {
+      headers: this.h(),
+    });
+  }
+
+  // =============================================================================
+  // BUILDING TAB — PATCH / UPDATE
+  // =============================================================================
+
+  updateBuildingAdministrativeInfo(su_id: any, data: any, tab: any) {
+    const filteredData = this.filterKeys(data, [
       'sl_ba_unit_type',
       'sl_ba_unit_name',
       'pd',
@@ -1091,74 +492,34 @@ export class APIsService {
       'wall_type',
       'ext_builduse_type',
       'ext_builduse_sub_type',
-    ];
-    // Filter the `data` object to keep only the allowed keys
-    // Filter the `data` object to keep only the allowed keys and remove empty values
-    const filteredData = Object.keys(data)
-      .filter(
-        (key) =>
-          allowedKeys.includes(key) &&
-          data[key] !== '' &&
-          data[key] !== null &&
-          data[key] !== undefined,
-      )
-      .reduce(
-        (obj, key) => {
-          obj[key] = data[key];
-          return obj;
-        },
-        {} as Record<string, any>,
-      );
+    ]);
+    return this.http.patch(`${this.baseUrl}bld-admin-info/update/su_id=${su_id}/`, filteredData, {
+      headers: this.h(),
+    });
+  }
 
-    // Add `user_id` and `category`
-    // filteredData['user_id'] = this.userService.getUser()?.user_id;
-    // filteredData['category'] = tab;
+  updateBuildOverviewInfo(su_id: any, data: any, tab: any) {
+    const filteredData = this.filterKeys(data, [
+      'dimension_2d_3d',
+      'area',
+      'reference_coordinate',
+      'hight',
+      'surface_relation',
+      'ext_builduse_type',
+      'ext_builduse_sub_type',
+      'roof_type',
+      'wall_type',
+      'no_floors',
+    ]);
     return this.http.patch(
-      `${this.baseUrl}bld-admin-info/update/su_id=${su_id}/`,
-      filteredData, // Send only filtered data
-      { headers },
+      `${this.baseUrl}bld-overview-info/update/su_id=${su_id}/`,
+      filteredData,
+      { headers: this.h() },
     );
-  }
-
-  uploadImage(formData: FormData) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Correct authorization format
-      // Remove 'Content-Type': 'application/json' as it's handled by FormData
-    });
-
-    // Log the formData for debugging
-    console.log('Sending formData:', formData);
-
-    return this.http.post(
-      `${this.baseUrl}attrib-image-upload/`,
-      formData, // Pass formData directly, do not wrap it in JSON
-      { headers },
-    );
-  }
-
-  // BUILDING CATEGORIES
-  loadBuildingCategories() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-ec-extbuildusetype-32/`, { headers });
-  }
-
-  loadBuildingSubCategory() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-ec-extbuildusesubtype-33/`, { headers });
   }
 
   updateBuildingITUtilInfo(su_id: any, data: any, tab: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    const allowedKeys = [
+    const filteredData = this.filterKeys(data, [
       'elec',
       'water',
       'water_drink',
@@ -1170,243 +531,238 @@ export class APIsService {
       'drainage',
       'expired_date',
       'issued_date',
-    ];
+    ]);
+    if (data.expired_date) filteredData['expired_date'] = data.expired_date;
+    if (data.issued_date) filteredData['issued_date'] = data.issued_date;
+    return this.http.patch(`${this.baseUrl}bld-utinet-info/update/su_id=${su_id}/`, filteredData, {
+      headers: this.h(),
+    });
+  }
 
-    const filteredData = Object.keys(data)
-      .filter(
-        (key) =>
-          allowedKeys.includes(key) &&
-          data[key] !== '' &&
-          data[key] !== null &&
-          data[key] !== undefined,
-      )
-      .reduce(
-        (obj, key) => {
-          obj[key] = data[key];
-          return obj;
-        },
-        {} as Record<string, any>,
-      );
+  // =============================================================================
+  // RRR (Rights, Restrictions, Responsibilities)
+  // =============================================================================
 
-    // Add `user_id` and `category`
-    // filteredData['user_id'] = this.userService.getUser()?.user_id;
-    // filteredData['category'] = tab;
-    if (data.expired_date) {
-      filteredData['expired_date'] = data.expired_date;
-    }
-    if (data.issued_date) {
-      filteredData['issued_date'] = data.issued_date;
-    }
+  getRRRData(su_id_value: any) {
+    return this.http.get(`${this.baseUrl}rrr_data_get/?su_id=${su_id_value}`, {
+      headers: this.h(),
+    });
+  }
+
+  /** Alias — same endpoint as getRRRData, kept for backward compatibility. */
+  getExistingAdminSourceData(su_id: any) {
+    return this.getRRRData(su_id);
+  }
+
+  getRrrByFeatureId(featureId: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}rrr-by-featureid/feature_id=${featureId}/`, {
+      headers: this.h(),
+    });
+  }
+
+  getRRRRestrictions(rrr_id: number | string) {
+    return this.http.get(`${this.baseUrl}rrr-restrictions/rrr_id=${rrr_id}/`, {
+      headers: this.h(),
+    });
+  }
+
+  postRRRRestriction(rrr_id: number | string, data: any) {
+    return this.http.post(`${this.baseUrl}rrr-restrictions/rrr_id=${rrr_id}/`, data, {
+      headers: this.h(),
+    });
+  }
+
+  deleteRRRRestriction(rrr_id: number | string, id: number | string) {
+    return this.http.delete(`${this.baseUrl}rrr-restrictions/rrr_id=${rrr_id}/`, {
+      headers: this.h(),
+      body: { id },
+    });
+  }
+
+  getRRRResponsibilities(rrr_id: number | string) {
+    return this.http.get(`${this.baseUrl}rrr-responsibilities/rrr_id=${rrr_id}/`, {
+      headers: this.h(),
+    });
+  }
+
+  postRRRResponsibility(rrr_id: number | string, data: any) {
+    return this.http.post(`${this.baseUrl}rrr-responsibilities/rrr_id=${rrr_id}/`, data, {
+      headers: this.h(),
+    });
+  }
+
+  deleteRRRResponsibility(rrr_id: number | string, id: number | string) {
+    return this.http.delete(`${this.baseUrl}rrr-responsibilities/rrr_id=${rrr_id}/`, {
+      headers: this.h(),
+      body: { id },
+    });
+  }
+
+  postAdminSource(formData: any): Observable<any> {
+    formData.append('user_id', this.userService.getUser()?.user_id);
+    return this.http.post(`${this.baseUrl}rrr_data_save/`, formData, { headers: this.h(false) });
+  }
+
+  patchAdminSource(adminSourceId: number, formData: FormData): Observable<any> {
+    return this.http.patch(`${this.baseUrl}admin-source/update/${adminSourceId}/`, formData, {
+      headers: this.h(false),
+    });
+  }
+
+  /** Update an existing LADM RRR entry (BA unit + primary RRR + party role + admin source). */
+  patchRRREntry(baUnitId: number, data: any): Observable<any> {
+    return this.http.patch(`${this.baseUrl}rrr/update/${baUnitId}/`, data, { headers: this.h() });
+  }
+
+  /** Upload an additional document to an existing BA unit. */
+  postRRRDocument(baUnitId: number, formData: FormData): Observable<any> {
+    return this.http.post(`${this.baseUrl}rrr-add-document/ba_unit_id=${baUnitId}/`, formData, {
+      headers: this.h(false),
+    });
+  }
+
+  /** Delete an additional document link (la_rrr_document row + its admin source). */
+  deleteRRRDocument(docLinkId: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}rrr-remove-document/${docLinkId}/`, {
+      headers: this.h(),
+    });
+  }
+
+  deleteRrr(id: string): Observable<any> {
     return this.http.patch(
-      `${this.baseUrl}bld-utinet-info/update/su_id=${su_id}/`,
-      filteredData, // Send only filtered data
-      { headers },
+      `${this.baseUrl}ba_unit/update/${id}/`,
+      { status: false },
+      { headers: this.h() },
     );
   }
 
-  // RRR PANAL LOAD DATA
-
-  //  MORTGAGE GET DATA
-  loadMortgageTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-sl-mortgagetype-13/`, { headers });
+  getRRRFile(url: string): Observable<any> {
+    return this.http.get(url, { headers: this.h() });
   }
 
-  // GET SOURCE TYPES
+  // =============================================================================
+  // LOOKUP DROPDOWNS
+  // =============================================================================
+
+  loadLandUseCategories() {
+    return this.http.get(`${this.baseUrl}lst-ec-extlandusetype-28/`, { headers: this.h() });
+  }
+
+  loadSubCategory() {
+    return this.http.get(`${this.baseUrl}lst-ec-extlandusesubtype-29/`, { headers: this.h() });
+  }
+
+  getWaterSupply() {
+    return this.http.get(`${this.baseUrl}lst-su-sl-water-22/`, { headers: this.h() });
+  }
+
+  getSanitationSewerage() {
+    return this.http.get(`${this.baseUrl}lst-su-sl-sanitation-23/`, { headers: this.h() });
+  }
+
+  loadRoofTypes() {
+    return this.http.get(`${this.baseUrl}lst-su-sl-roof-type-24/`, { headers: this.h() });
+  }
+
+  loadTelecomTypes() {
+    return this.http.get(`${this.baseUrl}lst-tele-providers-38/`, { headers: this.h() });
+  }
+
+  loadInternetTypes() {
+    return this.http.get(`${this.baseUrl}lst-int-providers-39/`, { headers: this.h() });
+  }
+
+  loadWallType() {
+    return this.http.get(`${this.baseUrl}lst-su-sl-wall-type-25/`, { headers: this.h() });
+  }
+
+  loadMortgageTypes() {
+    return this.http.get(`${this.baseUrl}lst-sl-mortgagetype-13/`, { headers: this.h() });
+  }
+
   getSourceTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
+    return this.http.get(`${this.baseUrl}lst-sl-administrativesourcetype-16/`, {
+      headers: this.h(),
     });
-    return this.http.get(`${this.baseUrl}lst-sl-administrativesourcetype-16/`, { headers });
   }
 
   getUnitTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-la-baunittype-18/`, { headers });
+    return this.http.get(`${this.baseUrl}lst-la-baunittype-18/`, { headers: this.h() });
   }
 
-  //   GET PARTY DATA
+  GNDListdData() {
+    return this.http.get(`${this.baseUrl}lst-gnd-area/`, { headers: this.h() });
+  }
+
   loadPartySubTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-sl-party-type-1/`, { headers });
-  }
-  // OWNERSHIP GET DATA
-  loadOwnershipTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-sl-righttype-9/`, { headers });
+    return this.http.get(`${this.baseUrl}lst-sl-party-type-1/`, { headers: this.h() });
   }
 
-  // GET GENDER TYPES
+  loadOwnershipTypes() {
+    return this.http.get(`${this.baseUrl}lst-sl-righttype-9/`, { headers: this.h() });
+  }
 
   loadGenderTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-sl-gendertype-8/`, { headers });
+    return this.http.get(`${this.baseUrl}lst-sl-gendertype-8/`, { headers: this.h() });
   }
 
-  // GET AUTHORITY TYPES
   getAuthorityTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-org-name-40/`, { headers });
+    return this.http.get(`${this.baseUrl}lst-org-name-40/`, { headers: this.h() });
   }
 
-  // GET EDUCATION TYPES
   getReligionTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-sl-religions-7/`, { headers });
+    return this.http.get(`${this.baseUrl}lst-sl-religions-7/`, { headers: this.h() });
   }
 
   grtMarriedStatus() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-sl-married-status-6/`, { headers });
+    return this.http.get(`${this.baseUrl}lst-sl-married-status-6/`, { headers: this.h() });
   }
-  // GET HELTH TYPES
 
   getHelthdTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-sl-health-status-5/`, { headers });
+    return this.http.get(`${this.baseUrl}lst-sl-health-status-5/`, { headers: this.h() });
   }
 
-  // GET PARTY TYPES
-
-  getPartyTypes() {}
-  // GET RACE TYPES
   getRaceTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-sl-race-4/`, { headers });
+    return this.http.get(`${this.baseUrl}lst-sl-race-4/`, { headers: this.h() });
   }
 
   getEducationLevelTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-sl-education-level-3/`, { headers });
+    return this.http.get(`${this.baseUrl}lst-sl-education-level-3/`, { headers: this.h() });
   }
-
-  // GET GROUP Names
 
   getGroupTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-sl-group_party_type-41/`, { headers });
+    return this.http.get(`${this.baseUrl}lst-sl-group_party_type-41/`, { headers: this.h() });
   }
-
-  // GET GROUP TYPES
-
-  getGroupNames() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}sl-party-data-type/Group/`, { headers });
-  }
-
-  // GET GROUP TYPES
-
-  getMinisrtTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}sl-party-data-type/Ministry/`, { headers });
-  }
-
-  // GET SHARE TYPES
 
   loadRightshareTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-sl-rightsharetype-14/`, { headers });
+    return this.http.get(`${this.baseUrl}lst-sl-rightsharetype-14/`, { headers: this.h() });
   }
 
   loadRightPartyRoleTypes() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}lst-sl-partyroletype-2/`, { headers });
+    return this.http.get(`${this.baseUrl}lst-sl-partyroletype-2/`, { headers: this.h() });
   }
 
-  // GET PDF FILE
-
-  getPDF(file_path: any) {
-    console.log(file_path);
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(file_path, { headers, responseType: 'blob' });
+  loadBuildingCategories() {
+    return this.http.get(`${this.baseUrl}lst-ec-extbuildusetype-32/`, { headers: this.h() });
   }
 
-  // LAYER PERMISIONS
-  getDefaultLayersPermisions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92],
-      },
-      { headers },
-    );
+  loadBuildingSubCategory() {
+    return this.http.get(`${this.baseUrl}lst-ec-extbuildusesubtype-33/`, { headers: this.h() });
   }
 
-  // API service method should return an Observable
-  getParsalImage(su_id: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}attrib-image-retrive/su_id=${su_id}/`, {
-      headers,
-      responseType: 'blob',
-    });
+  getAssessWardList() {
+    return this.http.get(`${this.baseUrl}assess_ward_lst/`, { headers: this.h() });
   }
 
-  // GET PARTY DATA COMMON FUNCTION
-  //GET  PARTY DATA
+  getDistList() {
+    return this.http.get(`${this.baseUrl}dist-list/`, { headers: this.h() });
+  }
+
+  // =============================================================================
+  // PARTY
+  // =============================================================================
+
   getCivilianPartyData(data: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
     return this.http.post(
       `${this.baseUrl}sl-party-data/`,
       {
@@ -1414,450 +770,254 @@ export class APIsService {
         ext_pid_type: data.party_registration_type,
         ext_pid: data.registration_number,
       },
-      { headers },
+      { headers: this.h() },
     );
   }
 
-  //GET MINISTRY AND GROUP PARTY DATA
   getPartyDataFromPID(data: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
     return this.http.post(
       `${this.baseUrl}sl-party-data-pid/`,
-      {
-        pid: data.registration_number,
-      },
-      { headers },
+      { pid: data.registration_number },
+      { headers: this.h() },
     );
   }
 
-  // GET PARTY DATA BY NAME
-  getPartyDataByName(data: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}sl-party-data-pid/`,
-      {
-        pid: data.registration_number,
-      },
-      { headers },
-    );
-  }
-  // GET ADMIN SOURCE EXISTING DATA
-
-  getExistingAdminSourceData(su_id: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-
-    return this.http.get(`${this.baseUrl}rrr_data_get/?su_id=${su_id}`, {
-      headers,
-    });
+  getGroupNames() {
+    return this.http.get(`${this.baseUrl}sl-party-data-type/Group/`, { headers: this.h() });
   }
 
-  // PATH CIVILIAN PARTY DATA
+  getMinisrtTypes() {
+    return this.http.get(`${this.baseUrl}sl-party-data-type/Ministry/`, { headers: this.h() });
+  }
 
   pathchCivilianPartyForm(type: string, value: any, id?: any): Observable<any> {
     value.done_by = this.userService.getUser()?.user_id;
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-
-    const httpOptions = { headers };
-
     if (type === 'update' && id) {
-      return this.http.patch(`${this.baseUrl}sl-party/update/pid=${id}/`, value, httpOptions);
+      return this.http.patch(`${this.baseUrl}sl-party/update/pid=${id}/`, value, {
+        headers: this.h(),
+      });
     } else if (type === 'create') {
-      return this.http.post(`${this.baseUrl}sl-party/`, value, httpOptions);
+      return this.http.post(`${this.baseUrl}sl-party/`, value, { headers: this.h() });
     }
-
-    return throwError(() => new Error('Invalid operation type')); // Returns an Observable that errors out
+    return throwError(() => new Error('Invalid operation type'));
   }
 
-  // CREATE ROLE
-  createRole(formData: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
+  // =============================================================================
+  // IMAGES / FILES
+  // =============================================================================
+
+  uploadImage(formData: FormData) {
+    return this.http.post(`${this.baseUrl}attrib-image-upload/`, formData, {
+      headers: this.h(false),
     });
-    const httpOptions = { headers };
-    return this.http.post(`${this.baseUrl}user-roles/`, formData, httpOptions);
   }
 
-  // CREATE LAYER
-  createLayer(formData: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
+  getParsalImage(su_id: any): Observable<any> {
+    return this.http.get(`${this.baseUrl}attrib-image-retrive/su_id=${su_id}/`, {
+      headers: this.h(),
+      responseType: 'blob',
     });
-    const httpOptions = { headers };
-    return this.http.post(`${this.baseUrl}layerdata/`, formData, httpOptions);
   }
 
-  // ADD NEW USERS TO ROLE
-
-  // CREATE ROLE
-  addUsersToRole(formData: any, role_id: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
+  deleteParcelImage(su_id_value: any) {
+    return this.http.delete(`${this.baseUrl}attrib-image-delete/su_id=${su_id_value}/`, {
+      headers: this.h(),
     });
-    const httpOptions = { headers };
-    return this.http.patch(
-      `${this.baseUrl}user-roles/update/role_id=${role_id}/`,
-      formData,
-      httpOptions,
+  }
+
+  getPDF(file_path: any) {
+    return this.http.get(file_path, { headers: this.h(), responseType: 'blob' });
+  }
+
+  getCreatedByDetails(su_id_value: any) {
+    return this.http.post(
+      `${this.baseUrl}create_by/`,
+      { su_id: su_id_value },
+      { headers: this.h() },
     );
   }
 
-  // DELETE LAYER
-  deleteLayer(formData: any, id: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
+  // =============================================================================
+  // GND / ORG AREA
+  // =============================================================================
+
+  getGndData(): Observable<GeoJSON.FeatureCollection> {
+    return this.http.get<GeoJSON.FeatureCollection>(`${this.baseUrl}org_area/`, {
+      headers: this.h(),
     });
-    const httpOptions = { headers };
-    return this.http.delete(`${this.baseUrl}layerdata/delete/id=${id}/`, httpOptions);
   }
 
-  // EDIT LAYER
-  updateLayer(formData: any, id: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
+  getCurrentLocation() {
+    return this.http.get(`${this.baseUrl}org_loc_get/`, { headers: this.h() });
+  }
+
+  getOrgAreas(pd: string): Observable<AreaRow[]> {
+    return this.http.get<AreaRow[]>(`${this.baseUrl}pd-data/${pd}/`, { headers: this.h() });
+  }
+
+  updateOrgArea(id: string, data: { gid: number }[]): Observable<any> {
+    const payload = { org_area: data.map((item) => item.gid) || null };
+    return this.http.patch(`${this.baseUrl}org-area/update/org_id=${id}/`, payload, {
+      headers: this.h(),
     });
-    const httpOptions = { headers };
-    return this.http.patch(`${this.baseUrl}layerdata/update/id=${id}/`, formData, httpOptions);
   }
 
-  // DELETE ROLE
-  deleteRole(role_id: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.delete(`${this.baseUrl}user-roles/delete/role_id=${role_id}/`, httpOptions);
+  getOrganizationAreaById(id: string) {
+    return this.http.get(`${this.baseUrl}org-area-get/org_id=${id}/`, { headers: this.h() });
   }
 
-  postAdminSource(formData: any): Observable<any> {
-    // formData.user_id = this.userService.getUser()?.user_id;
-    formData.append('user_id', this.userService.getUser()?.user_id);
-
-    console.log('Form Data to be sent:', formData);
-
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.post(`${this.baseUrl}rrr_data_save/`, formData, httpOptions);
-  }
-
-  patchAdminSource(adminSourceId: number, formData: FormData): Observable<any> {
-    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
-    return this.http.patch(
-      `${this.baseUrl}admin-source/update/${adminSourceId}/`,
-      formData,
-      { headers },
-    );
-  }
-
-  /** Update an existing LADM RRR entry (BA unit + primary RRR + party role + admin source). */
-  patchRRREntry(baUnitId: number, data: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.patch(`${this.baseUrl}rrr/update/${baUnitId}/`, data, { headers });
-  }
-
-  /** Upload an additional document to an existing BA unit. */
-  postRRRDocument(baUnitId: number, formData: FormData): Observable<any> {
-    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
-    return this.http.post(`${this.baseUrl}rrr-add-document/ba_unit_id=${baUnitId}/`, formData, { headers });
-  }
-
-  /** Delete an additional document link (la_rrr_document row + its admin source). */
-  deleteRRRDocument(docLinkId: number): Observable<any> {
-    const headers = new HttpHeaders({ Authorization: `Token ${this.token}` });
-    return this.http.delete(`${this.baseUrl}rrr-remove-document/${docLinkId}/`, { headers });
-  }
-
-  // ADMIN APIS
-  // GET USERS
+  // =============================================================================
+  // ADMIN — USERS, ROLES, LAYERS, ORGANIZATIONS
+  // =============================================================================
 
   getAdminUsers() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
+    return this.http.get(`${this.baseUrl}list/`, { headers: this.h() });
+  }
+
+  createNewUser(formData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}create/`, formData, { headers: this.h() });
+  }
+
+  editUser(document_id: any, formData: any): Observable<any> {
+    return this.http.patch(`${this.baseUrl}update/user_id=${document_id}/`, formData, {
+      headers: this.h(),
     });
-    const httpOptions = { headers };
-    return this.http.get(`${this.baseUrl}list/`, httpOptions);
+  }
+
+  getAdminRoleUsers() {
+    return this.http.get(`${this.baseUrl}list-add-user-roles/`, { headers: this.h() });
+  }
+
+  getRolesList() {
+    return this.http.get(`${this.baseUrl}user-roles-get-admin/`, { headers: this.h() });
+  }
+
+  createRole(formData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}user-roles/`, formData, { headers: this.h() });
+  }
+
+  addUsersToRole(formData: any, role_id: any): Observable<any> {
+    return this.http.patch(`${this.baseUrl}user-roles/update/role_id=${role_id}/`, formData, {
+      headers: this.h(),
+    });
+  }
+
+  deleteRole(role_id: any): Observable<any> {
+    return this.http.delete(`${this.baseUrl}user-roles/delete/role_id=${role_id}/`, {
+      headers: this.h(),
+    });
+  }
+
+  editUserPermisions(document_id: any, formData: any): Observable<any> {
+    return this.http.patch(`${this.baseUrl}role-permission/update/id=${document_id}/`, formData, {
+      headers: this.h(),
+    });
+  }
+
+  getAdminLayers(): Observable<any> {
+    return this.http.get(`${this.baseUrl}layerdata_get_admin_panel/`, { headers: this.h() });
+  }
+
+  createLayer(formData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}layerdata/`, formData, { headers: this.h() });
+  }
+
+  updateLayer(formData: any, id: any): Observable<any> {
+    return this.http.patch(`${this.baseUrl}layerdata/update/id=${id}/`, formData, {
+      headers: this.h(),
+    });
+  }
+
+  deleteLayer(formData: any, id: any): Observable<any> {
+    return this.http.delete(`${this.baseUrl}layerdata/delete/id=${id}/`, { headers: this.h() });
   }
 
   getOrganizationsList() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.get(`${this.baseUrl}sl-orgnization/`, httpOptions);
+    return this.http.get(`${this.baseUrl}sl-orgnization/`, { headers: this.h() });
   }
 
   getOrganizationById(id: string) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.get(`${this.baseUrl}sl-orgnization/org_id=${id}/`, httpOptions);
-  }
-
-  getDistList() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.get(`${this.baseUrl}dist-list/`, httpOptions);
-  }
-
-  getOrganizationLocationById(id: string) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.get(`${this.baseUrl}org_loc/org_id=${id}/`, httpOptions);
+    return this.http.get(`${this.baseUrl}sl-orgnization/org_id=${id}/`, { headers: this.h() });
   }
 
   createNewOrganization(formData: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.post(`${this.baseUrl}sl-orgnization/`, formData, httpOptions);
-  }
-
-  // GET ROLE USERS
-  getAdminRoleUsers() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.get(`${this.baseUrl}list-add-user-roles/`, httpOptions);
-  }
-  // GET DEPARTMENTS
-  getDepartments(): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-
-    return this.http.get(`${this.baseUrl}sl-department-list/`, httpOptions);
-  }
-
-  // GET ADMIN LAYERS
-  getAdminLayers(): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-
-    return this.http.get(`${this.baseUrl}layerdata_get_admin_panel/`, httpOptions);
-  }
-  // GET PERMISIONS
-  getPermisionsList(role_id: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.get(`${this.baseUrl}role-permission-all/role_id=${role_id}/`, httpOptions);
-  }
-
-  getDashboardData() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.get(`${this.baseUrl}org_details/`, httpOptions);
-  }
-
-  getAdminContactInfo() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.get(`${this.baseUrl}admin_acc_data/`, httpOptions);
-  }
-
-  getRecentLogins() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.get(`${this.baseUrl}recent_logins/`, httpOptions);
-  }
-
-  getUserOverview() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.get(`${this.baseUrl}user_overview/`, httpOptions);
-  }
-
-  // GET ROLES LIST
-  getRolesList() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.get(`${this.baseUrl}user-roles-get-admin/`, httpOptions);
-  }
-
-  // CREATE NEW USER
-  createNewUser(formData: any): Observable<any> {
-    // formData.user_type = 'user';
-    // formData.org_id = this.userService.getUser()?.org_id;
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.post(`${this.baseUrl}create/`, formData, httpOptions);
-  }
-
-  // EDIT NEW USER
-  editUser(document_id: any, formData: any): Observable<any> {
-    // formData.user_type = 'user';
-    // formData.org_id = this.userService.getUser()?.org_id;
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.patch(`${this.baseUrl}update/user_id=${document_id}/`, formData, httpOptions);
+    return this.http.post(`${this.baseUrl}sl-orgnization/`, formData, { headers: this.h() });
   }
 
   editOrganization(document_id: any, formData: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
     return this.http.patch(
       `${this.baseUrl}sl-organization/update/org_id=${document_id}/`,
       formData,
-      httpOptions,
+      { headers: this.h() },
     );
+  }
+
+  getOrganizationLocationById(id: string) {
+    return this.http.get(`${this.baseUrl}org_loc/org_id=${id}/`, { headers: this.h() });
   }
 
   editOrganizationLocation(document_id: any, formData: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
+    return this.http.patch(`${this.baseUrl}org_loc/update/org_id=${document_id}/`, formData, {
+      headers: this.h(),
     });
-    const httpOptions = { headers };
-    return this.http.patch(
-      `${this.baseUrl}org_loc/update/org_id=${document_id}/`,
-      formData,
-      httpOptions,
-    );
   }
 
-  // EDIT PERMISIONS
+  getDepartments(): Observable<any> {
+    return this.http.get(`${this.baseUrl}sl-department-list/`, { headers: this.h() });
+  }
 
-  editUserPermisions(document_id: any, formData: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
+  createDepartment(formData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}sl-department/`, formData, { headers: this.h() });
+  }
+
+  updateDepartment(formData: any, id: any): Observable<any> {
+    return this.http.patch(`${this.baseUrl}sl-department/update/id=${id}/`, formData, {
+      headers: this.h(),
     });
-    const httpOptions = { headers };
-    return this.http.patch(
-      `${this.baseUrl}role-permission/update/id=${document_id}/`,
-      formData,
-      httpOptions,
-    );
+  }
+
+  deleteDepartment(id: any): Observable<any> {
+    return this.http.delete(`${this.baseUrl}sl-department/update/id=${id}/`, { headers: this.h() });
+  }
+
+  createAssesmentWard(formData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}assess_ward_lst/`, formData, { headers: this.h() });
+  }
+
+  updateAssessmentWard(formData: any, id: any): Observable<any> {
+    return this.http.patch(`${this.baseUrl}assess_ward_update/id=${id}/`, formData, {
+      headers: this.h(),
+    });
+  }
+
+  getDashboardData() {
+    return this.http.get(`${this.baseUrl}org_details/`, { headers: this.h() });
+  }
+
+  getAdminContactInfo() {
+    return this.http.get(`${this.baseUrl}admin_acc_data/`, { headers: this.h() });
+  }
+
+  getRecentLogins() {
+    return this.http.get(`${this.baseUrl}recent_logins/`, { headers: this.h() });
+  }
+
+  getUserOverview() {
+    return this.http.get(`${this.baseUrl}user_overview/`, { headers: this.h() });
   }
 
   postPassword(password: any) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Add token for authentication
-    });
-    const httpOptions = { headers };
-
-    // Fix the URL and make sure the parameters are correctly passed
-    return this.http.post(`${this.baseUrl}check-password/`, password, httpOptions);
+    return this.http.post(`${this.baseUrl}check-password/`, password, { headers: this.h() });
   }
 
-  // UPDATE USER PASSWORD FROM ADMIN
   postAdminData(admin: any): Observable<any> {
-    admin.admin_id = this.userService.getUser()?.user_id; // Make sure user_id is assigned correctly
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Add token for authentication
-    });
-    const httpOptions = { headers };
-
-    // Fix the URL and make sure the parameters are correctly passed
-    return this.http.post(`${this.baseUrl}reset_password/`, admin, httpOptions);
+    admin.admin_id = this.userService.getUser()?.user_id;
+    return this.http.post(`${this.baseUrl}reset_password/`, admin, { headers: this.h() });
   }
 
-  // UPDATE ASSESSMENT WARD
-  updateAssessmentWard(formData: any, id: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.patch(`${this.baseUrl}assess_ward_update/id=${id}/`, formData, httpOptions);
-  }
-
-  //CREATE DEPARTMENT
-  createAssesmentWard(formData: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.post(`${this.baseUrl}assess_ward_lst/`, formData, httpOptions);
-  }
-
-  //UPDATE DEPARTMENT
-  updateDepartment(formData: any, id: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.patch(`${this.baseUrl}sl-department/update/id=${id}/`, formData, httpOptions);
-  }
-
-  //CREATE DEPARTMENT
-  createDepartment(formData: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.post(`${this.baseUrl}sl-department/`, formData, httpOptions);
-  }
-
-  //DELETE DEPARTMENT
-  deleteDepartment(id: any): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.delete(`${this.baseUrl}sl-department/update/id=${id}/`, httpOptions);
-  }
-
-  deleteRrr(id: string): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-
-    const payload = {
-      status: false,
-    };
-    return this.http.patch(`${this.baseUrl}ba_unit/update/${id}/`, payload, { headers });
-  }
-
-  // LAYER PERMISIONS
-  getLayersPermisions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}role-permission-layerpanel/`, { headers });
-  }
+  // =============================================================================
+  // AUTH
+  // =============================================================================
 
   userAuthentication(): Observable<{
     is_active: boolean;
@@ -1865,167 +1025,39 @@ export class APIsService {
     is_token_valid: boolean;
     is_org_active: boolean;
   }> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
     const roleId = localStorage.getItem('role_id');
     if (roleId === null) {
       return throwError(() => new Error('Role ID is not set in localStorage'));
     }
-    const body = {
-      role_id: parseInt(roleId!),
-    };
     return this.http.post<{
       is_active: boolean;
       is_role_id: boolean;
       is_token_valid: boolean;
       is_org_active: boolean;
-    }>(`${this.baseUrl}user-authentication/`, body, { headers });
+    }>(`${this.baseUrl}user-authentication/`, { role_id: parseInt(roleId) }, { headers: this.h() });
   }
 
   getUserDetails() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}me/`, { headers });
+    return this.http.get(`${this.baseUrl}me/`, { headers: this.h() });
   }
 
-  getToolbarPermission() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [201],
-      },
-      { headers },
-    );
-  }
-
-  getOrgAreas(pd: string): Observable<AreaRow[]> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get<AreaRow[]>(`${this.baseUrl}pd-data/${pd}/`, { headers });
-  }
-
-  updateOrgArea(
-    id: string,
-    data: {
-      gid: number;
-    }[],
-  ): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    const gidArray = data.map((item) => item.gid);
-    const payload = {
-      org_area: gidArray?.length ? gidArray : null,
-    };
-    return this.http.patch(`${this.baseUrl}org-area/update/org_id=${id}/`, payload, { headers });
-  }
-
-  getOrganizationAreaById(id: string) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-    });
-    const httpOptions = { headers };
-    return this.http.get(`${this.baseUrl}org-area-get/org_id=${id}/`, httpOptions);
-  }
-
-  getAdminPermissions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [251, 252, 253],
-      },
-      { headers },
-    );
-  }
-
-  getLayersPopPermissions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [94],
-      },
-      { headers },
-    );
-  }
-
-  getRrrByFeatureId(featureId: string): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(`${this.baseUrl}rrr-by-featureid/feature_id=${featureId}/`, { headers });
-  }
-
-  getRRRFile(url: string): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.get(url, { headers });
-  }
-
-  getRRRPermisions() {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}role-permission/`,
-      {
-        permission_id: [38],
-      },
-      { headers },
-    );
-  }
-
-  load3DData(featureId: string) {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`, // Ensure correct format
-      'Content-Type': 'application/json',
-    });
-    return this.http.get('https://infobhoomiback.geoinfobox.com/api/user/cityjson/', { headers });
-  }
+  // =============================================================================
+  // DYNAMIC ATTRIBUTES
+  // =============================================================================
 
   createDynamicAttribute(payload: {
     section_key: string;
     label: string;
     su_id: string | number;
   }): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-
-    const apiUrl = `${this.baseUrl}dynamic-attribute/`;
-    return this.http.post(apiUrl, payload, { headers });
+    return this.http.post(`${this.baseUrl}dynamic-attribute/`, payload, { headers: this.h() });
   }
 
   getDynamicAttributes(su_id: string | number, section_key: string): Observable<any[]> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    const apiUrl = `${this.baseUrl}dynamic-attribute/?su_id=${su_id}&section_key=${section_key}`;
-    return this.http.get<any[]>(apiUrl, { headers });
+    return this.http.get<any[]>(
+      `${this.baseUrl}dynamic-attribute/?su_id=${su_id}&section_key=${section_key}`,
+      { headers: this.h() },
+    );
   }
 
   updateDynamicAttributeValue(payload: {
@@ -2033,47 +1065,16 @@ export class APIsService {
     su_id: string | number;
     value: string;
   }): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
+    return this.http.post(`${this.baseUrl}dynamic-attribute-value/`, payload, {
+      headers: this.h(),
     });
-
-    const apiUrl = `${this.baseUrl}dynamic-attribute-value/`;
-
-    return this.http.post(apiUrl, payload, { headers });
   }
 
-  queryParcels(
-    layerId: number,
-    conditions: { field: string; operator: string; value: string }[],
-    logic: 'AND' | 'OR',
-  ) {
-    this.loadFromStorage();
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.post<{ count: number; layer_id: number; features: any[] }>(
-      `${this.baseUrl}query-parcels/`,
-      { layer_id: layerId, conditions, logic },
-      { headers },
-    );
-  }
+  // =============================================================================
+  // 3D / CITYJSON
+  // =============================================================================
 
-  exportQueryShp(
-    layerId: number,
-    conditions: { field: string; operator: string; value: string }[],
-    logic: 'AND' | 'OR',
-  ) {
-    this.loadFromStorage();
-    const headers = new HttpHeaders({
-      Authorization: `Token ${this.token}`,
-      'Content-Type': 'application/json',
-    });
-    return this.http.post(
-      `${this.baseUrl}query-parcels/export-shp/`,
-      { layer_id: layerId, conditions, logic },
-      { headers, responseType: 'blob' },
-    );
+  load3DData(featureId: string) {
+    return this.http.get(`${this.baseUrl}cityjson/`, { headers: this.h() });
   }
 }

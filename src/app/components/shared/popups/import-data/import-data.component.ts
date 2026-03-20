@@ -1,5 +1,12 @@
 import { HttpClient, HttpEventType } from '@angular/common/http';
-import { Component, OnDestroy, inject, DestroyRef} from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import type {
@@ -80,6 +87,7 @@ enum FileType {
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-import-data',
   standalone: true, // Assuming standalone
   imports: [
@@ -96,6 +104,7 @@ enum FileType {
   styleUrl: './import-data.component.css',
 })
 export class ImportDataComponent implements OnDestroy {
+  private readonly cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
   isLoading: boolean = false;
   selectedFile: File | null = null;
@@ -111,7 +120,7 @@ export class ImportDataComponent implements OnDestroy {
   sourceCrsUserInput: string = '';
   detectedSourceCrs: string | null = null;
   readonly TARGET_CRS_FOR_OL_FEATURES = 'EPSG:4326'; // Store OL Features in WGS84
-  private userToken = localStorage.getItem('Token');
+  private userToken = typeof window !== 'undefined' ? localStorage.getItem('Token') : null;
   private olGeoJsonFormat = new OLGeoJSON(); // For converting GeoJSON to OL Features
 
   processedGeoJsonData: FeatureCollection<Geometry, GeoJsonProperties> | null = null; // To store converted GeoJSON from KML/SHP or original GeoJSON
@@ -161,6 +170,8 @@ export class ImportDataComponent implements OnDestroy {
       if (user) {
         this.userId = user.user_id || '';
       }
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -1290,6 +1301,8 @@ export class ImportDataComponent implements OnDestroy {
               );
               resolve();
             }
+
+            this.cdr.markForCheck();
           },
           error: (err) => {
             this.isLoading = false;

@@ -1,5 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit, DestroyRef} from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  DestroyRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,7 +22,7 @@ import { Draw, Snap } from 'ol/interaction';
 import { DrawEvent } from 'ol/interaction/Draw';
 import VectorLayer from 'ol/layer/Vector'; // Import VectorLayer
 import { get, transform } from 'ol/proj';
-import {firstValueFrom, map, Observable, Subject, Subscription } from 'rxjs';
+import { firstValueFrom, map, Observable, Subscription } from 'rxjs';
 
 import { v4 as uuidv4 } from 'uuid';
 
@@ -38,6 +46,7 @@ import { UserService } from '../../services/user.service';
 import { GeomService } from '../../services/geom.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-tools',
   standalone: true,
   imports: [CommonModule, MatButtonModule, MatIconModule, MatTooltipModule],
@@ -54,11 +63,9 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
   public canMerge$: Observable<boolean>;
 
-  private readonly destroy$ = new Subject<void>();
   public isSaving = false;
 
   private toolbarSaveSubscription: Subscription | null = null;
-  private toolbarUndoSubscription: Subscription | null = null;
 
   isMenuOpen = false; // For local UI state of the menu button itself
   isPanActive = false; // For local UI state of the pan button
@@ -94,10 +101,14 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
     this.sidebarService.isClosed$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((closed) => {
       this.isSidebarClosed = closed;
+
+      this.cdr.markForCheck();
     });
 
     this.drawService.deselectedFeature$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.extendWidth = false;
+
+      this.cdr.markForCheck();
     });
 
     // <<< NEW: Logic to determine if the merge action is possible
@@ -126,6 +137,8 @@ export class ToolsComponent implements OnInit, OnDestroy {
         this.edit = res[0].edit;
         this.delete = res[0].delete;
         this.view = res[0].view;
+
+        this.cdr.markForCheck();
       },
       error: (err) => {
         // If permissions can't be fetched, default to fully enabled so the
@@ -1478,6 +1491,8 @@ export class ToolsComponent implements OnInit, OnDestroy {
     this.featureService.saveStagedChanges().subscribe({
       next: () => {
         /* Notification handled by FeatureService */
+
+        this.cdr.markForCheck();
       },
       error: (err: any) => {
         /* Notification handled by FeatureService */

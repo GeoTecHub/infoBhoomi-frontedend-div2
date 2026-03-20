@@ -1,5 +1,12 @@
 //
-import { Component, Inject, inject, DestroyRef} from '@angular/core';
+import {
+  Component,
+  Inject,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -18,6 +25,7 @@ import { APIsService } from '../../../services/api.service';
 import { NotificationService } from '../../../services/notifications.service';
 import { UserService } from '../../../services/user.service';
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-company',
   standalone: true,
   imports: [
@@ -34,6 +42,7 @@ import { UserService } from '../../../services/user.service';
   styleUrl: './company.component.css',
 })
 export class CompanyComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
   company_info = {
     registration_number: '',
@@ -93,6 +102,8 @@ export class CompanyComponent {
       if (user) {
         this.user_id = user.user_id || '';
       }
+
+      this.cdr.markForCheck();
     });
     console.log(this.data);
     this.data.ath == 'create_form';
@@ -151,6 +162,8 @@ export class CompanyComponent {
         } else {
           this.handleNotFound();
         }
+
+        this.cdr.markForCheck();
       },
       error: (err) => {
         if (err?.status === 404) {
@@ -220,6 +233,8 @@ export class CompanyComponent {
             console.log(response);
             this.data_submited = true;
             this.notificationService.showSuccess('Data saved successfully');
+
+            this.cdr.markForCheck();
           },
           (error: any) => {
             console.error('Error saving administrative info:', error);

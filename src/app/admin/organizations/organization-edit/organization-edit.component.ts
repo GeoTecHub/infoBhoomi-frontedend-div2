@@ -1,6 +1,6 @@
 // admin/organizations/organization-edit/organization-edit.component.ts
 
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -18,6 +18,7 @@ import { AdminHeaderComponent } from '../../common/admin-header/admin-header.com
 import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-bar.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-organization-edit',
   standalone: true,
   imports: [
@@ -76,6 +77,8 @@ export class OrganizationEditComponent implements OnInit {
       }
       this.orgId = id;
       this.fetchOrganization(id);
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -102,6 +105,8 @@ export class OrganizationEditComponent implements OnInit {
           this.organizationForm.updateValueAndValidity({ onlySelf: false, emitEvent: true });
           this.loading = false;
           this.cdr.detectChanges();
+
+          this.cdr.markForCheck();
         },
         error: (error) => {
           console.error('Failed to load organization:', error);

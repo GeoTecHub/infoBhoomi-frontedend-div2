@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,6 +15,7 @@ import { AdminSideBarComponent } from '../common/admin-side-bar/admin-side-bar.c
 declare var bootstrap: any;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-roles-list',
   standalone: true,
   imports: [
@@ -31,6 +32,7 @@ declare var bootstrap: any;
   styleUrl: './roles-list.component.css',
 })
 export class RolesListComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   selected_role_id: any;
   roles_list: any = [];
   searchQuery = '';
@@ -93,6 +95,8 @@ export class RolesListComponent {
       this.permisions_list = [...this.allPermisionsList];
       this.updateCategoryAndSubCategoryLists();
       this.applyPermissionFilters();
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -190,6 +194,8 @@ export class RolesListComponent {
           [user.role_name].some((field) => field?.toString().toLowerCase().includes(query)),
       );
       this.selectedRole = '';
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -318,6 +324,8 @@ export class RolesListComponent {
           }
         });
         modal.hide();
+
+        this.cdr.markForCheck();
       },
       (error: any) => {
         console.error('Error saving administrative info:', error);
@@ -349,6 +357,8 @@ export class RolesListComponent {
       if (result) {
         console.log('Dialog result:', result);
       }
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -371,6 +381,8 @@ export class RolesListComponent {
 
         this.notificationService.showSuccess('Users added successfully!');
       }
+
+      this.cdr.markForCheck();
     });
   }
 }

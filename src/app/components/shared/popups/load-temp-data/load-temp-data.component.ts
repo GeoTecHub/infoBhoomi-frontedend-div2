@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 
 import {
   MatDialogActions,
@@ -15,6 +15,7 @@ import { NotificationService } from '../../../../services/notifications.service'
 import { CustomButtonsComponent } from '../../custom-buttons/custom-buttons.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-load-temp-data',
   imports: [
     MatDialogClose,
@@ -28,6 +29,7 @@ import { CustomButtonsComponent } from '../../custom-buttons/custom-buttons.comp
   styleUrl: './load-temp-data.component.css',
 })
 export class LoadTempDataComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   geoJsonData: any[] = []; // To store the GeoJSON features
   selectedFeature: any = null; // Store selected feature
   isLoading: boolean = true; // Loading state
@@ -55,6 +57,8 @@ export class LoadTempDataComponent implements OnInit {
           this.geoJsonData = response.features;
           this.isLoading = false;
           console.log(response);
+
+          this.cdr.markForCheck();
         },
         (error) => {
           console.error('Error fetching data', error);
@@ -84,6 +88,8 @@ export class LoadTempDataComponent implements OnInit {
           // Successfully deleted, now remove the record from the table
           this.geoJsonData = this.geoJsonData.filter((item) => item.id !== recordId);
           // alert('Record deleted successfully');
+
+          this.cdr.markForCheck();
         },
         (error) => {
           console.error('Error deleting record', error);

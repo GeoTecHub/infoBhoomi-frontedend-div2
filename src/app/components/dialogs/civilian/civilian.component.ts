@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common'; //
-import { Component, Inject, inject, DestroyRef} from '@angular/core';
+import {
+  Component,
+  Inject,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -19,6 +26,7 @@ import { NotificationService } from '../../../services/notifications.service';
 import { UserService } from '../../../services/user.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-civilian',
   standalone: true,
   imports: [
@@ -36,6 +44,7 @@ import { UserService } from '../../../services/user.service';
   styleUrl: './civilian.component.css',
 })
 export class CivilianComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
   // VALIDATION VARIABLES
   id_number_validation = true;
@@ -132,6 +141,8 @@ export class CivilianComponent {
       if (user) {
         this.user_id = user.user_id || '';
       }
+
+      this.cdr.markForCheck();
     });
     if (this.data.path == 'create_form') {
       this.getCivilianUserData();
@@ -227,6 +238,8 @@ export class CivilianComponent {
         } else {
           this.handleNotFound();
         }
+
+        this.cdr.markForCheck();
       },
       error: (err) => {
         if (err?.status === 404) {
@@ -258,6 +271,8 @@ export class CivilianComponent {
     this.apiService.loadMortgageTypes().subscribe((res) => {
       console.log(res);
       this.mortgage_types_array = res;
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -265,6 +280,8 @@ export class CivilianComponent {
     this.apiService.loadGenderTypes().subscribe((res) => {
       console.log(res);
       this.gender_types_array = res;
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -300,18 +317,24 @@ export class CivilianComponent {
   getReligionTypes() {
     this.apiService.getReligionTypes().subscribe((res: any) => {
       this.religion_types_array = res;
+
+      this.cdr.markForCheck();
     });
   }
 
   getMarriedTypes() {
     this.apiService.grtMarriedStatus().subscribe((res: any) => {
       this.married_types_array = res;
+
+      this.cdr.markForCheck();
     });
   }
 
   getHelthdTypes() {
     this.apiService.getHelthdTypes().subscribe((res: any) => {
       this.helth_types_array = res;
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -319,6 +342,8 @@ export class CivilianComponent {
     this.apiService.getRaceTypes().subscribe((res: any) => {
       console.log(res);
       this.race_types_array = res;
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -326,12 +351,16 @@ export class CivilianComponent {
     this.apiService.getEducationLevelTypes().subscribe((res: any) => {
       console.log(res);
       this.education_leval_types_array = res;
+
+      this.cdr.markForCheck();
     });
   }
 
   loadOwnershipTypes() {
     this.apiService.loadOwnershipTypes().subscribe((res: any) => {
       this.ownership_types_array = res;
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -364,6 +393,8 @@ export class CivilianComponent {
             this.data_submitted = true;
             this.party_identification.pid = response.pid;
             this.notificationService.showSuccess('Data saved successfully');
+
+            this.cdr.markForCheck();
           },
           (error: any) => {
             console.error('Error saving administrative info:', error);
@@ -381,6 +412,8 @@ export class CivilianComponent {
 
           console.log(response);
           this.notificationService.showSuccess('Data saved successfully');
+
+          this.cdr.markForCheck();
         },
         (error: any) => {
           console.error('Error saving administrative info:', error);

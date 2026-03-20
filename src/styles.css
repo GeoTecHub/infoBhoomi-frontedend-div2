@@ -74,7 +74,12 @@
   --surface-overlay: rgba(49, 72, 92, 0.85); /* map overlay backdrops */
   --surface-sidebar: var(--color-secondary-l1); /* side-panel shell */
   --surface-sidebar-header: var(--color-neutral-l1); /* tab bar background */
-  --surface-sidebar-hover: rgba(119, 154, 184, 0.1); /* subtle tab/resize hover — --color-primary @ 10% */
+  --surface-sidebar-hover: rgba(
+    119,
+    154,
+    184,
+    0.1
+  ); /* subtle tab/resize hover — --color-primary @ 10% */
 
   /* ── Text ── */
   --text-primary: var(--color-text-primary);
@@ -485,6 +490,38 @@ td {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   /* transition: top 0.3s cubic-bezier(.4, 0, .2, 1), left 0.3s cubic-bezier(.4, 0, .2, 1), width 0.2s; */
+}
+
+/* ── Snackbar notification styles ── */
+.success-snackbar {
+  background-color: #28a745 !important;
+  color: #fff !important;
+}
+.error-snackbar {
+  background-color: #dc3545 !important;
+  color: #fff !important;
+}
+.warning-snackbar {
+  background-color: #ffc107 !important;
+  color: #212529 !important;
+}
+.info-snackbar {
+  background-color: #17a2b8 !important;
+  color: #fff !important;
+}
+.success-snackbar .mat-mdc-snack-bar-label,
+.error-snackbar .mat-mdc-snack-bar-label,
+.warning-snackbar .mat-mdc-snack-bar-label,
+.info-snackbar .mat-mdc-snack-bar-label {
+  color: inherit !important;
+}
+.success-snackbar button,
+.error-snackbar button,
+.info-snackbar button {
+  color: #fff !important;
+}
+.warning-snackbar button {
+  color: #212529 !important;
 }
 
 /* Add to styles.css or the component's global style file */

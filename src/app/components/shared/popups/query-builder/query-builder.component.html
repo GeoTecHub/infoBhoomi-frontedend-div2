@@ -1,11 +1,9 @@
 <h4 mat-dialog-title>Query Builder</h4>
 
 <div class="query-builder">
-
   <!-- ══ BASIC MODE (Saved Formulas) ══════════════════════════════════════════ -->
   <div class="query-basic" *ngIf="!isAdvancedMode()">
     <mat-dialog-content>
-
       <div *ngIf="savedFormulas().length === 0" class="empty-saved">
         <span>No saved formulas yet. Build a query in Advanced mode and save it.</span>
       </div>
@@ -15,7 +13,10 @@
         <div class="saved-item" *ngFor="let f of savedFormulas()">
           <div class="saved-info">
             <span class="saved-name">{{ f.name }}</span>
-            <span class="saved-meta">{{ getLayerLabel(f.layerId) }} · {{ f.conditions.length }} condition(s) · {{ f.logic }}</span>
+            <span class="saved-meta"
+              >{{ getLayerLabel(f.layerId) }} · {{ f.conditions.length }} condition(s) ·
+              {{ f.logic }}</span
+            >
           </div>
           <div class="saved-actions">
             <button class="btn-load" (click)="loadFormula(f)">Load</button>
@@ -23,7 +24,6 @@
           </div>
         </div>
       </div>
-
     </mat-dialog-content>
 
     <mat-dialog-actions>
@@ -46,14 +46,16 @@
   <!-- ══ ADVANCED MODE ═════════════════════════════════════════════════════════ -->
   <div class="query-advanced" *ngIf="isAdvancedMode()">
     <mat-dialog-content>
-
       <!-- Layer selection -->
       <div class="form-group">
         <label>Select Layer</label>
         <select (change)="onLayerChange($any($event.target).value)">
           <option value="">-- choose layer --</option>
-          <option *ngFor="let l of supportedLayers" [value]="l.id"
-            [selected]="selectedLayerId() === l.id">
+          <option
+            *ngFor="let l of supportedLayers"
+            [value]="l.id"
+            [selected]="selectedLayerId() === l.id"
+          >
             {{ l.label }}
           </option>
         </select>
@@ -65,15 +67,21 @@
         <div class="condition-row">
           <select (change)="onFieldChange($any($event.target).value)">
             <option value="">-- attribute --</option>
-            <option *ngFor="let a of availableAttributes()" [value]="a.field"
-              [selected]="newCondition().field === a.field">
+            <option
+              *ngFor="let a of availableAttributes()"
+              [value]="a.field"
+              [selected]="newCondition().field === a.field"
+            >
               {{ a.label }}
             </option>
           </select>
 
           <select (change)="onOperatorChange($any($event.target).value)">
-            <option *ngFor="let op of availableOperators()" [value]="op"
-              [selected]="newCondition().operator === op">
+            <option
+              *ngFor="let op of availableOperators()"
+              [value]="op"
+              [selected]="newCondition().operator === op"
+            >
               {{ op === '%' ? 'LIKE' : op }}
             </option>
           </select>
@@ -100,7 +108,9 @@
 
         <div class="condition-chip" *ngFor="let c of conditions(); let i = index">
           <span class="chip-text">
-            {{ getAttrLabel(c.field) }}&nbsp;{{ c.operator === '%' ? 'LIKE' : c.operator }}&nbsp;{{ c.value }}
+            {{ getAttrLabel(c.field) }}&nbsp;{{ c.operator === '%' ? 'LIKE' : c.operator }}&nbsp;{{
+              c.value
+            }}
           </span>
           <button class="btn-remove-cond" (click)="removeCondition(i)" title="Remove">✕</button>
         </div>
@@ -115,9 +125,11 @@
       <!-- Result count -->
       <div class="result-info" *ngIf="resultCount() !== null">
         <span [class.zero]="resultCount() === 0">
-          {{ resultCount() === 0
-            ? 'No features matched the query.'
-            : resultCount() + ' feature(s) highlighted on map.' }}
+          {{
+            resultCount() === 0
+              ? 'No features matched the query.'
+              : resultCount() + ' feature(s) highlighted on map.'
+          }}
         </span>
       </div>
 
@@ -132,7 +144,6 @@
         />
         <button class="btn-save-formula" (click)="saveFormula()">Save Formula</button>
       </div>
-
     </mat-dialog-content>
 
     <mat-dialog-actions>
@@ -165,5 +176,4 @@
       ></app-custom-buttons>
     </mat-dialog-actions>
   </div>
-
 </div>

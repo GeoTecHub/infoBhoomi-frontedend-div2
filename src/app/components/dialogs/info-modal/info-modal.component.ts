@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -12,6 +12,7 @@ import { DrawService } from '../../../services/draw.service';
 import { NotificationService } from '../../../services/notifications.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-info-modal',
   imports: [
     MatDialogModule,
@@ -26,6 +27,7 @@ import { NotificationService } from '../../../services/notifications.service';
   styleUrl: './info-modal.component.css',
 })
 export class InfoModalComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   name: string | null = null;
   id: string | null = null;
   createdAt: Date | string | null = null;
@@ -56,6 +58,8 @@ export class InfoModalComponent implements OnInit {
               this.createdAt = res.date_created;
               this.email = res.email;
             }
+
+            this.cdr.markForCheck();
           },
           error: (err) => {
             console.log('Get created by details error: ', err);

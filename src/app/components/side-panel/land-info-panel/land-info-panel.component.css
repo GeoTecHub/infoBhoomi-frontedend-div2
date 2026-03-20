@@ -224,6 +224,15 @@
   font-style: italic;
 }
 
+/* Administrative Hierarchy top section */
+.hierarchy-section {
+  border-left: 3px solid var(--color-accent, #5ec8e8);
+}
+
+.hierarchy-section .section-header {
+  background: color-mix(in srgb, var(--color-accent, #5ec8e8) 8%, transparent);
+}
+
 /* GND-derived administrative hierarchy sub-header */
 .derived-header-row td {
   padding-top: 0.75rem;

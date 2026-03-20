@@ -21,7 +21,7 @@ import { Token } from '../core/constant'; // Import the Token constant
   providedIn: 'root',
 })
 export class DataService {
-  token = localStorage.getItem('Token');
+  token = typeof window !== 'undefined' ? localStorage.getItem('Token') : null;
 
   private landDataCache: any = null;
 

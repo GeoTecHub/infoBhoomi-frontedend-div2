@@ -1,4 +1,11 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import {
+  Component,
+  Inject,
+  OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject
+} from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -18,6 +25,7 @@ import { NotificationService } from '../../../services/notifications.service';
 declare var bootstrap: any;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-manage-ass-wards',
   standalone: true,
   imports: [
@@ -35,6 +43,7 @@ declare var bootstrap: any;
   styleUrl: './manage-ass-wards.component.css',
 })
 export class ManageAssWardsComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   ass_wards_list: any = [];
   selected_ass_ward: any;
   admin_password = '';
@@ -59,6 +68,8 @@ export class ManageAssWardsComponent implements OnInit {
       for (let item of this.ass_wards_list) {
         item.edit = false;
       }
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -109,6 +120,8 @@ export class ManageAssWardsComponent implements OnInit {
         this.ass_ward_name = '';
         this.getAssWardsList();
         this.notificationService.showSuccess('Data saved successfully');
+
+        this.cdr.markForCheck();
       },
       (error: any) => {
         console.error('Error saving administrative info:', error);

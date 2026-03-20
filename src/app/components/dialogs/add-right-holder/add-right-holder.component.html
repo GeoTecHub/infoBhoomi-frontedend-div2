@@ -38,10 +38,7 @@
         <span class="arh-step-label">{{ label }}</span>
       </div>
       @if (i < stepLabels.length - 1) {
-        <div
-          class="arh-step-line"
-          [class.arh-step-line--done]="getStepNumber() > i + 1"
-        ></div>
+        <div class="arh-step-line" [class.arh-step-line--done]="getStepNumber() > i + 1"></div>
       }
     }
   </div>
@@ -180,9 +177,7 @@
               <span class="arh-result-name">{{
                 partyData?.party_full_name || partyData?.party_name || 'N/A'
               }}</span>
-              <span class="arh-result-status">
-                <mat-icon>verified</mat-icon> Record Found
-              </span>
+              <span class="arh-result-status"> <mat-icon>verified</mat-icon> Record Found </span>
             </div>
           </div>
           <div class="arh-result-details">
@@ -250,11 +245,21 @@
           <div class="arh-form-grid">
             <div class="arh-field-group">
               <label class="arh-label">Name <span class="arh-required">*</span></label>
-              <input class="arh-input" type="text" [(ngModel)]="newParty.party_name" placeholder="Enter name" />
+              <input
+                class="arh-input"
+                type="text"
+                [(ngModel)]="newParty.party_name"
+                placeholder="Enter name"
+              />
             </div>
             <div class="arh-field-group">
               <label class="arh-label">Full Name</label>
-              <input class="arh-input" type="text" [(ngModel)]="newParty.party_full_name" placeholder="Enter full name" />
+              <input
+                class="arh-input"
+                type="text"
+                [(ngModel)]="newParty.party_full_name"
+                placeholder="Enter full name"
+              />
             </div>
             @if (selectedPartyType === 'Civilian') {
               <div class="arh-field-group">
@@ -298,15 +303,31 @@
           <div class="arh-form-grid">
             <div class="arh-field-group">
               <label class="arh-label">Telephone</label>
-              <input class="arh-input" type="tel" maxlength="10" [(ngModel)]="newParty.specific_tp" placeholder="e.g. 0771234567" />
+              <input
+                class="arh-input"
+                type="tel"
+                maxlength="10"
+                [(ngModel)]="newParty.specific_tp"
+                placeholder="e.g. 0771234567"
+              />
             </div>
             <div class="arh-field-group">
               <label class="arh-label">Email</label>
-              <input class="arh-input" type="email" [(ngModel)]="newParty.email" placeholder="email@example.com" />
+              <input
+                class="arh-input"
+                type="email"
+                [(ngModel)]="newParty.email"
+                placeholder="email@example.com"
+              />
             </div>
             <div class="arh-field-group arh-field-full">
               <label class="arh-label">Address</label>
-              <input class="arh-input" type="text" [(ngModel)]="newParty.pmt_address" placeholder="Permanent address" />
+              <input
+                class="arh-input"
+                type="text"
+                [(ngModel)]="newParty.pmt_address"
+                placeholder="Permanent address"
+              />
             </div>
           </div>
         </div>
@@ -351,7 +372,12 @@
         <div class="arh-form-section">
           <div class="arh-field-group">
             <label class="arh-label">Remark</label>
-            <input class="arh-input" type="text" [(ngModel)]="newParty.remark" placeholder="Optional notes" />
+            <input
+              class="arh-input"
+              type="text"
+              [(ngModel)]="newParty.remark"
+              placeholder="Optional notes"
+            />
           </div>
         </div>
 

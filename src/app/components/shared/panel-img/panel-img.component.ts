@@ -1,4 +1,13 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject
+} from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
@@ -6,6 +15,7 @@ import { Token } from '../../../core/constant';
 import { APIsService } from '../../../services/api.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-panel-img',
   standalone: true,
   imports: [MatIcon, CommonModule],
@@ -13,6 +23,7 @@ import { APIsService } from '../../../services/api.service';
   styleUrls: ['./panel-img.component.css'], // Fixed styleUrls typo
 })
 export class PanelImgComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   @Input() suId!: number; // Unique ID for the image
   @Input() placeholder!: string; // Default placeholder image
   @Output() imageChange = new EventEmitter<File>(); // Emit selected image to parent
@@ -48,6 +59,8 @@ export class PanelImgComponent implements OnInit {
           const objectUrl = URL.createObjectURL(blob);
           this.imageUrl = objectUrl;
           this.loading = false;
+
+          this.cdr.markForCheck();
         },
         error: () => {
           console.log('Error loading image');

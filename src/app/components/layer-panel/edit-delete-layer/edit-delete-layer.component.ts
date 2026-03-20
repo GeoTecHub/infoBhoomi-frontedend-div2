@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, Inject, inject, DestroyRef} from '@angular/core';
+import {
+  Component,
+  Inject,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 
@@ -28,6 +35,7 @@ import { ModelVerificationComponent } from './model-verification/model-verificat
 import { MatCard, MatCardContent } from '@angular/material/card';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-edit-delete-layer',
   imports: [
     FormsModule,
@@ -45,6 +53,7 @@ import { MatCard, MatCardContent } from '@angular/material/card';
   styleUrl: './edit-delete-layer.component.css',
 })
 export class EditDeleteLayerComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
   updatedLayer: AddLayerModel = new AddLayerModel();
   layer: any;
@@ -76,6 +85,8 @@ export class EditDeleteLayerComponent {
         this.user_id_number = user.user_id_number || null;
         this.organization_id = user.organization_id || '';
       }
+
+      this.cdr.markForCheck();
     });
     // Pre-fill the layer object with data passed from the Layer-Panel component
     this.layer = { ...data.layer };
@@ -127,6 +138,8 @@ export class EditDeleteLayerComponent {
               console.log(res);
               this.notificationService.showSuccess('Layer updated successfully');
               this.dialogRef.close(true); // close the dialog and pass true to indicate update
+
+              this.cdr.markForCheck();
             },
             (error) => {
               this.isLoading = false; // Hide spinner on error
@@ -202,6 +215,8 @@ export class EditDeleteLayerComponent {
           },
         );
       }
+
+      this.cdr.markForCheck();
     });
   }
 }

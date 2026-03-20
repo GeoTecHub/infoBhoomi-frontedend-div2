@@ -1,4 +1,4 @@
-import { Component, inject, PLATFORM_ID } from '@angular/core';
+import { Component, inject, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import {
   MatDialogActions,
@@ -14,6 +14,7 @@ import { MapService } from '../../../../services/map.service';
 import { NotificationService } from '../../../../services/notifications.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-print-panel',
   imports: [
     CommonModule,

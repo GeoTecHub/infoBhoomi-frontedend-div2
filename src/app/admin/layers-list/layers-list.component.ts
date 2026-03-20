@@ -1,4 +1,13 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+  inject,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterModule } from '@angular/router';
@@ -15,6 +24,7 @@ import { AdminService, PermId } from '../../services/admin.service';
 declare var bootstrap: any;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-layers-list',
   standalone: true,
   imports: [
@@ -30,6 +40,7 @@ declare var bootstrap: any;
   styleUrls: ['./layers-list.component.css'],
 })
 export class LayersListComponent implements OnInit, AfterViewInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   @ViewChild('userLayerSearchInput') userLayerSearchInput!: ElementRef<HTMLInputElement>;
 
   roles_list: any = [];
@@ -110,6 +121,8 @@ export class LayersListComponent implements OnInit, AfterViewInit {
       );
 
       this.filterOtherGroups(); // Apply search filter inside this
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -229,6 +242,8 @@ export class LayersListComponent implements OnInit, AfterViewInit {
         );
         if (updated) this.selectedLayer = updated;
       }
+
+      this.cdr.markForCheck();
     });
   }
 

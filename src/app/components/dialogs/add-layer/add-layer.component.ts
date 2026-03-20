@@ -1,5 +1,5 @@
 //
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -17,6 +17,7 @@ import { APIsService } from '../../../services/api.service';
 import { NotificationService } from '../../../services/notifications.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-add-layer',
   standalone: true,
   imports: [

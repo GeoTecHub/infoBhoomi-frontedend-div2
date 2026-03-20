@@ -115,7 +115,7 @@
             </mat-icon>
             @if (!hasReachedLimit) {
               <span>
-                <b>{{ getUsersLimit() }}</b> Maximum user accounts allowed. You can create
+                <b>{{ usersLimit() }}</b> Maximum user accounts allowed. You can create
                 <b>{{ remainingUsersAllowed }}</b> more account{{
                   remainingUsersAllowed === 1 ? '' : 's'
                 }}.

@@ -1,4 +1,12 @@
-import {Component, Inject, OnInit, inject, DestroyRef} from '@angular/core';
+import {
+  Component,
+  Inject,
+  OnInit,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -21,6 +29,7 @@ export interface AddRightHolderResult {
 type DialogStep = 'select-type' | 'enter-id' | 'search-result' | 'create-new';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-add-right-holder',
   standalone: true,
   imports: [FormsModule, MatDialogModule, MatIconModule],
@@ -28,6 +37,7 @@ type DialogStep = 'select-type' | 'enter-id' | 'search-result' | 'create-new';
   styleUrls: ['./add-right-holder.component.css'],
 })
 export class AddRightHolderComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
   private userId: any;
 
@@ -110,6 +120,8 @@ export class AddRightHolderComponent implements OnInit {
   ngOnInit(): void {
     this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) this.userId = user.user_id || '';
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -237,6 +249,8 @@ export class AddRightHolderComponent implements OnInit {
           } else {
             this.handleNotFound();
           }
+
+          this.cdr.markForCheck();
         },
         error: () => {
           this.isSearching = false;
@@ -262,6 +276,8 @@ export class AddRightHolderComponent implements OnInit {
         } else {
           this.handleNotFound();
         }
+
+        this.cdr.markForCheck();
       },
       error: (err: any) => {
         this.isSearching = false;
@@ -367,6 +383,8 @@ export class AddRightHolderComponent implements OnInit {
           regNumber: this.registrationNumber.trim(),
         };
         this.dialogRef.close(result);
+
+        this.cdr.markForCheck();
       },
       error: (err: any) => {
         this.isSaving = false;
@@ -405,5 +423,4 @@ export class AddRightHolderComponent implements OnInit {
   closeDialog(): void {
     this.dialogRef.close(null);
   }
-
 }

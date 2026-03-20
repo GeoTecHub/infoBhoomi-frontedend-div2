@@ -70,7 +70,7 @@ export class FeatureService {
   private featureData: FeatureData[] = []; // Store all feature data here
   private vectorSource: VectorSource | undefined;
   private originalFeatures: FeatureData[] = [];
-  private userToken = localStorage.getItem('Token');
+  private userToken = typeof window !== 'undefined' ? localStorage.getItem('Token') : null;
   private redoStack: StagedChange[] = [];
 
   private isSplitActive: boolean = false; // Track if split is active
@@ -412,16 +412,20 @@ export class FeatureService {
     const headers = this.getAuthHeaders();
     if (this.stagedChanges.length === 0) {
       this.clearStagedChanges();
+      this.notificationService.showInfo('No changes to save.');
       return of({ success: true, message: 'No changes to save.' });
     }
 
+    const _t0 = performance.now();
     const adds = this.stagedChanges.filter((c) => c.type === 'add');
     const updates = this.stagedChanges.filter((c) => c.type === 'update');
     const deletes = this.stagedChanges.filter((c) => c.type === 'delete');
     const splits = this.stagedChanges.filter((c) => c.type === 'split');
     const merges = this.stagedChanges.filter((c) => c.type === 'merge');
 
-    console.log(`[SAVE] ── Staged: adds=${adds.length} updates=${updates.length} deletes=${deletes.length} splits=${splits.length} merges=${merges.length}`);
+    console.log(
+      `[SAVE⏱] ── Staged: adds=${adds.length} updates=${updates.length} deletes=${deletes.length} splits=${splits.length} merges=${merges.length}`,
+    );
 
     const requests: Observable<any>[] = [];
 
@@ -431,12 +435,18 @@ export class FeatureService {
         .map((a) => a.newFeatureData);
 
       if (payloadNew.length) {
-        console.log(`[SAVE] ADD payload (${payloadNew.length} features):`, payloadNew.map(f => ({
-          uuid: f.properties.uuid, layer_id: f.properties.layer_id,
-          geom_type: f.geometry?.type, area: f.properties.area,
-          gnd_id: f.properties.gnd_id, parent_uuid: f.properties.parent_uuid,
-          feature_Id: f.properties.feature_Id,
-        })));
+        console.log(
+          `[SAVE] ADD payload (${payloadNew.length} features):`,
+          payloadNew.map((f) => ({
+            uuid: f.properties.uuid,
+            layer_id: f.properties.layer_id,
+            geom_type: f.geometry?.type,
+            area: f.properties.area,
+            gnd_id: f.properties.gnd_id,
+            parent_uuid: f.properties.parent_uuid,
+            feature_Id: f.properties.feature_Id,
+          })),
+        );
         requests.push(
           this.http.post(this.apisService.POST_SURVEY_REP_DATA, payloadNew, { headers }),
         );
@@ -469,21 +479,32 @@ export class FeatureService {
 
     if (splits.length) {
       const payload = splits.flatMap((s) => s.newFeaturesData ?? []);
-      console.log(`[SAVE] SPLIT payload (${payload.length} child features):`, payload.map(f => ({
-        uuid: f.properties.uuid, layer_id: f.properties.layer_id,
-        geom_type: f.geometry?.type, area: f.properties.area,
-        gnd_id: f.properties.gnd_id, parent_uuid: f.properties.parent_uuid,
-        feature_Id: f.properties.feature_Id,
-      })));
+      console.log(
+        `[SAVE] SPLIT payload (${payload.length} child features):`,
+        payload.map((f) => ({
+          uuid: f.properties.uuid,
+          layer_id: f.properties.layer_id,
+          geom_type: f.geometry?.type,
+          area: f.properties.area,
+          gnd_id: f.properties.gnd_id,
+          parent_uuid: f.properties.parent_uuid,
+          feature_Id: f.properties.feature_Id,
+        })),
+      );
       requests.push(this.http.post(this.apisService.POST_SURVEY_REP_DATA, payload, { headers }));
     }
 
     if (merges.length) {
       const payload = merges.map((m) => m.newFeatureData);
-      console.log(`[SAVE] MERGE payload (${payload.length} features):`, payload.map(f => ({
-        uuid: f.properties.uuid, layer_id: f.properties.layer_id,
-        gnd_id: f.properties.gnd_id, parent_uuid: f.properties.parent_uuid,
-      })));
+      console.log(
+        `[SAVE] MERGE payload (${payload.length} features):`,
+        payload.map((f) => ({
+          uuid: f.properties.uuid,
+          layer_id: f.properties.layer_id,
+          gnd_id: f.properties.gnd_id,
+          parent_uuid: f.properties.parent_uuid,
+        })),
+      );
       requests.push(this.http.post(this.apisService.POST_SURVEY_REP_DATA, payload, { headers }));
     }
 
@@ -496,13 +517,19 @@ export class FeatureService {
 
     if (!requests.length) {
       this.clearStagedChanges();
+      this.notificationService.showInfo('No server operations needed.');
       return of({ success: true, message: 'No server operations needed.' });
     }
 
+    const _tRequest = performance.now();
+    console.log(`[SAVE⏱] Payload built in ${(_tRequest - _t0).toFixed(1)}ms — sending HTTP request...`);
+
     return forkJoin(requests).pipe(
       tap((results) => {
-        console.log('[FeatureService] Save operations results:', results);
+        const _tResponse = performance.now();
+        console.log(`[SAVE⏱] HTTP round-trip (request → response): ${(_tResponse - _tRequest).toFixed(1)}ms`);
 
+        const _tProcess = performance.now();
         const savedRecords: any[] = [];
         for (const r of results) {
           if (!r) continue;
@@ -531,17 +558,15 @@ export class FeatureService {
         }
 
         if (savedRecords.length) {
-          console.log(`[SAVE] Backend saved ${savedRecords.length} record(s):`, savedRecords.map((r: any) => ({
-            id: r.properties?.id ?? r.id,
-            uuid: r.properties?.uuid ?? r.uuid,
-            status: r.properties?.status ?? r.status,
-            gnd_id: r.properties?.gnd_id ?? r.gnd_id,
-            parent_id: r.properties?.parent_id ?? r.parent_id,
-          })));
+          console.log(`[SAVE⏱] Backend saved ${savedRecords.length} record(s).`);
+          const _tMapUpdate = performance.now();
           this.mapService.updateAllFeatureIdsAfterSave(savedRecords, this.layerService);
+          console.log(`[SAVE⏱] Map feature ID update: ${(performance.now() - _tMapUpdate).toFixed(1)}ms`);
         }
 
         this.clearStagedChanges();
+        console.log(`[SAVE⏱] Response processing + map update: ${(performance.now() - _tProcess).toFixed(1)}ms`);
+        console.log(`[SAVE⏱] ══ TOTAL end-to-end: ${(performance.now() - _t0).toFixed(1)}ms ══`);
 
         if (allWarnings.length > 0) {
           this.notificationService.showSuccess(
@@ -1302,6 +1327,7 @@ export class FeatureService {
       parent_uuid: properties['parent_uuid'] ?? parentId ?? null,
       uuid: properties['uuid'] ?? uuidv4(),
       ref_id: properties['ref_id'] ?? null,
+      crs: properties['crs'] ?? null,
       // <<< ROBUST FIX: Check for both 'gnd_id' and 'gnd_Id' >>>
       gnd_id: properties['gnd_id'] ?? gnd_id ?? null,
       isUpdateOnly: properties['isUpdateOnly'] ? true : false,

@@ -5,12 +5,13 @@
 // custom-buttons.component.ts
 
 import { RouterLink } from '@angular/router'; // Import RouterLink if using internal routes
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatRipple } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-custom-buttons',
   imports: [CommonModule, MatRipple, MatIconModule],
   templateUrl: './custom-buttons.component.html',

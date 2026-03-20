@@ -1,4 +1,10 @@
-import { Component, inject, DestroyRef} from '@angular/core';
+import {
+  Component,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import {
   FormBuilder,
@@ -18,6 +24,7 @@ import { AdminHeaderComponent } from '../../common/admin-header/admin-header.com
 import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-bar.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-users-create',
   standalone: true,
   imports: [
@@ -33,6 +40,7 @@ import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-ba
   styleUrl: './users-create.component.css',
 })
 export class UsersCreateComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
   userForm!: FormGroup;
   passwordMatch: boolean = true;
@@ -56,6 +64,8 @@ export class UsersCreateComponent {
           this.default_pw = 'admin@admin123';
         }
       }
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -88,6 +98,8 @@ export class UsersCreateComponent {
   getDepartmentList() {
     this.apiService.getDepartments().subscribe((res) => {
       this.departments_list = res;
+
+      this.cdr.markForCheck();
     });
   }
 

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -15,6 +15,7 @@ import { AdminHeaderComponent } from '../../common/admin-header/admin-header.com
 import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-bar.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-organizations-create',
   standalone: true,
   imports: [

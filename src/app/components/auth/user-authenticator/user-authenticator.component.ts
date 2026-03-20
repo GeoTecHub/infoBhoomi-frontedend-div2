@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { APIsService } from '../../../services/api.service';
 import { LoginService } from '../../../services/login.service';
 import { NotificationService } from '../../../services/notifications.service';
 import { UserService } from '../../../services/user.service';
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-user-authenticator',
   imports: [RouterModule],
   templateUrl: './user-authenticator.component.html',

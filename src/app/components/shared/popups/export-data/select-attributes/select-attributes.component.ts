@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {
   MatDialog,
@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 import { CustomButtonsComponent } from '../../../custom-buttons/custom-buttons.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-select-attributes',
   imports: [
     CommonModule,

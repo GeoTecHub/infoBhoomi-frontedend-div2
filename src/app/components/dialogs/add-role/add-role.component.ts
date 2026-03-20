@@ -1,5 +1,12 @@
 //
-import { Component, Inject, inject, DestroyRef} from '@angular/core';
+import {
+  Component,
+  Inject,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -20,6 +27,7 @@ import { NotificationService } from '../../../services/notifications.service';
 import { UserService } from '../../../services/user.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-add-role',
   standalone: true,
   imports: [
@@ -37,6 +45,7 @@ import { UserService } from '../../../services/user.service';
   styleUrl: './add-role.component.css',
 })
 export class AddRoleComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
   role_user: any = [];
   role_name = '';
@@ -67,6 +76,8 @@ export class AddRoleComponent {
       if (user) {
         this.userType = user.user_type;
       }
+
+      this.cdr.markForCheck();
     });
   }
 

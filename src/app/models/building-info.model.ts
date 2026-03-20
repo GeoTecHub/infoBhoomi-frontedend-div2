@@ -310,6 +310,7 @@ export const PARTY_TYPE_DISPLAY: Record<PartyType, string> = {
  * Rights, Restrictions & Responsibilities (RRR)
  */
 export interface RRRRestriction {
+  id?: number; // backend DB id — present on fetched records, absent on newly added ones
   type: RestrictionType;
   description: string;
   validFrom: string; // ISO 8601
@@ -317,6 +318,7 @@ export interface RRRRestriction {
 }
 
 export interface RRRResponsibility {
+  id?: number; // backend DB id — present on fetched records, absent on newly added ones
   type: ResponsibilityType;
   description: string;
   validFrom: string; // ISO 8601
@@ -393,6 +395,8 @@ export interface PhysicalAttributes {
   roofType: RoofType; // Enum, Editable
   wallType: string; // wall_type, Editable
   grossArea: number; // System-Calculated (sum of unit areas)
+  extBuildUseType: string; // ext_builduse_type, Editable
+  extBuildUseSubType: string; // ext_builduse_sub_type, Editable
 }
 
 /**
@@ -620,6 +624,8 @@ export function extractBuildingInfo(cityjson: any, objectId?: string): BuildingI
       roofType: RoofType.FLAT,
       wallType: '',
       grossArea,
+      extBuildUseType: '',
+      extBuildUseSubType: '',
     },
     taxValuation: attributes.assessedValue
       ? {

@@ -1,7 +1,16 @@
 /**
  *@KD-96
  */
-import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  Output,
+  EventEmitter,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PermissionService } from '../../../services/permissions.service';
@@ -9,12 +18,14 @@ import { DataService } from '../../../services/data.service';
 import { LandTabPermissions } from '../../../core/PermissionIds';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-key-value-dropdown',
   imports: [CommonModule, FormsModule],
   templateUrl: './key-value-dropdown.component.html',
   styleUrl: './key-value-dropdown.component.css',
 })
 export class KeyValueDropdownComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   @Input() key!: string;
   @Input() db_tag!: string; // use when generate payload
   @Input() value!: string | number;
@@ -81,6 +92,8 @@ export class KeyValueDropdownComponent implements OnInit {
             this.value = ''; // Set empty if no matching option is found
             this.onValueChange(this.value); // Emit the change to keep the parent in sync
           }
+
+          this.cdr.markForCheck();
         },
         (error) => {
           console.error('Error fetching dropdown options:', error);

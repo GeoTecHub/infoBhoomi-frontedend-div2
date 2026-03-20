@@ -11,7 +11,7 @@ export class ActivityLogService {
   private userService = inject(UserService);
 
   user_name: string = ''; // replaced with the login response detail - (username)
-  usertoken: string = localStorage.getItem('Token') || ''; // replaced with the login response detail - (token)
+  usertoken: string = (typeof window !== 'undefined' ? localStorage.getItem('Token') : null) || ''; // replaced with the login response detail - (token)
 
   constructor(private http: HttpClient) {
     this.userService.user$.pipe().subscribe((user: any) => {

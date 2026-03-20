@@ -1,4 +1,13 @@
-import { Component, ElementRef, OnInit, ViewChild, inject, DestroyRef} from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnInit,
+  ViewChild,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { FormsModule } from '@angular/forms';
@@ -14,6 +23,7 @@ import { UserPasswordChangeComponent } from './user-password-change/user-passwor
 import { UserUsernameChangeComponent } from './user-username-change/user-username-change.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-user-profile',
   standalone: true,
   imports: [
@@ -29,6 +39,7 @@ import { UserUsernameChangeComponent } from './user-username-change/user-usernam
   styleUrl: './user-profile.component.css',
 })
 export class UserProfileComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
   first_name: string = '';
   last_name: string = '';
@@ -48,7 +59,7 @@ export class UserProfileComponent implements OnInit {
     public dialog: MatDialog,
     private userService: UserService,
   ) {
-    this.eid = localStorage.getItem('emp_id') || '';
+    this.eid = (typeof window !== 'undefined' ? localStorage.getItem('emp_id') : null) || '';
   }
 
   ngOnInit(): void {
@@ -66,6 +77,8 @@ export class UserProfileComponent implements OnInit {
         this.eid = user.emp_id || '';
         this.mobile = user.mobile || '';
       }
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -126,6 +139,8 @@ export class UserProfileComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       this.username = this.userService.getUser()?.username.replace(/"/g, '') || '';
+
+      this.cdr.markForCheck();
     });
   }
 }

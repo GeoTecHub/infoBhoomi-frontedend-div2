@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, DestroyRef} from '@angular/core';
+import {
+  Component,
+  OnInit,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
@@ -15,6 +22,7 @@ import { AdminHeaderComponent } from '../../common/admin-header/admin-header.com
 import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-bar.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-organizations-list',
   imports: [
     AdminHeaderComponent,
@@ -32,6 +40,7 @@ import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-ba
   standalone: true,
 })
 export class OrganizationsListComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
   organizations_list: any = [];
   user_org: number | null = null;
@@ -47,6 +56,8 @@ export class OrganizationsListComponent implements OnInit {
       if (user) {
         this.user_org = user.org_id || null;
       }
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -57,6 +68,8 @@ export class OrganizationsListComponent implements OnInit {
   getOrganizationsList() {
     this.apiService.getOrganizationsList().subscribe((res) => {
       this.organizations_list = res;
+
+      this.cdr.markForCheck();
     });
   }
 

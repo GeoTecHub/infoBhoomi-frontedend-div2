@@ -1,4 +1,10 @@
-import { Component, inject, DestroyRef} from '@angular/core';
+import {
+  Component,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,6 +24,7 @@ import { NotificationService } from '../../../../../services/notifications.servi
 import { UserService } from '../../../../../services/user.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-user-username-change',
   standalone: true,
   imports: [MatDialogModule, FormsModule, MatButtonModule, MatProgressSpinnerModule, MatIconModule],
@@ -25,6 +32,7 @@ import { UserService } from '../../../../../services/user.service';
   styleUrl: './user-username-change.component.css',
 })
 export class UserUsernameChangeComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   Obj: ChangeUsernameModel = new ChangeUsernameModel();
   isLoading = false;
   usertoken: string = '';
@@ -46,6 +54,8 @@ export class UserUsernameChangeComponent {
       if (user) {
         this.userId = user.user_id.toString() || '';
       }
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -92,6 +102,8 @@ export class UserUsernameChangeComponent {
         } else if (res?.details.includes('exist') || res?.details.includes('exists')) {
           this.showError('This username is already taken!');
         }
+
+        this.cdr.markForCheck();
       },
       (error: any) => {
         this.isLoading = false;

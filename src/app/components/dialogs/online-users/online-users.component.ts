@@ -1,6 +1,14 @@
 // npx ng g c online-users
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -10,6 +18,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { APIsService } from '../../../services/api.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-online-users',
   standalone: true,
   imports: [
@@ -24,7 +33,8 @@ import { APIsService } from '../../../services/api.service';
   templateUrl: './online-users.component.html',
   styleUrl: './online-users.component.css',
 })
-export class OnlineUsersComponent implements OnInit, AfterViewInit {
+export class OnlineUsersComponent implements OnInit, AfterViewInit, OnDestroy {
+  private readonly cdr = inject(ChangeDetectorRef);
   onlineUsers: any[] = [];
   loading = false;
   private intervalId: any;
@@ -53,6 +63,8 @@ export class OnlineUsersComponent implements OnInit, AfterViewInit {
         next: (res: any) => {
           this.onlineUsers = res.online_users || [];
           resolve(true);
+
+          this.cdr.markForCheck();
         },
         error: (err) => {
           console.error(err.error.error);

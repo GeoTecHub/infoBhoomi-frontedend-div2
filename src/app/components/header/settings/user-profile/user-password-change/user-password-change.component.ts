@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
@@ -13,6 +13,7 @@ import { ChangePasswordModel } from '../../../../../models/API';
 import { LoginService } from '../../../../../services/login.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-user-password-change',
   standalone: true,
   imports: [MatDialogModule, FormsModule, MatButtonModule, MatProgressSpinnerModule, MatIconModule],
@@ -20,6 +21,7 @@ import { LoginService } from '../../../../../services/login.service';
   styleUrl: './user-password-change.component.css',
 })
 export class UserPasswordChangeComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   Obj: ChangePasswordModel = new ChangePasswordModel();
   isLoading = false; // avriable for spinner
   usertoken: string = ''; // replaced with the login response detail - (token)
@@ -61,6 +63,8 @@ export class UserPasswordChangeComponent {
           this.showSuccess('Password changed successfully!');
           this.dialogRef.close(true);
         }
+
+        this.cdr.markForCheck();
       },
       (error) => {
         const errorMessage = error?.error?.error;

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -11,6 +11,7 @@ import { UserService } from '../../../services/user.service';
 import { LoaderComponent } from '../../side-panel/loader/loader.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-subscription-details',
   imports: [
     MatDialogModule,
@@ -55,6 +56,8 @@ export class SubscriptionDetailsComponent implements OnInit {
           this.userService.setUserLimit(res.users_limit);
           this.cdr.detectChanges();
           resolve(true);
+
+          this.cdr.markForCheck();
         },
         error: (err) => reject(err),
       });

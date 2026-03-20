@@ -1,5 +1,5 @@
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
-import { Injectable, inject, DestroyRef} from '@angular/core';
+import { Injectable, inject, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Map as OLMap } from 'ol';
 import Feature from 'ol/Feature';
@@ -103,14 +103,12 @@ export class LayerService {
     this.mapService.showLabels$
       .pipe(startWith(this.mapService.showLabels), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
-        const map = this.mapService.getMapInstance?.();
-        map?.getLayers().forEach((l) => l.changed?.());
+        this.mapInstance?.getLayers().forEach((l) => l.changed?.());
       });
     this.mapService.showArea$
       .pipe(startWith(this.mapService.showArea), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => {
-        const map = this.mapService.getMapInstance?.();
-        map?.getLayers().forEach((l) => l.changed?.());
+        this.mapInstance?.getLayers().forEach((l) => l.changed?.());
       });
   }
 
@@ -267,7 +265,7 @@ export class LayerService {
         color,
         item.properties?.uuid,
         item.id,
-        item.properties?.area,
+        item.properties?.calculated_area,
       );
 
       if (feature) {
@@ -646,6 +644,5 @@ export class LayerService {
     return this.http.post<VERIFICATION_RESPONSE>(url, obj, { headers: this.getHeaders() });
   }
 
-  ngOnDestroy(): void {
-  }
+  ngOnDestroy(): void {}
 }

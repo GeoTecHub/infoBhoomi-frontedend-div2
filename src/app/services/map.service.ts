@@ -4,7 +4,6 @@ import View from 'ol/View';
 import LayerGroup from 'ol/layer/Group';
 import TileLayer from 'ol/layer/Tile';
 import VectorLayer, { Options as VectorLayerOptions } from 'ol/layer/Vector'; // Import Options
-import OSM from 'ol/source/OSM';
 import VectorSource from 'ol/source/Vector';
 import proj4 from 'proj4';
 import { BehaviorSubject } from 'rxjs';
@@ -120,13 +119,16 @@ export class MapService {
   setShowLabels(next: boolean): void {
     if (next === this._showLabels$.value) return;
     this._showLabels$.next(next);
-    localStorage.setItem(this.SHOW_LABELS_STORAGE_KEY, JSON.stringify(next));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.SHOW_LABELS_STORAGE_KEY, JSON.stringify(next));
+    }
     this.getMapInstance?.()
       ?.getLayers()
       .forEach((l) => l.changed?.());
   }
 
   private readShowLabelsFromStorage(): boolean {
+    if (typeof window === 'undefined') return false;
     const raw = localStorage.getItem(this.SHOW_LABELS_STORAGE_KEY);
     if (raw === null) return false;
     try {
@@ -142,12 +144,15 @@ export class MapService {
   setShowArea(next: boolean): void {
     if (next === this._showArea$.value) return;
     this._showArea$.next(next);
-    localStorage.setItem(this.SHOW_AREA_STORAGE_KEY, JSON.stringify(next));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(this.SHOW_AREA_STORAGE_KEY, JSON.stringify(next));
+    }
     this.getMapInstance?.()
       ?.getLayers()
       .forEach((l) => l.changed?.());
   }
   private readShowAreaFromStorage(): boolean {
+    if (typeof window === 'undefined') return false;
     const raw = localStorage.getItem(this.SHOW_AREA_STORAGE_KEY);
     if (raw === null) return false;
     try {
@@ -270,9 +275,14 @@ export class MapService {
   private _createBaseLayersGroup(): LayerGroup {
     const activeBaseMapId = this.activeBaseMapSubject.getValue();
 
-    // --- Layer 1: OpenStreetMap ---
+    // --- Layer 1: OpenStreetMap (live OSM tile server) ---
     const osmLayer = new TileLayer({
-      source: new OSM(),
+      source: new XYZ({
+        url: 'https://{a-c}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        attributions:
+          '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19,
+      }),
       visible: activeBaseMapId === 'OSM',
     });
     osmLayer.set('baseMapId', 'OSM');
@@ -729,39 +739,46 @@ export class MapService {
       return;
     }
 
+    // Build a UUID→record lookup map once — O(n) instead of rescanning per layer
+    const recordByUuid = new Map<string, any>();
+    for (const record of savedRecords) {
+      if (record?.properties?.uuid) {
+        recordByUuid.set(record.properties.uuid, record);
+      }
+    }
+    if (recordByUuid.size === 0) return;
+
+    const styleFn = makePerFeatureStyleFn(
+      () => this.showLabels,
+      () => this.showArea,
+    );
+
     const layers = this.mapInstance
       .getLayers()
       .getArray()
       .filter((l) => l instanceof VectorLayer) as VectorLayer<any>[];
 
-    savedRecords.forEach((record) => {
-      const uuid = record.properties.uuid;
-      const su_id = record.properties.su_id;
-      const gnd_id = record.properties.gnd_id;
-      const area = record.properties.area;
-      const layer_id = record.properties.layer_id;
-      layers.forEach((layer) => {
-        const source = layer.getSource();
-        if (!source) return;
+    // Single pass through layers × features — O(layers × features)
+    for (const layer of layers) {
+      const source = layer.getSource();
+      if (!source) continue;
 
-        const feature = source.getFeatures().find((f: any) => f.get('uuid') === uuid);
+      for (const feature of source.getFeatures()) {
+        const uuid = (feature as any).get('uuid');
+        if (!uuid) continue;
+        const record = recordByUuid.get(uuid);
+        if (!record) continue;
 
-        if (feature) {
-          feature.set('layer_id', layer_id);
-          feature.set('feature_Id', su_id);
-          feature.set('gnd_Id', gnd_id);
-          feature.set('area', area);
-          const layerColor = layerService.getLayerColor(layer_id) ?? '#2c7be5';
-          feature.set('baseHex', this.normalizeToHex(layerColor));
-          feature.setStyle(
-            makePerFeatureStyleFn(
-              () => this.showLabels,
-              () => this.showArea,
-            ),
-          );
-        }
-      });
-    });
+        const { su_id, gnd_id, calculated_area, layer_id } = record.properties;
+        feature.set('layer_id', layer_id);
+        feature.set('feature_Id', su_id);
+        feature.set('gnd_Id', gnd_id);
+        feature.set('area', calculated_area);
+        const layerColor = layerService.getLayerColor(layer_id) ?? '#2c7be5';
+        feature.set('baseHex', this.normalizeToHex(layerColor));
+        feature.setStyle(styleFn);
+      }
+    }
   }
 
   public updateFeatureAfterUpdateOnlySave(savedRecord: any, layerService: LayerService): void {
@@ -773,6 +790,11 @@ export class MapService {
       .getLayers()
       .getArray()
       .filter((l) => l instanceof VectorLayer) as VectorLayer<any>[];
+
+    const styleFn = makePerFeatureStyleFn(
+      () => this.showLabels,
+      () => this.showArea,
+    );
 
     for (const layer of layers) {
       const source = layer.getSource();
@@ -788,14 +810,7 @@ export class MapService {
 
       const layerColor = layerService.getLayerColor(layer_id) ?? '#2c7be5';
       feature.set('baseHex', this.normalizeToHex(layerColor));
-
-      feature.setStyle(
-        makePerFeatureStyleFn(
-          () => this.showLabels,
-          () => this.showArea,
-        ),
-      );
-
+      feature.setStyle(styleFn);
       feature.changed();
       break;
     }

@@ -1,5 +1,14 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnDestroy, OnInit, ViewContainerRef, DestroyRef} from '@angular/core';
+import {
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  ViewContainerRef,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { LayerService } from '../../services/layer.service';
@@ -23,8 +32,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import {Subject } from 'rxjs'; // Import Subject
- // Import takeUntil
+import { Subject } from 'rxjs'; // Import Subject
+// Import takeUntil
 import { APIsService } from '../../services/api.service';
 import { NotificationService } from '../../services/notifications.service';
 import { UserService } from '../../services/user.service';
@@ -33,6 +42,7 @@ import { ComponentPortal } from '@angular/cdk/portal';
 import { CustomTooltipComponent } from './custom-tooltip/custom-tooltip.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-layer-panel',
   imports: [
     CommonModule,
@@ -54,6 +64,7 @@ import { CustomTooltipComponent } from './custom-tooltip/custom-tooltip.componen
   standalone: true,
 })
 export class LayerPanelComponent implements OnInit, OnDestroy {
+  private readonly cdr = inject(ChangeDetectorRef);
   default_layers_permisions_array: any = [];
 
   LayerList!: API_LAYER_RESPONSE[];
@@ -108,6 +119,8 @@ export class LayerPanelComponent implements OnInit, OnDestroy {
         this.user_type = user.user_type || '';
         this.user_id_number = Number(user.user_id);
       }
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -117,11 +130,6 @@ export class LayerPanelComponent implements OnInit, OnDestroy {
     this.getLayerPermisions();
     this.getDefaultLayersPermisions();
 
-    // Subscribe to the selectedLayerIds$ observable to get updates on selected layer IDs
-    this.layerService.selectedLayerIds$.subscribe((ids) => {
-      this.selectedLayerIds = ids;
-      console.log('Updated selected layer IDs:', this.selectedLayerIds);
-    });
     if (this.organization_id) {
       this.organization_id = `ORG${this.organization_id}`; // Update the class property.
     }
@@ -132,21 +140,33 @@ export class LayerPanelComponent implements OnInit, OnDestroy {
     }
 
     // Subscribe to VISIBILITY changes
-    this.layerService.selectedLayerIds$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((ids) => {
-      console.log('LayerPanel: Visibility IDs received from service:', ids);
-      this.selectedLayerIds = ids; // Assign correct type
-    });
+    this.layerService.selectedLayerIds$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((ids) => {
+        console.log('LayerPanel: Visibility IDs received from service:', ids);
+        this.selectedLayerIds = ids; // Assign correct type
+
+        this.cdr.markForCheck();
+      });
 
     // Subscribe to CURRENT DRAWING LAYER changes
-    this.layerService.currentLayerIdForDrawing$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((id) => {
-      console.log('LayerPanel: Current Drawing Layer ID received from service:', id);
-      this.currentSelectedLayerIdForDrawing = id;
-    });
+    this.layerService.currentLayerIdForDrawing$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((id) => {
+        console.log('LayerPanel: Current Drawing Layer ID received from service:', id);
+        this.currentSelectedLayerIdForDrawing = id;
+
+        this.cdr.markForCheck();
+      });
 
     // added by malaka
-    this.layerService.buildingsDisabled$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((disabled) => {
-      this.isBuildingsDisabled = disabled;
-    });
+    this.layerService.buildingsDisabled$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((disabled) => {
+        this.isBuildingsDisabled = disabled;
+
+        this.cdr.markForCheck();
+      });
   }
 
   getLayerPopPermisions() {
@@ -160,6 +180,8 @@ export class LayerPanelComponent implements OnInit, OnDestroy {
         },
         {},
       );
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -179,7 +201,8 @@ export class LayerPanelComponent implements OnInit, OnDestroy {
   //   this.apiService.getLayersPermisions().subscribe(res=>{
   //     this.layer_permisions=res
   //     console.log(res)
-  //   })
+  //
+  // })
   // }
 
   ngOnDestroy(): void {
@@ -196,6 +219,8 @@ export class LayerPanelComponent implements OnInit, OnDestroy {
         },
         {},
       );
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -263,6 +288,8 @@ export class LayerPanelComponent implements OnInit, OnDestroy {
             this.notifcationService.showError('Unable to load the layer list!'); // Use notification service
           },
         });
+
+      this.cdr.markForCheck();
     });
   }
 

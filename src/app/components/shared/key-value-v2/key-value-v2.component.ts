@@ -1,7 +1,14 @@
 /**
  * @KD-96
  */
-import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  Output,
+  EventEmitter,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -9,6 +16,7 @@ import { PermissionService } from '../../../services/permissions.service';
 import { LandTabPermissions } from '../../../core/constant';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-key-value-v2',
   standalone: true,
   imports: [CommonModule, FormsModule],

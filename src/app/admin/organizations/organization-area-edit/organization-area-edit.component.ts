@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -10,6 +16,7 @@ import { AdminHeaderComponent } from '../../common/admin-header/admin-header.com
 import { AdminSideBarComponent } from '../../common/admin-side-bar/admin-side-bar.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-organization-area-edit',
   imports: [
     AdminHeaderComponent,
@@ -142,6 +149,8 @@ export class OrganizationAreaEditComponent implements OnInit, OnDestroy {
       }
       this.orgId = id;
       this.fetchOrganizationArea(id);
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -157,6 +166,8 @@ export class OrganizationAreaEditComponent implements OnInit, OnDestroy {
           this.orgName = org?.org_name || '';
           this.loading = false;
           this.cdr.detectChanges();
+
+          this.cdr.markForCheck();
         },
         error: (error) => {
           console.error('Failed to load organization area:', error);
@@ -193,6 +204,8 @@ export class OrganizationAreaEditComponent implements OnInit, OnDestroy {
             this.orgAreaDefineService.buildDistrictsForProvince(province);
           this.loading = false;
           this.cdr.detectChanges();
+
+          this.cdr.markForCheck();
         },
         error: (err) => {
           console.error('Failed to load areas:', err);
@@ -286,6 +299,8 @@ export class OrganizationAreaEditComponent implements OnInit, OnDestroy {
           this.loading = false;
           this.notificationService.showSuccess('Area updated successfully');
           this.goBack();
+
+          this.cdr.markForCheck();
         },
         error: (error) => {
           this.loading = false;

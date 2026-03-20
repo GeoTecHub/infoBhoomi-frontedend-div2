@@ -1,4 +1,12 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, DestroyRef} from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms'; // For ngModel
 import { MatButtonModule } from '@angular/material/button';
@@ -7,8 +15,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import {firstValueFrom, Subscription } from 'rxjs';
-import {filter, take } from 'rxjs/operators';
+import { firstValueFrom, Subscription } from 'rxjs';
+import { filter, take } from 'rxjs/operators';
 
 import OLFeature from 'ol/Feature';
 import OLGeoJSON from 'ol/format/GeoJSON';
@@ -31,6 +39,7 @@ type ExportType = 'selectedObjects' | 'layers' | null;
 type ExportFormat = 'geojson' | 'kml' | 'shp' | null;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-export-data',
   standalone: true,
   imports: [
@@ -94,6 +103,8 @@ export class ExportDataComponent implements OnInit, OnDestroy {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((layers) => {
         this.availableLayersForExport = layers;
+
+        this.cdr.markForCheck();
       });
   }
 
@@ -139,6 +150,8 @@ export class ExportDataComponent implements OnInit, OnDestroy {
         .subscribe((featuresFromService) => {
           this.selectedFeaturesForExport = featuresFromService;
           this.cdr.detectChanges();
+
+          this.cdr.markForCheck();
         });
     } catch (error) {
       this.notificationService.showError('Failed to start selection tool.');

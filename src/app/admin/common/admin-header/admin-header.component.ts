@@ -1,5 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, inject, DestroyRef} from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { MatButtonModule, MatIconButton } from '@angular/material/button';
 import { MatRipple } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
@@ -30,6 +37,7 @@ import { UserService } from '../../../services/user.service';
 import { ThemeToggleComponent } from '../../../components/shared/theme-toggle/theme-toggle.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-header',
   standalone: true,
   imports: [
@@ -78,7 +86,7 @@ export class AdminHeaderComponent implements OnInit {
   department: string | null = null;
   async ngOnInit() {
     this.checkUrl(this.router.url);
-    this.router.events.subscribe((event: any) => {
+    this.router.events.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((event: any) => {
       if (event.url) {
         this.checkUrl(event.url);
       }
@@ -92,6 +100,8 @@ export class AdminHeaderComponent implements OnInit {
         this.userType = user.user_type;
         this.department = user.department || '';
       }
+
+      this.cdr.markForCheck();
     });
 
     await this.getPermissions();
@@ -131,6 +141,8 @@ export class AdminHeaderComponent implements OnInit {
       this.current_org = this.organizations_list.find(
         (org: any) => org.org_id === this.user_org_id,
       );
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -143,6 +155,8 @@ export class AdminHeaderComponent implements OnInit {
           this.userService.setUserLimit(res.users_limit);
           this.cdr.detectChanges();
           resolve(true);
+
+          this.cdr.markForCheck();
         },
         error: (err) => reject(err),
       });
@@ -157,6 +171,8 @@ export class AdminHeaderComponent implements OnInit {
         next: (res) => {
           // @ts-ignore
           this.current_location = res.features[0].properties;
+
+          this.cdr.markForCheck();
         },
         error: (err) => {
           console.warn('Could not fetch org location:', err?.status, err?.message);
@@ -191,6 +207,8 @@ export class AdminHeaderComponent implements OnInit {
       // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
+
+        this.cdr.markForCheck();
       });
     }
   }
@@ -206,6 +224,8 @@ export class AdminHeaderComponent implements OnInit {
         // this.selectedMode = result;
         console.log('Selected Mode:', result);
       }
+
+      this.cdr.markForCheck();
     });
   }
   OpenUserProfile() {
@@ -223,6 +243,8 @@ export class AdminHeaderComponent implements OnInit {
       // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
+
+        this.cdr.markForCheck();
       });
     }
   }
@@ -241,6 +263,8 @@ export class AdminHeaderComponent implements OnInit {
       // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
+
+        this.cdr.markForCheck();
       });
     }
   }
@@ -265,6 +289,8 @@ export class AdminHeaderComponent implements OnInit {
       // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
+
+        this.cdr.markForCheck();
       });
     }
   }
@@ -283,6 +309,8 @@ export class AdminHeaderComponent implements OnInit {
       // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
+
+        this.cdr.markForCheck();
       });
     }
   }
@@ -333,32 +361,15 @@ export class AdminHeaderComponent implements OnInit {
 
   logout(): void {
     if (isPlatformBrowser(this.platformId)) {
+      sessionStorage.removeItem('permissions');
+
+      const token = localStorage.getItem('Token');
+      this.authService.logout(token).subscribe(() => {
+        this.apiService.clearPermissionsCache();
+        localStorage.clear();
+        this.router.navigateByUrl('/login');
+      });
     }
-    // localStorage.removeItem('userdetail');
-    // localStorage.removeItem('user_type');
-    // localStorage.removeItem('organization_id');
-    // localStorage.removeItem('department');
-    // localStorage.removeItem('user_name');
-    // localStorage.removeItem('first_name');
-    // localStorage.removeItem('last_name');
-    // localStorage.removeItem('nic');
-    // localStorage.removeItem('mobile');
-    // localStorage.removeItem('email');
-    // localStorage.removeItem('post');
-    // localStorage.removeItem('sex');
-    // localStorage.removeItem('birthday');
-    // localStorage.removeItem('is_active');
-    // localStorage.removeItem('currentLayerId');
-    // localStorage.removeItem('Oraganization');
-
-    sessionStorage.removeItem('permissions');
-
-    const token = localStorage.getItem('Token');
-    this.authService.logout(token).subscribe(() => {
-      // localStorage.removeItem('Token');
-      localStorage.clear();
-      this.router.navigateByUrl('/login');
-    });
   }
 
   ngOnDestroy() {

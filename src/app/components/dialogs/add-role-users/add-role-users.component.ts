@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common'; //
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -18,6 +18,7 @@ import { APIsService } from '../../../services/api.service';
 import { NotificationService } from '../../../services/notifications.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-add-role-users',
   standalone: true,
   imports: [
@@ -36,6 +37,7 @@ import { NotificationService } from '../../../services/notifications.service';
   styleUrl: './add-role-users.component.css',
 })
 export class AddRoleUsersComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   role_user: any = [];
   searchQuery = '';
   selected_role_id: any;
@@ -95,6 +97,8 @@ export class AddRoleUsersComponent {
           ),
         );
       }
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -108,6 +112,8 @@ export class AddRoleUsersComponent {
         this.loading = false;
         this.dialogRef.close(this.data.role_data);
         this.notificationService.showSuccess('Data saved successfully');
+
+        this.cdr.markForCheck();
       },
       error: (error) => {
         this.loading = false;

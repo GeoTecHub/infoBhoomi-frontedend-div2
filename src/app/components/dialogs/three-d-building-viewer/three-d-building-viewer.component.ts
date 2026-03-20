@@ -1,5 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { AfterViewInit, Component, Inject, OnInit } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  Inject,
+  OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  inject
+} from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogContent, MatDialogRef } from '@angular/material/dialog';
 import { APIsService } from '../../../services/api.service';
 import { NotificationService } from '../../../services/notifications.service';
@@ -12,6 +20,7 @@ import { ViewerComponent } from './viewer/viewer.component';
 type ViewMode = '3d' | '2d';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-three-d-building-viewer',
   standalone: true,
   imports: [CommonModule, MatDialogContent, ViewerComponent, FloorPlanViewerComponent],
@@ -19,6 +28,7 @@ type ViewMode = '3d' | '2d';
   styleUrl: './three-d-building-viewer.component.css',
 })
 export class ThreeDBuildingViewerComponent implements OnInit, AfterViewInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   isLoading: boolean = true;
   buildingData: any | null = null;
   has3DData: boolean = false;
@@ -51,6 +61,8 @@ export class ThreeDBuildingViewerComponent implements OnInit, AfterViewInit {
         this.buildingData = res;
         this.has3DData = this.validate3DData(res);
         this.isLoading = false;
+
+        this.cdr.markForCheck();
       },
       error: () => {
         this.isLoading = false;

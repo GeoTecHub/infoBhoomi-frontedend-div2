@@ -1,4 +1,12 @@
-import { Component, effect, inject, input, output, signal } from '@angular/core';
+import {
+  Component,
+  effect,
+  inject,
+  input,
+  output,
+  signal,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { LandSectionPermissions } from '../../../core/constant';
 
 import { FormsModule } from '@angular/forms';
@@ -51,6 +59,7 @@ import {
 import { APIsService } from '../../../services/api.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-land-info-panel',
   standalone: true,
   imports: [FormsModule],
@@ -140,7 +149,7 @@ export class LandInfoPanelComponent {
   }
 
   // --- UI State ---
-  expandedSections = signal<Set<string>>(new Set(['identification']));
+  expandedSections = signal<Set<string>>(new Set(['hierarchy', 'identification']));
   expandedRRRId = signal<string | null>(null);
 
   isSectionExpanded(section: string): boolean {

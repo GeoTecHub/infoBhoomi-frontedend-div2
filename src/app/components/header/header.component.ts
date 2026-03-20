@@ -1,6 +1,14 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject, DestroyRef} from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule, MatIconButton } from '@angular/material/button';
@@ -11,7 +19,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltip } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
-import {combineLatest } from 'rxjs';
+import { combineLatest } from 'rxjs';
 import { APIsService } from '../../services/api.service';
 import { AppStateService } from '../../services/app-state.service';
 import { DrawService } from '../../services/draw.service';
@@ -40,6 +48,7 @@ interface ParcelResult {
 
 type SearchFieldType = 'su_id' | 'nic' | 'valuation';
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-header',
   standalone: true,
   imports: [
@@ -131,6 +140,8 @@ export class HeaderComponent implements OnDestroy, OnInit {
 
         this.department = user.department || '';
       }
+
+      this.cdr.markForCheck();
     });
     this.getCurrentLocation();
     // this.mapService.showLabels$.subscribe((v) => (this.showLabels = v));
@@ -149,15 +160,21 @@ export class HeaderComponent implements OnDestroy, OnInit {
   ngOnInit() {
     this.getOrgData();
 
-    this.appStateService.canUndo$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((canUndoState) => {
-      this.canUndo = canUndoState;
-      console.log('[HeaderComponent] Can Undo state updated:', this.canUndo);
-    });
+    this.appStateService.canUndo$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((canUndoState) => {
+        this.canUndo = canUndoState;
+        console.log('[HeaderComponent] Can Undo state updated:', this.canUndo);
+
+        this.cdr.markForCheck();
+      });
 
     this.activeBaseMap = this.mapService.getActiveBaseMap();
     // Subscribe to changes in the active base map from the service
     this.mapService.activeBaseMap$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((type) => {
       this.activeBaseMap = type;
+
+      this.cdr.markForCheck();
     });
 
     combineLatest([this.layerService.allLayers$, this.layerService.currentLayerIdForDrawing$])
@@ -190,6 +207,8 @@ export class HeaderComponent implements OnDestroy, OnInit {
           this.userService.setUserLimit(res.users_limit);
           this.cdr.detectChanges();
           resolve(true);
+
+          this.cdr.markForCheck();
         },
         error: (err) => reject(err),
       });
@@ -217,6 +236,8 @@ export class HeaderComponent implements OnDestroy, OnInit {
         next: (res) => {
           // @ts-ignore
           this.current_location = res.features[0].properties;
+
+          this.cdr.markForCheck();
         },
         error: (err) => {
           console.warn('Could not fetch org location:', err?.status, err?.message);
@@ -281,6 +302,8 @@ export class HeaderComponent implements OnDestroy, OnInit {
         document.removeEventListener('click', clickListener);
         this.dialogRef = null;
         this.isLayersPanelOpen = false;
+
+        this.cdr.markForCheck();
       });
 
       setTimeout(() => {
@@ -300,6 +323,8 @@ export class HeaderComponent implements OnDestroy, OnInit {
         // this.selectedMode = result;
         console.log('Selected Mode:', result);
       }
+
+      this.cdr.markForCheck();
     });
   }
   OpenUserProfile() {
@@ -317,6 +342,8 @@ export class HeaderComponent implements OnDestroy, OnInit {
       // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
+
+        this.cdr.markForCheck();
       });
     }
   }
@@ -335,6 +362,8 @@ export class HeaderComponent implements OnDestroy, OnInit {
       // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
+
+        this.cdr.markForCheck();
       });
     }
   }
@@ -353,6 +382,8 @@ export class HeaderComponent implements OnDestroy, OnInit {
       // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
+
+        this.cdr.markForCheck();
       });
     }
   }
@@ -368,6 +399,8 @@ export class HeaderComponent implements OnDestroy, OnInit {
       // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
+
+        this.cdr.markForCheck();
       });
     }
   }
@@ -386,6 +419,8 @@ export class HeaderComponent implements OnDestroy, OnInit {
       // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
+
+        this.cdr.markForCheck();
       });
     }
   }
@@ -404,35 +439,23 @@ export class HeaderComponent implements OnDestroy, OnInit {
       // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
+
+        this.cdr.markForCheck();
       });
     }
   }
 
   logout(): void {
-    // localStorage.removeItem('userdetail');
-    // localStorage.removeItem('user_type');
-    // localStorage.removeItem('organization_id');
-    // localStorage.removeItem('department');
-    // localStorage.removeItem('user_name');
-    // localStorage.removeItem('first_name');
-    // localStorage.removeItem('last_name');
-    // localStorage.removeItem('nic');
-    // localStorage.removeItem('mobile');
-    // localStorage.removeItem('email');
-    // localStorage.removeItem('post');
-    // localStorage.removeItem('sex');
-    // localStorage.removeItem('birthday');
-    // localStorage.removeItem('is_active');
-    // localStorage.removeItem('currentLayerId');
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('permissions');
 
-    sessionStorage.removeItem('permissions');
-
-    let token = localStorage.getItem('Token');
-    this.authService.logout(token).subscribe((res) => {
-      // localStorage.removeItem('Token');
-      localStorage.clear();
-      this.router.navigateByUrl('/login');
-    });
+      const token = localStorage.getItem('Token');
+      this.authService.logout(token).subscribe((res) => {
+        this.apiService.clearPermissionsCache();
+        localStorage.clear();
+        this.router.navigateByUrl('/login');
+      });
+    }
   }
 
   saveAllChanges(): void {
@@ -447,6 +470,8 @@ export class HeaderComponent implements OnDestroy, OnInit {
       next: (response) => {
         // Success message handled by FeatureService on success
         console.log('[ToolsComponent] Save successful.', response);
+
+        this.cdr.markForCheck();
       },
       error: (err) => {
         // Error message handled by FeatureService

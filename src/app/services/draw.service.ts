@@ -1,4 +1,4 @@
-import { inject, Injectable, OnDestroy, DestroyRef} from '@angular/core';
+import { inject, Injectable, OnDestroy, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { featureCollection } from '@turf/helpers';
 import * as turf from '@turf/turf'; // Make sure turf is imported
@@ -2124,6 +2124,7 @@ export class DrawService implements OnDestroy {
       status: true,
       uuid: newUuid || uuidv4(), // Generate a new UUID if not provided
       ref_id: this.selectedRefFeatureId ? this.selectedRefFeatureId : null,
+      crs: 'EPSG:4326',
       gnd_id: gndId ? gndId : undefined, // Will be set later if needed
     };
   }

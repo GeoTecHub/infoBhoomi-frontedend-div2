@@ -1,13 +1,21 @@
 // src/app/components/main/main.component.ts
 import { CommonModule } from '@angular/common';
-import { Component, ElementRef, inject, OnDestroy, OnInit, ViewChild, DestroyRef} from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  inject,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute } from '@angular/router';
-
-
 
 // OpenLayers imports
 import { Map as OLMap } from 'ol';
@@ -47,11 +55,7 @@ import {
   TenureType,
   ZoningCategory,
 } from '../../models/land-parcel.model';
-import {
-  AccuracyLevel,
-  RightType,
-  SurveyMethod,
-} from '../../models/building-info.model';
+import { AccuracyLevel, RightType, SurveyMethod } from '../../models/building-info.model';
 import { getArea, getLength } from 'ol/sphere';
 
 import { Feature } from 'ol';
@@ -100,6 +104,7 @@ function isOLFeature<T extends Geometry = Geometry>(v: unknown): v is OLFeature<
 }
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-main',
   standalone: true,
   imports: [
@@ -115,6 +120,7 @@ function isOLFeature<T extends Geometry = Geometry>(v: unknown): v is OLFeature<
   styleUrl: './main.component.css',
 })
 export class MainComponent implements OnInit, OnDestroy {
+  private readonly cdr = inject(ChangeDetectorRef);
   // --- View Children ---
   @ViewChild('mapContainer', { static: false }) mapContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('mousePositionElement', { static: true })
@@ -166,16 +172,22 @@ export class MainComponent implements OnInit, OnDestroy {
     // Subscriptions that don't depend on the DOM being ready
     this.sidebarService.isClosed$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((closed) => {
       this.isSidebarClosed = closed;
+
+      this.cdr.markForCheck();
     });
 
-    this.drawService.selectedFeatureInfo$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((info) => {
-      // If info is an array, use the first element or null; otherwise, use info as is
-      const selectedInfo = Array.isArray(info) ? (info.length > 0 ? info[0] : null) : info;
-      this.handleFeatureSelection(selectedInfo);
-    });
+    this.drawService.selectedFeatureInfo$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((info) => {
+        // If info is an array, use the first element or null; otherwise, use info as is
+        const selectedInfo = Array.isArray(info) ? (info.length > 0 ? info[0] : null) : info;
+        this.handleFeatureSelection(selectedInfo);
+      });
 
     this.drawService.deselectedFeature$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       this.extendWidth = false;
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -184,15 +196,21 @@ export class MainComponent implements OnInit, OnDestroy {
     this.availableProjections = this.mapService.getAvailableProjectionCodes();
 
     // Subscribe to display projection changes
-    this.mapService.displayProjection$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((projCode) => {
-      this.selectedDisplayProjection = projCode;
-      this.setupMousePositionControl();
-    });
+    this.mapService.displayProjection$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((projCode) => {
+        this.selectedDisplayProjection = projCode;
+        this.setupMousePositionControl();
+
+        this.cdr.markForCheck();
+      });
 
     // Subscribe to layer visibility changes from the service
-    this.layerService.selectedLayerIds$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((visibleIds) => {
-      this.updateMapLayerVisibility(visibleIds);
-    });
+    this.layerService.selectedLayerIds$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((visibleIds) => {
+        this.updateMapLayerVisibility(visibleIds);
+      });
 
     // Subscribe to drawing layer changes to update the UI
     this.layerService.currentLayerIdForDrawing$
@@ -201,12 +219,16 @@ export class MainComponent implements OnInit, OnDestroy {
         // this.updateCurrentLayerName(layerId);
       });
 
-    this.layerService.isLoading$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((isLoading) => {
-      this.isLayerLoading = isLoading;
-      if (!isLoading) {
-        this.tryAutoSelectFeature();
-      }
-    });
+    this.layerService.isLoading$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((isLoading) => {
+        this.isLayerLoading = isLoading;
+        if (!isLoading) {
+          this.tryAutoSelectFeature();
+        }
+
+        this.cdr.markForCheck();
+      });
 
     this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       const featureId = params.get('feature_id');
@@ -218,15 +240,17 @@ export class MainComponent implements OnInit, OnDestroy {
 
     // REFACTORED: Map initialization is triggered by login status, not component lifecycle.
     // This is more robust and avoids timing issues and the need for setTimeout.
-    this.loginService.loginStatus$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((isLoggedIn) => {
-      if (isLoggedIn) {
-        // Use a microtask to ensure the view is updated and mapContainer is available
-        Promise.resolve().then(() => this.initializeMap());
-      } else {
-        // Handle logout: potentially dispose of the map
-        this.mapService.disposeMap();
-      }
-    });
+    this.loginService.loginStatus$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((isLoggedIn) => {
+        if (isLoggedIn) {
+          // Use a microtask to ensure the view is updated and mapContainer is available
+          Promise.resolve().then(() => this.initializeMap());
+        } else {
+          // Handle logout: potentially dispose of the map
+          this.mapService.disposeMap();
+        }
+      });
 
     // Initialize default drawing layer
     const selectedLayerId = localStorage.getItem('selected_layer_id');
@@ -266,6 +290,8 @@ export class MainComponent implements OnInit, OnDestroy {
       } else if (!map) {
         this.mapInstance = null;
       }
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -973,7 +999,6 @@ export class MainComponent implements OnInit, OnDestroy {
   // }
 
   ngOnDestroy(): void {
-
     // Clean up global event listeners
     if (this.mapInstance) {
       const viewport = this.mapInstance.getViewport();

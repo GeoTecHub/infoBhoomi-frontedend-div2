@@ -1,5 +1,12 @@
 //
-import { Component, Inject, inject, DestroyRef} from '@angular/core';
+import {
+  Component,
+  Inject,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -19,6 +26,7 @@ import { APIsService } from '../../../services/api.service';
 import { NotificationService } from '../../../services/notifications.service';
 import { UserService } from '../../../services/user.service';
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-legal-firm',
   imports: [
     MatDialogModule,
@@ -36,6 +44,7 @@ import { UserService } from '../../../services/user.service';
   standalone: true,
 })
 export class LegalFirmComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   private destroyRef = inject(DestroyRef);
   selectedGroup: any = {}; // Initialize as an empty object to avoid null errors
 
@@ -107,6 +116,8 @@ export class LegalFirmComponent {
       if (user) {
         this.user_id = user.user_id || '';
       }
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -171,6 +182,8 @@ export class LegalFirmComponent {
             }
           },
         });
+
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.notificationService.showError('Failed to load authority types');
@@ -204,6 +217,8 @@ export class LegalFirmComponent {
     this.apiService.getAuthorityTypes().subscribe((res) => {
       console.log(res);
       this.authority_types_array = res;
+
+      this.cdr.markForCheck();
     });
   }
   onGroupChange(id: string | null) {

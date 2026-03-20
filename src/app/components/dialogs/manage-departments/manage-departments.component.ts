@@ -1,5 +1,5 @@
 //
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -18,6 +18,7 @@ import { NotificationService } from '../../../services/notifications.service';
 declare var bootstrap: any;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-manage-departments',
   standalone: true,
   imports: [
@@ -35,6 +36,7 @@ declare var bootstrap: any;
   styleUrl: './manage-departments.component.css',
 })
 export class ManageDepartmentsComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   departments_list: any = [];
   private all_departments: any = [];
   searchQuery = '';
@@ -64,6 +66,8 @@ export class ManageDepartmentsComponent {
     this.apiService.getDepartments().subscribe((res) => {
       this.all_departments = res.map((item: any) => ({ ...item, edit: false }));
       this.filterDepartments();
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -155,6 +159,8 @@ export class ManageDepartmentsComponent {
         this.department_name = '';
         this.getDepartmentList();
         this.notificationService.showSuccess('Data saved successfully');
+
+        this.cdr.markForCheck();
       },
       (error: any) => {
         console.error('Error saving administrative info:', error);

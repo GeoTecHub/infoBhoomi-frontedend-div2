@@ -1,5 +1,4 @@
 <div class="gqc-dialog" [class.gqc-dialog--minimized]="isHighlighting()">
-
   <!-- ═══ Highlight Strip (minimized state) ═══ -->
   @if (isHighlighting()) {
     <div class="gqc-highlight-strip">
@@ -47,13 +46,16 @@
             <button
               class="gqc-cat-btn"
               [class.gqc-cat-btn--active]="activeCategory() === key"
-              [style.border-left-color]="activeCategory() === key ? categories[key].color : 'transparent'"
+              [style.border-left-color]="
+                activeCategory() === key ? categories[key].color : 'transparent'
+              "
               (click)="selectCategory(key)"
             >
               <mat-icon
                 class="gqc-cat-icon"
                 [style.color]="activeCategory() === key ? categories[key].color : ''"
-              >{{ categories[key].icon }}</mat-icon>
+                >{{ categories[key].icon }}</mat-icon
+              >
               <span>{{ categories[key].label }}</span>
             </button>
           }
@@ -75,10 +77,9 @@
         <!-- ─── Query List ─── -->
         <div class="gqc-query-list">
           <div class="gqc-section-label">
-            <mat-icon
-              class="gqc-ql-icon"
-              [style.color]="category.color"
-            >{{ category.icon }}</mat-icon>
+            <mat-icon class="gqc-ql-icon" [style.color]="category.color">{{
+              category.icon
+            }}</mat-icon>
             {{ category.label }} Queries
           </div>
           <div class="gqc-query-items">
@@ -112,7 +113,11 @@
                   <p class="gqc-param-desc">{{ activeQuery()!.description }}</p>
                 </div>
                 <div class="gqc-param-actions">
-                  <button class="gqc-sql-toggle" [class.gqc-sql-toggle--on]="showSQL()" (click)="toggleSQL()">
+                  <button
+                    class="gqc-sql-toggle"
+                    [class.gqc-sql-toggle--on]="showSQL()"
+                    (click)="toggleSQL()"
+                  >
                     @if (showSQL()) {
                       <mat-icon>code_off</mat-icon> Hide SQL
                     } @else {
@@ -121,7 +126,15 @@
                   </button>
                   <button
                     class="gqc-execute-btn"
-                    [style.background]="isRunning() ? '#1a2d4a' : 'linear-gradient(135deg, ' + category.color + ', ' + category.color + 'cc)'"
+                    [style.background]="
+                      isRunning()
+                        ? '#1a2d4a'
+                        : 'linear-gradient(135deg, ' +
+                          category.color +
+                          ', ' +
+                          category.color +
+                          'cc)'
+                    "
                     [disabled]="isRunning()"
                     (click)="runQuery()"
                   >
@@ -181,7 +194,8 @@
                 <div class="gqc-preview-notice">
                   <mat-icon>info_outline</mat-icon>
                   <span>
-                    <strong>Preview only</strong> — this query requires spatial datasets (elevation, water bodies, roads) not yet available in the live database.
+                    <strong>Preview only</strong> — this query requires spatial datasets (elevation,
+                    water bodies, roads) not yet available in the live database.
                   </span>
                 </div>
               }
@@ -192,22 +206,35 @@
                   <div class="gqc-results-info">
                     <mat-icon>check_circle</mat-icon>
                     <span>
-                      <strong>{{ results()!.count }}</strong> features found in {{ results()!.time }}s
+                      <strong>{{ results()!.count }}</strong> features found in
+                      {{ results()!.time }}s
                     </span>
                   </div>
                   <div class="gqc-results-actions">
-                    <button class="gqc-action-btn gqc-action-btn--highlight" (click)="highlightOnMap()"
-                      [disabled]="!results()!.features.length" title="Highlight parcels on map — press ESC to restore">
+                    <button
+                      class="gqc-action-btn gqc-action-btn--highlight"
+                      (click)="highlightOnMap()"
+                      [disabled]="!results()!.features.length"
+                      title="Highlight parcels on map — press ESC to restore"
+                    >
                       <mat-icon>location_on</mat-icon> Highlight on Map
                     </button>
                     <button class="gqc-export-btn" (click)="exportCSV()" title="Download CSV">
                       <mat-icon>download</mat-icon> CSV
                     </button>
-                    <button class="gqc-export-btn" (click)="exportGeoJSON()" title="Download GeoJSON">
+                    <button
+                      class="gqc-export-btn"
+                      (click)="exportGeoJSON()"
+                      title="Download GeoJSON"
+                    >
                       <mat-icon>download</mat-icon> GeoJSON
                     </button>
                     @if (activeQuery()?.backend) {
-                      <button class="gqc-export-btn" (click)="exportSHP()" title="Download Shapefile ZIP">
+                      <button
+                        class="gqc-export-btn"
+                        (click)="exportSHP()"
+                        title="Download Shapefile ZIP"
+                      >
                         <mat-icon>download</mat-icon> SHP
                       </button>
                     }
@@ -256,16 +283,45 @@
               <div class="gqc-map-area">
                 <div class="gqc-minimap">
                   <svg class="gqc-map-grid" width="100%" height="100%">
-                    @for (i of [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]; track i) {
-                      <line [attr.x1]="0" [attr.y1]="i * 5 + '%'" x2="100%" [attr.y2]="i * 5 + '%'" stroke="#4a9eff" stroke-width="0.5" />
-                      <line [attr.x1]="i * 5 + '%'" [attr.y1]="0" [attr.x2]="i * 5 + '%'" y2="100%" stroke="#4a9eff" stroke-width="0.5" />
+                    @for (
+                      i of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+                      track i
+                    ) {
+                      <line
+                        [attr.x1]="0"
+                        [attr.y1]="i * 5 + '%'"
+                        x2="100%"
+                        [attr.y2]="i * 5 + '%'"
+                        stroke="#4a9eff"
+                        stroke-width="0.5"
+                      />
+                      <line
+                        [attr.x1]="i * 5 + '%'"
+                        [attr.y1]="0"
+                        [attr.x2]="i * 5 + '%'"
+                        y2="100%"
+                        stroke="#4a9eff"
+                        stroke-width="0.5"
+                      />
                     }
                   </svg>
-                  <svg class="gqc-map-parcels" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-                    <path d="M 0 45 Q 25 38, 45 42 Q 65 46, 85 40 L 100 40 L 100 50 Q 80 52, 60 48 Q 35 44, 15 50 L 0 52 Z"
-                      fill="#0d3b66" opacity="0.5" />
-                    <path d="M 0 45 Q 25 38, 45 42 Q 65 46, 85 40"
-                      fill="none" stroke="#1a6fb5" stroke-width="0.4" opacity="0.6" />
+                  <svg
+                    class="gqc-map-parcels"
+                    viewBox="0 0 100 100"
+                    preserveAspectRatio="xMidYMid meet"
+                  >
+                    <path
+                      d="M 0 45 Q 25 38, 45 42 Q 65 46, 85 40 L 100 40 L 100 50 Q 80 52, 60 48 Q 35 44, 15 50 L 0 52 Z"
+                      fill="#0d3b66"
+                      opacity="0.5"
+                    />
+                    <path
+                      d="M 0 45 Q 25 38, 45 42 Q 65 46, 85 40"
+                      fill="none"
+                      stroke="#1a6fb5"
+                      stroke-width="0.4"
+                      opacity="0.6"
+                    />
                     <line x1="5" y1="0" x2="5" y2="100" stroke="#1a2d4a" stroke-width="1.2" />
                     <line x1="50" y1="0" x2="50" y2="100" stroke="#1a2d4a" stroke-width="0.8" />
                     <line x1="0" y1="52" x2="100" y2="52" stroke="#1a2d4a" stroke-width="1" />
@@ -319,7 +375,8 @@
               <mat-icon class="gqc-empty-icon">hexagon</mat-icon>
               <span class="gqc-empty-title">Select a Query to Begin</span>
               <span class="gqc-empty-desc">
-                Choose a category from the left panel and select a spatial or attribute query to configure and execute.
+                Choose a category from the left panel and select a spatial or attribute query to
+                configure and execute.
               </span>
               <div class="gqc-empty-tags">
                 <span class="gqc-tag">Flood Analysis</span>

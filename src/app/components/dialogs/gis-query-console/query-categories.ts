@@ -11,7 +11,9 @@ export interface QueryBackend {
   /** Layer IDs this query runs against (first one is used). */
   layerIds: number[];
   /** Translate current params into queryParcels conditions. */
-  toConditions: (params: Record<string, any>) => { field: string; operator: string; value: string }[];
+  toConditions: (
+    params: Record<string, any>,
+  ) => { field: string; operator: string; value: string }[];
   logic?: 'AND' | 'OR';
 }
 
@@ -93,13 +95,7 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
             key: 'soil',
             label: 'Soil Type',
             type: 'select',
-            options: [
-              'All Types',
-              'Laterite',
-              'Red-Yellow Podzolic',
-              'Alluvial',
-              'Bog & Half-Bog',
-            ],
+            options: ['All Types', 'Laterite', 'Red-Yellow Podzolic', 'Alluvial', 'Bog & Half-Bog'],
           },
         ],
         sql: (p) =>
@@ -215,9 +211,7 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
         sql: (p) => `SELECT * FROM land_parcels\nWHERE area >= ${p['min_area']};`,
         backend: {
           layerIds: [1, 6],
-          toConditions: (p) => [
-            { field: 'area_m2', operator: '>=', value: String(p['min_area']) },
-          ],
+          toConditions: (p) => [{ field: 'area_m2', operator: '>=', value: String(p['min_area']) }],
         },
       },
     ],
@@ -280,16 +274,16 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
         backend: {
           layerIds: [3, 12],
           toConditions: (p) =>
-            p['value'] ? [{ field: 'building_name', operator: '%', value: String(p['value']) }] : [],
+            p['value']
+              ? [{ field: 'building_name', operator: '%', value: String(p['value']) }]
+              : [],
         },
       },
       {
         id: 'high_rise',
         name: 'High-Rise Buildings',
         description: 'Find buildings above a given number of floors',
-        params: [
-          { key: 'min_floors', label: 'Min Floors', type: 'number', default: 5 },
-        ],
+        params: [{ key: 'min_floors', label: 'Min Floors', type: 'number', default: 5 }],
         sql: (p) => `SELECT * FROM buildings\nWHERE no_floors >= ${p['min_floors']};`,
         backend: {
           layerIds: [3, 12],
@@ -310,8 +304,7 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
             options: ['Poor', 'Very Poor', 'Fair'],
           },
         ],
-        sql: (p) =>
-          `SELECT * FROM buildings\nWHERE condition ILIKE '%${p['condition']}%';`,
+        sql: (p) => `SELECT * FROM buildings\nWHERE condition ILIKE '%${p['condition']}%';`,
         backend: {
           layerIds: [3, 12],
           toConditions: (p) => [
@@ -329,9 +322,7 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
         sql: (p) => `SELECT * FROM buildings\nWHERE area >= ${p['min_area']};`,
         backend: {
           layerIds: [3, 12],
-          toConditions: (p) => [
-            { field: 'area_m2', operator: '>=', value: String(p['min_area']) },
-          ],
+          toConditions: (p) => [{ field: 'area_m2', operator: '>=', value: String(p['min_area']) }],
         },
       },
     ],
@@ -372,7 +363,13 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
             type: 'select',
             options: ['Land Parcels', 'Buildings'],
           },
-          { key: 'min_value', label: 'Min Market Value', type: 'number', default: 1000000, unit: 'LKR' },
+          {
+            key: 'min_value',
+            label: 'Min Market Value',
+            type: 'number',
+            default: 1000000,
+            unit: 'LKR',
+          },
         ],
         sql: (p) =>
           `SELECT p.su_id, a.market_value\nFROM survey_rep p\nJOIN assessment a ON a.su_id = p.su_id\nWHERE a.market_value > ${p['min_value']};`,
@@ -394,7 +391,13 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
             type: 'select',
             options: ['Land Parcels', 'Buildings'],
           },
-          { key: 'max_value', label: 'Max Assessed Value', type: 'number', default: 50000, unit: 'LKR' },
+          {
+            key: 'max_value',
+            label: 'Max Assessed Value',
+            type: 'number',
+            default: 50000,
+            unit: 'LKR',
+          },
         ],
         sql: (p) =>
           `SELECT p.su_id, a.assessment_annual_value\nFROM survey_rep p\nJOIN assessment a ON a.su_id = p.su_id\nWHERE a.assessment_annual_value < ${p['max_value']};`,

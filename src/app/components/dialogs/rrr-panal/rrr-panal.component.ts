@@ -1,5 +1,5 @@
 //
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -20,6 +20,7 @@ import { GroupComponent } from '../../dialogs/group/group.component';
 import { LegalFirmComponent } from '../legal-firm/legal-firm.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-rrr-panal',
   standalone: true,
   imports: [
@@ -36,6 +37,7 @@ import { LegalFirmComponent } from '../legal-firm/legal-firm.component';
   styleUrl: './rrr-panal.component.css',
 })
 export class RrrPanalComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   party_sub_types_array_to_dialog = [{ name: 'Type 1' }, { name: 'Type 2' }, { name: 'Type 3' }]; // example data
   card = { party_sub_type: '' };
   // DATA LOAD OBJECTS
@@ -125,6 +127,8 @@ export class RrrPanalComponent {
       console.log(res);
       // @ts-ignore
       this.ba_unit = res.ba_unit_id;
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -149,12 +153,16 @@ export class RrrPanalComponent {
   loadMortgageTypes() {
     this.apiService.loadMortgageTypes().subscribe((res) => {
       this.mortgage_types_array = res;
+
+      this.cdr.markForCheck();
     });
   }
 
   getSourceTypes() {
     this.apiService.getSourceTypes().subscribe((res) => {
       this.source_types_array = res;
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -185,12 +193,16 @@ export class RrrPanalComponent {
   loadPartySubTypes() {
     this.apiService.loadPartySubTypes().subscribe((res) => {
       this.party_sub_types_array = res;
+
+      this.cdr.markForCheck();
     });
   }
 
   loadOwnershipTypes() {
     this.apiService.loadOwnershipTypes().subscribe((res) => {
       this.ownership_types_array = res;
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -198,6 +210,8 @@ export class RrrPanalComponent {
     this.apiService.loadRightshareTypes().subscribe((res) => {
       console.log(res);
       this.right_share_types_array = res;
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -235,6 +249,8 @@ export class RrrPanalComponent {
             this.data_of_aded_party = result.data;
             this.show_presentage_inputs = true;
           }
+
+          this.cdr.markForCheck();
         });
       }
       if (this.add_party.party_sub_type == 'Ministry') {
@@ -263,6 +279,8 @@ export class RrrPanalComponent {
             this.data_of_aded_party = result.data;
             this.show_presentage_inputs = true;
           }
+
+          this.cdr.markForCheck();
         });
       }
     } else {
@@ -277,6 +295,8 @@ export class RrrPanalComponent {
         this.existing_admin_source = res;
       } else {
       }
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -381,6 +401,8 @@ export class RrrPanalComponent {
             this.notificationService.showSuccess('Data saved successfully');
             this.administrative_source = {};
             this.adeded_party_cards = [];
+
+            this.cdr.markForCheck();
           },
           (error: any) => {
             console.error('Error saving administrative info:', error);

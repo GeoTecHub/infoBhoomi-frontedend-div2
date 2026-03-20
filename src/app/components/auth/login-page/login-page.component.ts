@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -10,6 +10,7 @@ import { NotificationService } from '../../../services/notifications.service';
 import { MatIconModule } from '@angular/material/icon';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-login-page',
   standalone: true,
   imports: [FormsModule, MatIconModule],
@@ -75,8 +76,10 @@ export class LoginPageComponent {
         }
       },
       (error) => {
-        console.error('Error occurred during login:', error.error.error);
-        this.notificationService.showError(error.error.error, 5000);
+        console.error('Error occurred during login:', error);
+        const msg =
+          error?.error?.error || error?.error?.detail || 'Login failed. Please try again.';
+        this.notificationService.showError(msg, 5000);
         // alert('Login Failed');
       },
     );

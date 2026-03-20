@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, inject, DestroyRef} from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  inject,
+  DestroyRef,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatDialog } from '@angular/material/dialog';
 import { RouterModule } from '@angular/router';
@@ -8,6 +14,7 @@ import { UserService } from '../../../services/user.service';
 import { AdminService, PermId } from '../../../services/admin.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-side-bar',
   standalone: true,
   imports: [RouterModule],
@@ -28,6 +35,8 @@ export class AdminSideBarComponent {
       if (user) {
         this.user_type = user.user_type || '';
       }
+
+      this.cdr.markForCheck();
     });
   }
 
@@ -41,7 +50,7 @@ export class AdminSideBarComponent {
   }
 
   dialog = inject(MatDialog);
-private destroyRef = inject(DestroyRef);
+  private destroyRef = inject(DestroyRef);
   private dialogRef: any;
 
   openProAlert() {
@@ -58,6 +67,8 @@ private destroyRef = inject(DestroyRef);
       // Reset dialogRef when the dialog is closed
       this.dialogRef.afterClosed().subscribe(() => {
         this.dialogRef = null;
+
+        this.cdr.markForCheck();
       });
     }
   }

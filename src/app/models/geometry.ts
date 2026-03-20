@@ -84,6 +84,7 @@ export interface FeatureProperties {
   uuid: string;
   ref_id: number | null;
   gnd_id?: number | null | string; //x
+  crs?: string | null;
   // --- >> NEW: Properties specific to imported points from CSV/Text << ---
   original_point_id?: string | number | null; // To store the 'Pt_ID' from the file
   original_x_coord?: number | null; // To store the original X from the file

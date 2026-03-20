@@ -23,11 +23,19 @@
         [disabled]="!option.available"
         (click)="openReport(option)"
       >
-        <div class="gr-option-icon" [style.border-color]="option.available ? option.accent + '44' : '#1a2a40'" [style.background]="option.available ? option.accent + '15' : 'transparent'">
-          <mat-icon [style.color]="option.available ? option.accent : '#2a3a50'">{{ option.icon }}</mat-icon>
+        <div
+          class="gr-option-icon"
+          [style.border-color]="option.available ? option.accent + '44' : '#1a2a40'"
+          [style.background]="option.available ? option.accent + '15' : 'transparent'"
+        >
+          <mat-icon [style.color]="option.available ? option.accent : '#2a3a50'">{{
+            option.icon
+          }}</mat-icon>
         </div>
         <div class="gr-option-body">
-          <div class="gr-option-title" [style.color]="option.available ? '#e8f4ff' : '#3a5070'">{{ option.title }}</div>
+          <div class="gr-option-title" [style.color]="option.available ? '#e8f4ff' : '#3a5070'">
+            {{ option.title }}
+          </div>
           <div class="gr-option-sub">{{ option.subtitle }}</div>
         </div>
         <div class="gr-option-arrow">

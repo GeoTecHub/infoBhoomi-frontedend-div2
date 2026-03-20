@@ -1,4 +1,13 @@
-import { Component, inject, input, output, signal, computed, effect } from '@angular/core';
+import {
+  Component,
+  inject,
+  input,
+  output,
+  signal,
+  computed,
+  effect,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { BuildingSectionPermissions } from '../../../core/constant';
 
 import { FormsModule } from '@angular/forms';
@@ -70,6 +79,7 @@ type CollapsibleSection =
   | 'metadata';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-building-info-panel',
   standalone: true,
   imports: [FormsModule],

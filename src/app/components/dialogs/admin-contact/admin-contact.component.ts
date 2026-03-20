@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -9,6 +9,7 @@ import { APIsService } from '../../../services/api.service';
 import { LoaderComponent } from '../../side-panel/loader/loader.component';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-admin-contact',
   standalone: true,
   imports: [
@@ -24,6 +25,7 @@ import { LoaderComponent } from '../../side-panel/loader/loader.component';
   styleUrl: './admin-contact.component.css',
 })
 export class AdminContactComponent implements OnInit {
+  private readonly cdr = inject(ChangeDetectorRef);
   email = '';
   first_name = '';
   last_name = '';
@@ -49,6 +51,8 @@ export class AdminContactComponent implements OnInit {
         this.mobile = res[0].mobile;
         this.post = res[0].post;
         this.loading = false;
+
+        this.cdr.markForCheck();
       },
       error: (err) => {
         this.loading = false;

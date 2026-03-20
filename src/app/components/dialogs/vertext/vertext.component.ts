@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -23,6 +23,7 @@ import { makePerFeatureStyleFn } from '../../../services/style-factory.service';
 import { VertextService } from '../../../services/vertext.service';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-vertext',
   templateUrl: './vertext.component.html',
   styleUrl: './vertext.component.css',
@@ -39,6 +40,7 @@ import { VertextService } from '../../../services/vertext.service';
   ],
 })
 export class VertextComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   loginObj: LoginModel = new LoginModel();
   passwordRequired: boolean = false;
   usernameRequired: boolean = false;
@@ -105,6 +107,8 @@ export class VertextComponent {
           this.isLoading = false;
           this.ActiveProjectPanel = false;
         }
+
+        this.cdr.markForCheck();
       },
       (error) => {
         console.error('Error occurred during login:', error);
@@ -122,6 +126,8 @@ export class VertextComponent {
       (res: API_VERTEXT_PROJECT_RESPONSE[]) => {
         this.projectList = res;
         console.log('Project List:', this.projectList);
+
+        this.cdr.markForCheck();
       },
       (error) => {
         console.error('Error occurred:', error);

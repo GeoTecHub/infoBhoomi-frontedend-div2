@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
 
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -22,6 +22,7 @@ import { NotificationService } from '../../../services/notifications.service';
 declare var bootstrap: any;
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-share-layer',
   standalone: true,
   imports: [
@@ -39,6 +40,7 @@ declare var bootstrap: any;
   styleUrl: './share-layer.component.css',
 })
 export class ShareLayerComponent {
+  private readonly cdr = inject(ChangeDetectorRef);
   // UI/selection lists
   users_list: any[] = []; // displayed (filtered) list
   private all_users_list: any[] = []; // master list from API (unfiltered)
@@ -82,6 +84,8 @@ export class ShareLayerComponent {
       (res: any) => {
         this.all_users_list = (res || []).map((u: any) => ({ ...u, check_status: false }));
         this.applyUserFilters();
+
+        this.cdr.markForCheck();
       },
       (err) => {
         console.error('getAdminUsers failed', err);
