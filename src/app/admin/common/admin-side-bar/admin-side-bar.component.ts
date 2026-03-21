@@ -31,11 +31,16 @@ export class AdminSideBarComponent {
     private userService: UserService,
     private adminService: AdminService,
   ) {
+    // Seed synchronously so tabs are correct on first render
+    const current = this.userService.getUser();
+    if (current) {
+      this.user_type = current.user_type || '';
+    }
+
     this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
         this.user_type = user.user_type || '';
       }
-
       this.cdr.markForCheck();
     });
   }

@@ -1,5 +1,6 @@
 //
 import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef, inject } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
 import {
@@ -32,6 +33,7 @@ import { LegalFirmComponent } from '../legal-firm/legal-firm.component';
     MatIconModule,
     MatFormFieldModule,
     MatInputModule,
+    DatePipe,
   ],
   templateUrl: './rrr-panal.component.html',
   styleUrl: './rrr-panal.component.css',
@@ -88,6 +90,10 @@ export class RrrPanalComponent {
 
   show_party_add = false;
 
+  // Issue #8: audit history
+  history_data: any[] = [];
+  history_loading = false;
+
   add_party = {
     party_sub_type: '',
     share_percentage: '',
@@ -102,6 +108,7 @@ export class RrrPanalComponent {
     this.getSourceTypes();
     this.getExistingAdminSourceData();
     this.getTabLabel();
+    this.loadHistory();
   }
 
   // featureId: string;
@@ -289,13 +296,17 @@ export class RrrPanalComponent {
   }
 
   getExistingAdminSourceData() {
-    this.apiService.getExistingAdminSourceData(this.data.feature_id).subscribe((res) => {
+    this.apiService.getExistingAdminSourceData(this.data.feature_id).subscribe((res: any) => {
       console.log(res);
-      if (Array.isArray(res) && res.length > 0) {
-        this.existing_admin_source = res;
-      } else {
+      // Response shape: { history_su_id, records: [ { ba_unit_id, admin_sources: [], rrrs: [] } ] }
+      const records: any[] = res?.records ?? [];
+      const allAdminSources: any[] = [];
+      for (const record of records) {
+        for (const src of record.admin_sources ?? []) {
+          allAdminSources.push(src);
+        }
       }
-
+      this.existing_admin_source = allAdminSources;
       this.cdr.markForCheck();
     });
   }
@@ -333,6 +344,37 @@ export class RrrPanalComponent {
     }
   }
 
+  // Issue #8: load audit history for this parcel
+  loadHistory() {
+    this.history_loading = true;
+    this.apiService.getRRRHistory(this.data.feature_id).subscribe({
+      next: (res: any[]) => {
+        this.history_data = res;
+        this.history_loading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.history_loading = false;
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  // Issue #8: terminate (soft-delete) a right and refresh the panel data
+  terminateRRR(rrrId: number) {
+    if (!confirm('Terminate this right? This action cannot be undone from the UI.')) return;
+    this.apiService.terminateRRR(rrrId).subscribe({
+      next: () => {
+        this.notificationService.showSuccess('Right terminated successfully.');
+        this.getExistingAdminSourceData();
+        this.loadHistory();
+      },
+      error: (err: any) => {
+        this.notificationService.showError(err?.error?.error || 'Failed to terminate right.');
+      },
+    });
+  }
+
   toggleSelection(card: any) {
     console.log(card);
 
@@ -359,7 +401,8 @@ export class RrrPanalComponent {
       if (!this.doc_owner_pid) {
         this.notificationService.showError('Please select DOC owner');
       } else {
-        let save_data = {
+        const isMortgage = this.right_edit_view.right_type === 'Mortgage';
+        let save_data: any = {
           admin_source_type: this.administrative_source.admin_source_type,
           reference_no: this.administrative_source.reference_no,
           acceptance_date: this.administrative_source.acceptance_date,
@@ -371,6 +414,16 @@ export class RrrPanalComponent {
           code: 'la_rrr_sl_rights',
           la_ba_unit_type: 'basicPropertyUnit',
           rights: this.adeded_party_cards,
+          mortgage: isMortgage
+            ? {
+                amount: this.mortgage.amount || null,
+                interest: this.mortgage.interest || null,
+                ranking: this.mortgage.ranking || null,
+                mortgage_type: this.mortgage.mortgage_type || null,
+                mortgage_ref_id: this.mortgage.Mortgage_ID || null,
+                mortgagee: this.mortgage.Mortgagee || null,
+              }
+            : null,
         };
         // const formData = new FormData();
         // formData.append("admin_source_type", this.administrative_source.admin_source_type);

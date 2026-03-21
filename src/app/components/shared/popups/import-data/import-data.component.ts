@@ -1,4 +1,4 @@
-import { HttpClient, HttpEventType } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import {
   Component,
   OnDestroy,
@@ -22,7 +22,8 @@ import { Geometry as OLGeometry } from 'ol/geom'; // OpenLayers Geometry
 import { transformExtent } from 'ol/proj'; // OL projection utils
 import VectorSource from 'ol/source/Vector';
 import proj4 from 'proj4';
-import { Subject, Subscription, takeUntil } from 'rxjs';
+import { DecimalPipe } from '@angular/common';
+import { Subject, takeUntil } from 'rxjs';
 import { APIsService } from '../../../../services/api.service';
 import { FeatureService } from '../../../../services/feature.service';
 import { LayerService } from '../../../../services/layer.service';
@@ -57,13 +58,12 @@ import { register } from 'ol/proj/proj4';
 
 // Import parsing libraries
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; // <<<<====== ADD THIS LINE
 import { kml } from '@tmcw/togeojson'; // For KML
 import { fromArrayBuffer } from 'geotiff'; // For GeoTIFF
-import { LineString as OLLineString, Point as OLPoint, Polygon as OLPolygon } from 'ol/geom';
 import TileLayer from 'ol/layer/Tile';
 import * as shp from 'shpjs'; // For Shapefiles (zip)
-import { DrawService } from '../../../../services/draw.service';
 import { UserService } from '../../../../services/user.service';
 
 // CRITICAL: Ensure proj4 knows about the projections in your dropdown.
@@ -92,6 +92,7 @@ enum FileType {
   standalone: true, // Assuming standalone
   imports: [
     MatProgressSpinnerModule,
+    MatProgressBarModule,
     MatDialogClose,
     MatDialogActions,
     MatDialogContent,
@@ -99,6 +100,7 @@ enum FileType {
     MatIconModule,
     FormsModule,
     CustomButtonsComponent,
+    DecimalPipe,
   ],
   templateUrl: './import-data.component.html',
   styleUrl: './import-data.component.css',
@@ -126,6 +128,7 @@ export class ImportDataComponent implements OnDestroy {
   processedGeoJsonData: FeatureCollection<Geometry, GeoJsonProperties> | null = null; // To store converted GeoJSON from KML/SHP or original GeoJSON
   processedGeoTiffData: GeoTIFF | null = null; // To store parsed GeoTIFF object
   processedGeoTiffBlob: Blob | null = null; // Store the original Blob for GeoTIFFSource
+  importProgress: { done: number; total: number } | null = null;
 
   dataSetName: string = '';
   enableAdditionalInputs: boolean = false;
@@ -145,15 +148,11 @@ export class ImportDataComponent implements OnDestroy {
   private userId = ''; // Use consistent naming
 
   private destroy$ = new Subject<void>(); // Standard way to signal component destruction
-  private uploadSubscription: Subscription | null = null; // To hold the HTTP subscription
 
   // Properties to get X/Y column names from user (if not fixed)
   csvXColumn: string = 'longitude'; // Default, user can change
   csvYColumn: string = 'latitude'; // Default, user can change
   csvDataAsFeatures: GeoJsonFeature<Geometry, GeoJsonProperties>[] = []; // Store parsed CSV data as GeoJSON features
-
-  // import API endpointG
-  private readonly IMPORT_RASTER_DATA = this.apiService.IMPORT_RASTER_DATA;
 
   constructor(
     private http: HttpClient,
@@ -164,7 +163,6 @@ export class ImportDataComponent implements OnDestroy {
     private mapService: MapService, // For adding OL layers to the map
     public dialogRef: MatDialogRef<ImportDataComponent>,
     private userService: UserService,
-    private drawService: DrawService,
   ) {
     this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
@@ -196,6 +194,8 @@ export class ImportDataComponent implements OnDestroy {
     }
 
     this.isLoading = true;
+    // const t0 = performance.now();
+    // console.log(`[PERF] ▶ onFileSelected — file: ${this.selectedFileName} (${(this.selectedFile!.size / 1024).toFixed(1)} KB)`);
     try {
       switch (this.currentFileType) {
         case FileType.GeoJSON:
@@ -207,14 +207,9 @@ export class ImportDataComponent implements OnDestroy {
           this.processedGeoJsonData = await this.parseKML(this.selectedFile!);
           this.detectedSourceCrs = 'EPSG:4326';
           this.notificationService.showInfo(`KML "${this.selectedFileName}" parsed to GeoJSON.`);
-
           break;
         case FileType.SHP:
           this.processedGeoJsonData = await this.parseShapefile(this.selectedFile!);
-          this.notificationService.showInfo(
-            `Shapefile (from ZIP) "${this.selectedFileName}" parsed to GeoJSON.`,
-          );
-          this.detectedSourceCrs = 'EPSG:4326'; // Assuming WGS84 for now if shpjs doesn't provide easy CRS
           break;
         case FileType.GeoTIFF:
           this.processedGeoTiffData = await this.parseGeoTIFFObject(this.selectedFile!);
@@ -226,6 +221,7 @@ export class ImportDataComponent implements OnDestroy {
           this.detectedSourceCrs = 'EPSG:4326'; // Assume standard Lat/Lon for text files unless user specifies otherwise
           break;
       }
+      // console.log(`[PERF] ✔ File parsing complete — ${(performance.now() - t0).toFixed(0)} ms`);
       // --- >> NEW LOGIC: Pre-fill the dropdown for the user << ---
       if (this.processedGeoJsonData || this.processedGeoTiffData) {
         this.sourceCrsUserInput = this.detectedSourceCrs || 'EPSG:4326';
@@ -238,13 +234,19 @@ export class ImportDataComponent implements OnDestroy {
         `File "${this.selectedFileName}" parsed. Detected CRS: ${this.detectedSourceCrs || 'Defaulting/Unknown'}`,
       );
     } catch (error: any) {
-      console.error('Error parsing file:', error);
+      // console.error(`[PERF] ✖ File parsing failed after ${(performance.now() - t0).toFixed(0)} ms:`, error);
       this.notificationService.showError(
         `Error parsing ${this.selectedFileName}: ${error.message || 'Unknown error'}`,
       );
       this.resetFileState();
     } finally {
       this.isLoading = false;
+      // OnPush: the FileReader callback runs outside Angular's zone, so change
+      // detection doesn't automatically fire when the async chain resolves.
+      // markForCheck() tells Angular this component's view is stale and must be
+      // re-evaluated on the next CD cycle — this releases the spinner and enables
+      // the Import button immediately after parsing finishes.
+      this.cdr.markForCheck();
     }
   }
 
@@ -826,8 +828,11 @@ export class ImportDataComponent implements OnDestroy {
       }
 
       const reader = new FileReader();
+      // const tRead = performance.now();
+      // console.log(`[PERF]   ▶ FileReader.readAsArrayBuffer — started`);
 
       reader.onload = async (event: any) => {
+        // console.log(`[PERF]   ✔ FileReader done — ${(performance.now() - tRead).toFixed(0)} ms`);
         try {
           const arrayBuffer = event.target.result as ArrayBuffer;
           if (!arrayBuffer || arrayBuffer.byteLength === 0) {
@@ -836,7 +841,10 @@ export class ImportDataComponent implements OnDestroy {
           }
 
           // shp.parseZip returns a GeoJSON FeatureCollection or an array of them
+          // const tShp = performance.now();
+          // console.log(`[PERF]   ▶ shp.parseZip — started (${(arrayBuffer.byteLength / 1024).toFixed(1)} KB buffer)`);
           const parsedData: ShpJSOutput = await shp.parseZip(arrayBuffer);
+          // console.log(`[PERF]   ✔ shp.parseZip done — ${(performance.now() - tShp).toFixed(0)} ms`);
 
           let featureCollection: FeatureCollection<Geometry, GeoJsonProperties> | null = null;
 
@@ -867,12 +875,14 @@ export class ImportDataComponent implements OnDestroy {
             featureCollection.type === 'FeatureCollection' &&
             Array.isArray(featureCollection.features)
           ) {
-            console.log(
-              '[ImportData] Shapefile (ZIP) parsed successfully to GeoJSON. Features found:',
-              featureCollection.features.length,
-            );
+            // console.log(`[PERF]   ℹ Feature count: ${featureCollection.features.length}`);
+            // const tPrj = performance.now();
+            // console.log(`[PERF]   ▶ extractPrjFromZip — started`);
+            const prjWkt = await this.extractPrjFromZip(arrayBuffer);
+            // console.log(`[PERF]   ✔ extractPrjFromZip done — ${(performance.now() - tPrj).toFixed(0)} ms`);
 
-            this.detectedSourceCrs = 'EPSG:4326'; // Or null to force user input
+            this.detectedSourceCrs = prjWkt ? this.detectCrsFromWkt(prjWkt) : 'EPSG:4326';
+            console.log('[ImportData] Detected CRS from PRJ:', this.detectedSourceCrs);
             resolve(featureCollection);
           } else {
             console.error(
@@ -900,7 +910,105 @@ export class ImportDataComponent implements OnDestroy {
     });
   }
 
-  // Helper to parse CRS name (similar to getGeoJsonCRS)
+  // Extracts the .prj WKT string from a ZIP ArrayBuffer via the Central Directory,
+  // which always stores correct compressed sizes regardless of data-descriptor flags.
+  private async extractPrjFromZip(arrayBuffer: ArrayBuffer): Promise<string | null> {
+    const bytes = new Uint8Array(arrayBuffer);
+    const view = new DataView(arrayBuffer);
+
+    // Step 1: Find the End of Central Directory (EOCD) record.
+    // Signature PK\x05\x06 = 0x06054b50. Scan backwards from end (comment may follow).
+    let eocdOffset = -1;
+    const maxSearch = Math.max(0, bytes.length - 65558);
+    for (let i = bytes.length - 22; i >= maxSearch; i--) {
+      if (view.getUint32(i, true) === 0x06054b50) {
+        eocdOffset = i;
+        break;
+      }
+    }
+    if (eocdOffset === -1) return null;
+
+    // Step 2: Read Central Directory location.
+    const cdCount = view.getUint16(eocdOffset + 10, true);
+    const cdOffset = view.getUint32(eocdOffset + 16, true);
+
+    // Step 3: Walk the Central Directory entries looking for a .prj file.
+    let offset = cdOffset;
+    for (let i = 0; i < cdCount; i++) {
+      // Central directory entry signature: PK\x01\x02 = 0x02014b50
+      if (view.getUint32(offset, true) !== 0x02014b50) break;
+
+      const compressionMethod = view.getUint16(offset + 10, true);
+      const compressedSize = view.getUint32(offset + 20, true);
+      const cdFileNameLen = view.getUint16(offset + 28, true);
+      const cdExtraLen = view.getUint16(offset + 30, true);
+      const cdCommentLen = view.getUint16(offset + 32, true);
+      const localHeaderOffset = view.getUint32(offset + 42, true);
+      const fileName = new TextDecoder().decode(bytes.slice(offset + 46, offset + 46 + cdFileNameLen));
+
+      if (fileName.toLowerCase().endsWith('.prj')) {
+        // Step 4: Jump to the local file header to find the exact data start.
+        // The local extra field length can differ from the CD extra field length.
+        const localFileNameLen = view.getUint16(localHeaderOffset + 26, true);
+        const localExtraLen = view.getUint16(localHeaderOffset + 28, true);
+        const dataOffset = localHeaderOffset + 30 + localFileNameLen + localExtraLen;
+
+        const compressedData = bytes.slice(dataOffset, dataOffset + compressedSize);
+
+        if (compressionMethod === 0) {
+          // Stored — read directly
+          return new TextDecoder().decode(compressedData);
+        }
+        if (compressionMethod === 8 && typeof DecompressionStream !== 'undefined') {
+          // Deflate — decompress with browser native API
+          try {
+            const ds = new DecompressionStream('deflate-raw');
+            const writer = ds.writable.getWriter();
+            const reader = ds.readable.getReader();
+            writer.write(compressedData);
+            writer.close();
+            const chunks: Uint8Array[] = [];
+            let done = false;
+            while (!done) {
+              const { value, done: d } = await reader.read();
+              if (value) chunks.push(value);
+              done = d;
+            }
+            const total = chunks.reduce((sum, c) => sum + c.length, 0);
+            const result = new Uint8Array(total);
+            let pos = 0;
+            for (const c of chunks) {
+              result.set(c, pos);
+              pos += c.length;
+            }
+            return new TextDecoder().decode(result);
+          } catch {
+            return null;
+          }
+        }
+        return null; // Unsupported compression method
+      }
+
+      offset += 46 + cdFileNameLen + cdExtraLen + cdCommentLen;
+    }
+    return null;
+  }
+
+  // Maps a WKT projection string to an EPSG code string.
+  private detectCrsFromWkt(wkt: string): string {
+    // Most reliable: explicit AUTHORITY tag in WKT
+    const authorityMatch = wkt.match(/AUTHORITY\["EPSG","(\d+)"\]/i);
+    if (authorityMatch) return `EPSG:${authorityMatch[1]}`;
+
+    // Name-based fallback for common projections used in this project
+    if (/Web_Mercator|WGS_1984_Web_Mercator/i.test(wkt)) return 'EPSG:3857';
+    if (/SLD99|Sri_Lanka_1999|Sri Lanka Grid 1999/i.test(wkt)) return 'EPSG:5235';
+    if (/UTM_Zone_44N|zone=44/i.test(wkt)) return 'EPSG:32644';
+    if (/GCS_WGS_1984|WGS_1984|WGS 84/i.test(wkt)) return 'EPSG:4326';
+
+    console.warn('[ImportData] Could not identify CRS from PRJ WKT, defaulting to EPSG:4326:', wkt);
+    return 'EPSG:4326';
+  }
 
   private resetFileState(): void {
     this.selectedFile = null;
@@ -908,6 +1016,8 @@ export class ImportDataComponent implements OnDestroy {
     this.currentFileType = FileType.Unsupported;
     this.processedGeoJsonData = null;
     this.processedGeoTiffData = null;
+    this.processedGeoTiffBlob = null;
+    this.importProgress = null;
     this.enableAdditionalInputs = false;
     this.detectedSourceCrs = null;
     this.sourceCrsUserInput = ''; // Clear user input as well
@@ -984,6 +1094,8 @@ export class ImportDataComponent implements OnDestroy {
     }
 
     this.isLoading = true;
+    // const tImport = performance.now();
+    // console.log(`[PERF] ▶ importData — CRS: ${finalSourceCrs}, type: ${this.currentFileType}`);
 
     try {
       if (this.currentFileType === FileType.GeoTIFF) {
@@ -998,12 +1110,15 @@ export class ImportDataComponent implements OnDestroy {
         throw new Error('No data has been processed for import.');
       }
 
+      // console.log(`[PERF] ✔ importData complete — ${(performance.now() - tImport).toFixed(0)} ms total`);
       this.notificationService.showSuccess(`"${this.dataSetName}" imported successfully!`);
       this.dialogRef.close({ success: true });
     } catch (error: any) {
+      // console.error(`[PERF] ✖ importData failed after ${(performance.now() - tImport).toFixed(0)} ms:`, error);
       this.notificationService.showError(`Import failed: ${error.message || 'Unknown error'}`);
     } finally {
       this.isLoading = false;
+      this.cdr.markForCheck();
     }
   }
 
@@ -1016,11 +1131,15 @@ export class ImportDataComponent implements OnDestroy {
       throw new Error('Vector data is not available for processing.');
     }
 
+    // const tTotal = performance.now();
+    // console.log(`[PERF] ▶ handleVectorDataImport — layerId: ${targetLayerId}, CRS: ${sourceCrs}`);
+
     this.notificationService.showInfo(
       `Importing vector data with source projection ${sourceCrs}...`,
     );
 
     // --- 1. Get the target layer from the map ---
+    // const t1 = performance.now();
     const targetOlVectorLayer = this.mapService.findLayerByNumericId(targetLayerId);
     if (!targetOlVectorLayer) {
       throw new Error(`Target layer with ID ${targetLayerId} not found on the map.`);
@@ -1029,17 +1148,18 @@ export class ImportDataComponent implements OnDestroy {
     if (!targetOlVectorSource) {
       throw new Error(`Target layer ${targetLayerId} does not have a valid source.`);
     }
+    // console.log(`[PERF]   ✔ Step 1 — layer lookup: ${(performance.now() - t1).toFixed(0)} ms`);
 
     // --- 2. Read GeoJSON and Reproject Features in ONE STEP ---
     // OpenLayers' GeoJSON format reader can transform coordinates on the fly.
     const mapProjectionCode = olMap.getView().getProjection().getCode();
     let olFeatures: OLFeature<OLGeometry>[];
 
+    // const t2 = performance.now();
+    // console.log(`[PERF]   ▶ Step 2 — readFeatures (${sourceCrs} → ${mapProjectionCode})`);
     try {
       olFeatures = this.olGeoJsonFormat.readFeatures(this.processedGeoJsonData, {
-        // The projection of the SOURCE file (what the user selected in the dropdown).
         dataProjection: sourceCrs,
-        // The projection we want the features to be in to display correctly on our map.
         featureProjection: mapProjectionCode,
       });
     } catch (readError: any) {
@@ -1047,79 +1167,86 @@ export class ImportDataComponent implements OnDestroy {
         `Failed to read/reproject features. Ensure the selected Source Projection is correct. Error: ${readError.message}`,
       );
     }
+    // console.log(`[PERF]   ✔ Step 2 — readFeatures: ${(performance.now() - t2).toFixed(0)} ms (${olFeatures.length} features)`);
 
     if (!olFeatures || olFeatures.length === 0) {
       this.notificationService.showWarning('No features were converted from the imported file.');
       return;
     }
 
-    // --- 3. Add Features to the Map and Stage for Saving ---
+    // --- 3. Add Features to the Map ---
+    // const t3 = performance.now();
+    // console.log(`[PERF]   ▶ Step 3 — addFeatures to map source`);
     targetOlVectorSource.addFeatures(olFeatures);
+    // console.log(`[PERF]   ✔ Step 3 — addFeatures: ${(performance.now() - t3).toFixed(0)} ms`);
     this.notificationService.showSuccess(`${olFeatures.length} features added to the map.`);
 
-    // --- 4. Stage each feature for saving to the backend ---
-    // Note: The `olFeature` geometries are now in the map's projection (`EPSG:3857`).
-    // Your `featureService` must handle reprojecting them to your backend's required format (e.g., EPSG:4326) upon saving.
-    olFeatures.forEach((olFeature) => {
-      olFeature.set('layer_id', targetLayerId);
-      olFeature.set('uuid', uuidv4());
-      olFeature.set('feature_Id', olFeature.get('uuid'));
+    // --- 4. Assign IDs and convert features to FeatureData in chunks to keep the UI responsive.
+    // GND parent lookup is skipped for bulk imports — per-feature spatial queries (findLayerOnMap +
+    // getFeaturesAtCoordinate) across thousands of features are the single biggest performance cost.
+    // The backend handles auto-assignment for any features missing gnd_id.
+    // const t4 = performance.now();
+    // console.log(`[PERF]   ▶ Step 4 — ID assignment + convertFeatureToFeatureData (chunk size: 200)`);
+    const CHUNK_SIZE = 200;
+    const allFeatureData: ReturnType<typeof this.featureService.convertFeatureToFeatureData>[] = [];
 
-      const geometry = olFeature.getGeometry();
-      let gndId: string | number | null = null;
+    for (let i = 0; i < olFeatures.length; i += CHUNK_SIZE) {
+      const chunk = olFeatures.slice(i, i + CHUNK_SIZE);
+      for (const olFeature of chunk) {
+        olFeature.set('layer_id', targetLayerId);
+        const id = uuidv4();
+        olFeature.set('uuid', id);
+        olFeature.set('feature_Id', id);
 
-      if (geometry instanceof OLPolygon) {
-        gndId = this.drawService.findParentGndFeature(geometry);
-      } else if (geometry instanceof OLPoint) {
-        gndId = this.drawService.findParentGndFeatureForPoint(geometry);
-      } else if (geometry instanceof OLLineString) {
-        gndId = this.drawService.findParentGndFeatureForLine(geometry);
+        allFeatureData.push(
+          this.featureService.convertFeatureToFeatureData(olFeature, null, null),
+        );
       }
-
-      if (gndId !== null && gndId !== undefined) {
-        olFeature.set('gnd_id', gndId);
-      }
-
-      const featureData = this.featureService.convertFeatureToFeatureData(
-        olFeature,
-        null,
-        gndId?.toString() ?? null,
-      );
-      if (featureData) {
-        this.featureService.stageAddition(featureData, featureData);
-      }
-    });
-
-    // Warn if any features could not be assigned a GND (client-side lookup miss)
-    const featuresWithoutGnd = olFeatures.filter(
-      (f) => f.get('gnd_id') === null || f.get('gnd_id') === undefined,
-    ).length;
-    if (featuresWithoutGnd > 0) {
-      this.notificationService.showWarning(
-        `${featuresWithoutGnd} feature(s) could not be matched to a GND boundary on the map. ` +
-          `They will be staged for save — the server will attempt auto-assignment and warn if unsuccessful.`,
-        7000,
-      );
+      // const elapsed = (performance.now() - t4).toFixed(0);
+      // console.log(`[PERF]     chunk ${Math.floor(i / CHUNK_SIZE) + 1}/${Math.ceil(olFeatures.length / CHUNK_SIZE)} done — ${elapsed} ms elapsed`);
+      // Update import progress and yield to the browser for OnPush CD
+      this.importProgress = { done: Math.min(i + CHUNK_SIZE, olFeatures.length), total: olFeatures.length };
+      this.cdr.markForCheck();
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
     }
+    // console.log(`[PERF]   ✔ Step 4 — ID + convert total: ${(performance.now() - t4).toFixed(0)} ms`);
+
+    // Stage all converted features in one call — avoids 3,500+ individual console.log lines
+    // and repeated undo-state BehaviorSubject emissions.
+    // const t5 = performance.now();
+    // console.log(`[PERF]   ▶ Step 5 — stageBulkAddition`);
+    const validFeatureData = allFeatureData.filter(
+      (fd): fd is NonNullable<typeof fd> => fd != null,
+    );
+    this.featureService.stageBulkAddition(validFeatureData);
+    // console.log(`[PERF]   ✔ Step 5 — stageBulkAddition: ${(performance.now() - t5).toFixed(0)} ms`);
+
+    this.notificationService.showInfo(
+      `${validFeatureData.length} features staged. The server will assign GND boundaries on save.`,
+      5000,
+    );
+    this.importProgress = null;
+    this.cdr.markForCheck();
 
     // --- ZOOM TO IMPORTED DATA ---
-    // Create a temporary, in-memory source with ONLY the new features to get their precise extent.
+    // const t6 = performance.now();
+    // console.log(`[PERF]   ▶ Step 6 — compute extent + fit view`);
     const tempSourceForExtent = new VectorSource({ features: olFeatures });
     const newFeaturesExtent = tempSourceForExtent.getExtent();
 
-    // Check if the extent is valid before fitting
     if (newFeaturesExtent && newFeaturesExtent.every(isFinite)) {
       olMap.getView().fit(newFeaturesExtent, {
         duration: 1000,
-        padding: [100, 100, 100, 100], // More padding
+        padding: [100, 100, 100, 100],
         maxZoom: 18,
       });
+      // console.log(`[PERF]   ✔ Step 6 — extent + fit: ${(performance.now() - t6).toFixed(0)} ms`);
     } else {
-      console.warn(
-        'Could not calculate a valid extent for the imported features. Skipping auto-zoom.',
-      );
+      // console.warn('[PERF]   ✖ Step 6 — could not compute a valid extent, skipping auto-zoom.');
       this.notificationService.showWarning('Could not auto-zoom to imported data.');
     }
+
+    // console.log(`[PERF] ✔ handleVectorDataImport total: ${(performance.now() - tTotal).toFixed(0)} ms`);
   }
 
   private resetProcessingState(): void {
@@ -1237,13 +1364,6 @@ export class ImportDataComponent implements OnDestroy {
     }
   }
 
-  async detectProjection() {
-    const tiff = await fromUrl('assets/your-geotiff.tif');
-    const image = await tiff.getImage();
-    const projection = image.getGeoKeys().ProjectedCSTypeGeoKey;
-    console.log('EPSG Code:', projection);
-  }
-
   private createPointLabelStyle(labelText: string): Style {
     return new Style({
       image: new CircleStyle({
@@ -1261,125 +1381,6 @@ export class ImportDataComponent implements OnDestroy {
     });
   }
 
-  private handleGeoTiffFileUpload(sourceCrs: string | null): Promise<void> {
-    if (!this.selectedFile) {
-      this.notificationService.showError('No GeoTIFF file selected for upload.');
-      return Promise.reject(new Error('No GeoTIFF file for upload.'));
-    }
-
-    const formData = new FormData();
-    formData.append('file_path', this.selectedFile, this.selectedFileName);
-    formData.append('datasetName', this.dataSetName);
-    formData.append('username', this.userId!);
-    formData.append('capture_date', ''); // Empty string as value, or add proper date value
-    if (sourceCrs) formData.append('crs', sourceCrs);
-
-    const geotiffUploadUrl = this.apiService.IMPORT_RASTER_DATA;
-    if (!geotiffUploadUrl) {
-      /* ... */ return Promise.reject(new Error('GeoTIFF upload URL not configured.'));
-    }
-
-    this.notificationService.showInfo('Uploading GeoTIFF to server...');
-    // No need to set isLoading here again if importData manages it globally
-
-    // Unsubscribe from previous if any
-    this.uploadSubscription?.unsubscribe();
-
-    return new Promise((resolve, reject) => {
-      this.apiService
-        .importRasterData(formData)
-        .pipe(takeUntil(this.cancelToken)) // Allow cancellation
-        .subscribe({
-          next: (event: any) => {
-            if (
-              event.type === HttpEventType.Response &&
-              (event.status === 200 || event.status === 201)
-            ) {
-              // Update progress (optional)
-              this.notificationService.showSuccess(
-                `GeoTIFF "${this.dataSetName}" uploaded successfully.`,
-              );
-              resolve();
-            }
-
-            this.cdr.markForCheck();
-          },
-          error: (err) => {
-            this.isLoading = false;
-            console.error('Upload failed:', err);
-            this.notificationService.showError(err.error?.error || 'Failed to upload GeoTIFF');
-            reject(err);
-          },
-        });
-    });
-  }
-
-  private reprojectGeoJson(
-    geojson: FeatureCollection<Geometry, GeoJsonProperties>,
-    sourceCrs: string,
-    targetCrs: string,
-  ): FeatureCollection<Geometry, GeoJsonProperties> {
-    try {
-      // Register the source CRS if not already known by proj4
-      if (!proj4.defs(sourceCrs)) {
-        // You might need to add CRS definitions here or fetch them
-        console.warn(`CRS ${sourceCrs} not defined in proj4. Attempting to transform anyway.`);
-      }
-
-      const transformedFeatures = geojson.features.map((feature) => {
-        const transformedGeometry = this.transformGeometry(feature.geometry, sourceCrs, targetCrs);
-        return {
-          ...feature,
-          geometry: transformedGeometry,
-        };
-      });
-
-      return {
-        ...geojson,
-        features: transformedFeatures,
-      };
-    } catch (error) {
-      console.error('Error reprojecting GeoJSON:', error);
-      throw new Error('Failed to reproject data. Check the source CRS is correct.');
-    }
-  }
-
-  private transformGeometry(geometry: Geometry, sourceCrs: string, targetCrs: string): Geometry {
-    // Handle different geometry types (Point, LineString, Polygon, etc.)
-    switch (geometry.type) {
-      case 'Point':
-        const [x, y] = proj4(sourceCrs, targetCrs, geometry.coordinates);
-        return {
-          ...geometry,
-          coordinates: [x, y],
-        };
-      case 'LineString':
-      case 'MultiPoint':
-        return {
-          ...geometry,
-          coordinates: geometry.coordinates.map((coord) => proj4(sourceCrs, targetCrs, coord)),
-        };
-      case 'Polygon':
-      case 'MultiLineString':
-        return {
-          ...geometry,
-          coordinates: geometry.coordinates.map((ring) =>
-            ring.map((coord) => proj4(sourceCrs, targetCrs, coord)),
-          ),
-        };
-      case 'MultiPolygon':
-        return {
-          ...geometry,
-          coordinates: geometry.coordinates.map((polygon) =>
-            polygon.map((ring) => ring.map((coord) => proj4(sourceCrs, targetCrs, coord))),
-          ),
-        };
-      default:
-        console.warn(`Unsupported geometry type for reprojection: ${geometry.type}`);
-        return geometry;
-    }
-  }
-
   cancelImport(): void {
     this.resetFileState();
     this.dialogRef.close();
@@ -1387,11 +1388,5 @@ export class ImportDataComponent implements OnDestroy {
   ngOnDestroy(): void {
     this.processedGeoJsonData = null;
     this.processedGeoTiffBlob = null;
-
-    // 4. Clean up subscriptions
-
-    if (this.uploadSubscription) {
-      this.uploadSubscription.unsubscribe();
-    }
   }
 }

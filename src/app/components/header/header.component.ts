@@ -164,7 +164,6 @@ export class HeaderComponent implements OnDestroy, OnInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((canUndoState) => {
         this.canUndo = canUndoState;
-        console.log('[HeaderComponent] Can Undo state updated:', this.canUndo);
 
         this.cdr.markForCheck();
       });

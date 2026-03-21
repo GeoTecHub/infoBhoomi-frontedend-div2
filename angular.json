@@ -38,6 +38,7 @@
             "allowedCommonJsDependencies": [
               "lerc",
               "papaparse",
+              "shpjs",
               "@turf/jsts",
               "skmeans",
               "concaveman",

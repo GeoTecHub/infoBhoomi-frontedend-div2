@@ -481,6 +481,47 @@ Infobhoomi ID : {{data.feature_id}}
     <mat-tab label="Responsibilities">
       <p>Responsibilities</p>
     </mat-tab>
+    <!-- Issue #8: RRR Audit History tab -->
+    <mat-tab label="History">
+      @if (history_loading) {
+        <p class="history-loading">Loading history…</p>
+      } @else if (history_data.length === 0) {
+        <p class="history-empty">No history recorded for this parcel yet.</p>
+      } @else {
+        <table class="table history-table">
+          <thead>
+            <tr>
+              <th>Action</th>
+              <th>Right Type</th>
+              <th>RRR ID</th>
+              <th>Date</th>
+              <th>By</th>
+              <th>Parties</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of history_data; track entry.id) {
+              <tr>
+                <td>
+                  <span [class]="'history-badge history-badge--' + entry.action.toLowerCase()">
+                    {{ entry.action }}
+                  </span>
+                </td>
+                <td>{{ entry.snapshot?.rrr_type || '—' }}</td>
+                <td>{{ entry.rrr_id }}</td>
+                <td>{{ entry.changed_at | date: 'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ entry.changed_by_name || entry.changed_by }}</td>
+                <td>
+                  @for (p of entry.snapshot?.parties || []; track p.pid_id) {
+                    <span class="history-party">{{ p.party_role_type }} (ID: {{ p.pid_id }})</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </mat-tab>
   </mat-tab-group>
 </mat-dialog-content>
 <mat-dialog-actions align="end">

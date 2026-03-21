@@ -41,8 +41,8 @@ export class KeyValueV2Component implements OnInit {
   permissionIds = [
     ...LandTabPermissions.L_ADMIN_INFO,
     ...LandTabPermissions.L_LAND_OVERVIEW,
-    ...LandTabPermissions.L_LAND_TENURE,
-    ...LandTabPermissions.L_ASSES_TAX_INFO,
+    ...LandTabPermissions.L_RRR,
+    ...LandTabPermissions.L_ASSESSMENT_INFO,
   ];
 
   constructor(private permissionService: PermissionService) {}

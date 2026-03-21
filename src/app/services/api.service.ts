@@ -560,47 +560,54 @@ export class APIsService {
     });
   }
 
-  getRRRRestrictions(rrr_id: number | string) {
-    return this.http.get(`${this.baseUrl}rrr-restrictions/rrr_id=${rrr_id}/`, {
+  getRRRRestrictions(ba_unit_id: number | string) {
+    return this.http.get(`${this.baseUrl}rrr-restrictions/ba_unit_id=${ba_unit_id}/`, {
       headers: this.h(),
     });
   }
 
-  postRRRRestriction(rrr_id: number | string, data: any) {
-    return this.http.post(`${this.baseUrl}rrr-restrictions/rrr_id=${rrr_id}/`, data, {
+  postRRRRestriction(ba_unit_id: number | string, data: any) {
+    return this.http.post(`${this.baseUrl}rrr-restrictions/ba_unit_id=${ba_unit_id}/`, data, {
       headers: this.h(),
     });
   }
 
-  deleteRRRRestriction(rrr_id: number | string, id: number | string) {
-    return this.http.delete(`${this.baseUrl}rrr-restrictions/rrr_id=${rrr_id}/`, {
-      headers: this.h(),
-      body: { id },
-    });
-  }
-
-  getRRRResponsibilities(rrr_id: number | string) {
-    return this.http.get(`${this.baseUrl}rrr-responsibilities/rrr_id=${rrr_id}/`, {
-      headers: this.h(),
-    });
-  }
-
-  postRRRResponsibility(rrr_id: number | string, data: any) {
-    return this.http.post(`${this.baseUrl}rrr-responsibilities/rrr_id=${rrr_id}/`, data, {
-      headers: this.h(),
-    });
-  }
-
-  deleteRRRResponsibility(rrr_id: number | string, id: number | string) {
-    return this.http.delete(`${this.baseUrl}rrr-responsibilities/rrr_id=${rrr_id}/`, {
+  deleteRRRRestriction(ba_unit_id: number | string, id: number | string) {
+    return this.http.delete(`${this.baseUrl}rrr-restrictions/ba_unit_id=${ba_unit_id}/`, {
       headers: this.h(),
       body: { id },
     });
   }
 
-  postAdminSource(formData: any): Observable<any> {
-    formData.append('user_id', this.userService.getUser()?.user_id);
-    return this.http.post(`${this.baseUrl}rrr_data_save/`, formData, { headers: this.h(false) });
+  getRRRResponsibilities(ba_unit_id: number | string) {
+    return this.http.get(`${this.baseUrl}rrr-responsibilities/ba_unit_id=${ba_unit_id}/`, {
+      headers: this.h(),
+    });
+  }
+
+  postRRRResponsibility(ba_unit_id: number | string, data: any) {
+    return this.http.post(`${this.baseUrl}rrr-responsibilities/ba_unit_id=${ba_unit_id}/`, data, {
+      headers: this.h(),
+    });
+  }
+
+  deleteRRRResponsibility(ba_unit_id: number | string, id: number | string) {
+    return this.http.delete(`${this.baseUrl}rrr-responsibilities/ba_unit_id=${ba_unit_id}/`, {
+      headers: this.h(),
+      body: { id },
+    });
+  }
+
+  postAdminSource(formData: FormData | Record<string, any>): Observable<any> {
+    const userId = this.userService.getUser()?.user_id;
+    if (formData instanceof FormData) {
+      formData.append('user_id', String(userId ?? ''));
+      return this.http.post(`${this.baseUrl}rrr_data_save/`, formData, { headers: this.h(false) });
+    }
+    // Plain JSON object path (used by rrr-panal dialog)
+    return this.http.post(`${this.baseUrl}rrr_data_save/`, { ...formData, user_id: userId }, {
+      headers: this.h(true),
+    });
   }
 
   patchAdminSource(adminSourceId: number, formData: FormData): Observable<any> {
@@ -638,6 +645,16 @@ export class APIsService {
 
   getRRRFile(url: string): Observable<any> {
     return this.http.get(url, { headers: this.h() });
+  }
+
+  /** Issue #8: Soft-delete (terminate) a single RRR and write an audit record. */
+  terminateRRR(rrrId: number): Observable<any> {
+    return this.http.patch(`${this.baseUrl}rrr/terminate/${rrrId}/`, {}, { headers: this.h() });
+  }
+
+  /** Issue #8: Fetch the full audit history for a parcel (by su_id). */
+  getRRRHistory(suId: string | number): Observable<any> {
+    return this.http.get(`${this.baseUrl}rrr-history/?su_id=${suId}`, { headers: this.h() });
   }
 
   // =============================================================================

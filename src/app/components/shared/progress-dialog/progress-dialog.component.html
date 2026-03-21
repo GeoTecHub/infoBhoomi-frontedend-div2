@@ -1,0 +1,18 @@
+<div class="progress-dialog-content">
+  <h3 class="progress-title">{{ data.title }}</h3>
+
+  <p class="progress-label">{{ label }}</p>
+
+  <mat-progress-bar
+    [mode]="isIndeterminate ? 'indeterminate' : 'determinate'"
+    [value]="percentage"
+    class="progress-bar"
+  ></mat-progress-bar>
+
+  @if (!isIndeterminate) {
+    <div class="progress-stats">
+      <span>{{ done | number }} / {{ total | number }}</span>
+      <span class="progress-pct">{{ percentage }}%</span>
+    </div>
+  }
+</div>

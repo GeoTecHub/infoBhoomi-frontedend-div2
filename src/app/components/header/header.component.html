@@ -65,27 +65,28 @@
       }
     </div>
     <div class="header-bottom">
-      <!-- <div class="save-undo">
-      <div class="save-undo-icon">
-        <div class="header-icon">
-          <button mat-icon-button (click)="onHeaderSaveClick()" matTooltip="Save All Changes">
-            <mat-icon style="color: white">save</mat-icon>
-          </button>
-        </div>
+      <div class="header-actions">
+        <button
+          class="action-btn"
+          [class.action-btn--active]="canUndo"
+          [disabled]="!canUndo"
+          (click)="onHeaderSaveClick()"
+          matTooltip="Save All Changes"
+        >
+          <mat-icon class="action-icon">save</mat-icon>
+          <span class="action-label">Save</span>
+        </button>
+        <button
+          class="action-btn"
+          [class.action-btn--active]="canUndo"
+          [disabled]="!canUndo"
+          (click)="onHeaderUndoClick()"
+          matTooltip="Undo Last Action"
+        >
+          <mat-icon class="action-icon">undo</mat-icon>
+          <span class="action-label">Undo</span>
+        </button>
       </div>
-      <div class="save-undo-icon">
-        <div class="header-icon">
-          <button
-            mat-icon-button
-            (click)="onHeaderUndoClick()"
-            matTooltip="Undo Last Action"
-            [disabled]="!canUndo"
-            >
-            <mat-icon style="color: white">undo</mat-icon>
-          </button>
-        </div>
-      </div>
-    </div> -->
 
       <div class="header-container">
         <div class="header-layers position-relative" #searchBtn>

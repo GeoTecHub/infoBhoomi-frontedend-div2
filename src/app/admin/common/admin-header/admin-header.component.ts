@@ -29,6 +29,7 @@ import { Inject, PLATFORM_ID } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatTooltip } from '@angular/material/tooltip';
 
+import { AdminContactComponent } from '../../../components/dialogs/admin-contact/admin-contact.component';
 import { FeatureNotAvailableComponent } from '../../../components/dialogs/feature-not-available/feature-not-available.component';
 import { SubscriptionDetailsComponent } from '../../../components/dialogs/subscription-details/subscription-details.component';
 import { AdminService } from '../../../services/admin.service';
@@ -91,7 +92,19 @@ export class AdminHeaderComponent implements OnInit {
         this.checkUrl(event.url);
       }
     });
-    await this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
+
+    // Seed synchronously so getOrgs() has userType/user_org_id ready immediately
+    const current = this.userService.getUser();
+    if (current) {
+      this.username = current.username?.replace(/"/g, '') || '';
+      this.sex = current.sex || '';
+      this.user_org_id = current.org_id;
+      this.userId = current.user_id?.toString() || '';
+      this.userType = current.user_type || '';
+      this.department = current.department || '';
+    }
+
+    this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user) => {
       if (user) {
         this.username = user.username.replace(/"/g, '') || '';
         this.sex = user.sex || '';
@@ -271,6 +284,19 @@ export class AdminHeaderComponent implements OnInit {
 
   backToMain() {
     this.router.navigateByUrl('/main');
+  }
+
+  openContact() {
+    if (this.dialogRef) {
+      this.dialogRef.close();
+      this.dialogRef = null;
+    } else {
+      this.dialogRef = this.dialog.open(AdminContactComponent, { minWidth: '480px' });
+      this.dialogRef.afterClosed().subscribe(() => {
+        this.dialogRef = null;
+        this.cdr.markForCheck();
+      });
+    }
   }
 
   OpenVERTEXT() {}

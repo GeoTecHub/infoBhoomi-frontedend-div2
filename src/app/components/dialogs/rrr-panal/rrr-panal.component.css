@@ -419,3 +419,35 @@ button.mat-dialog-close {
   font-size: 12px;
   line-height: 14px;
 }
+
+/* ── Issue #8: History tab ─────────────────────────────────────────────────── */
+.history-loading,
+.history-empty {
+  padding: 16px;
+  color: #666;
+  font-size: 13px;
+}
+
+.history-table {
+  width: 100%;
+  font-size: 12px;
+}
+
+.history-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.history-badge--create    { background: #d4edda; color: #155724; }
+.history-badge--terminate { background: #f8d7da; color: #721c24; }
+.history-badge--update    { background: #fff3cd; color: #856404; }
+
+.history-party {
+  display: block;
+  font-size: 11px;
+  color: #555;
+}

@@ -106,3 +106,25 @@
   padding-left: 7px;
   padding-right: 7px;
 }
+
+/* Import progress bar */
+.import-progress-section {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: #f0f5fb;
+  border-radius: 8px;
+  border: 1px solid #c8daea;
+}
+
+.import-progress-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #3c71a6;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.import-progress-count {
+  font-weight: 600;
+}

@@ -12,6 +12,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialogModule } from '@angular/material/dialog';
 import * as turf from '@turf/turf'; // <<< ADD THIS IMPORT. You need Turf.js here.
 import type { Position } from 'geojson';
 import { Feature } from 'ol';
@@ -44,12 +45,19 @@ import { APIsService } from '../../services/api.service';
 import { SidebarControlService } from '../../services/sidebar-control.service';
 import { UserService } from '../../services/user.service';
 import { GeomService } from '../../services/geom.service';
+import { MatDialog } from '@angular/material/dialog';
+import { Subject } from 'rxjs';
+import {
+  ProgressDialogComponent,
+  ProgressDialogData,
+  ProgressUpdate,
+} from '../shared/progress-dialog/progress-dialog.component';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-tools',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatTooltipModule, MatDialogModule],
   templateUrl: './tools.component.html',
   styleUrls: ['./tools.component.css'],
 })
@@ -93,6 +101,7 @@ export class ToolsComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private apiService: APIsService,
     private geomService: GeomService,
+    private dialog: MatDialog,
   ) {
     this.activeTool$ = this.drawService.activeTool$;
     this.isSnappingEnabled$ = this.drawService.isSnappingEnabled$;
@@ -1487,20 +1496,56 @@ export class ToolsComponent implements OnInit, OnDestroy {
   saveAllChanges(): void {
     if (this.isSaving) return;
     this.isSaving = true;
-    this.notifications.showInfo('Saving changes...');
-    this.featureService.saveStagedChanges().subscribe({
-      next: () => {
-        /* Notification handled by FeatureService */
 
-        this.cdr.markForCheck();
-      },
-      error: (err: any) => {
-        /* Notification handled by FeatureService */
-        console.error('[ToolsComponent] Save failed.', err);
-        this.isSaving = false;
-      },
-      complete: () => (this.isSaving = false),
-    });
+    const stagedCount = this.featureService.getStagedChangesCount();
+    const progress$ = new Subject<ProgressUpdate>();
+
+    const dialogRef =
+      stagedCount > 50
+        ? this.dialog.open<ProgressDialogComponent, ProgressDialogData>(ProgressDialogComponent, {
+            width: '420px',
+            disableClose: true,
+            data: {
+              title: `Saving ${stagedCount} Change${stagedCount !== 1 ? 's' : ''}`,
+              progress$: progress$.asObservable(),
+            },
+          })
+        : null;
+
+    if (dialogRef) {
+      progress$.next({ done: 0, total: stagedCount, label: 'Preparing data...' });
+    }
+
+    this.featureService
+      .saveStagedChanges(
+        stagedCount > 50
+          ? (done, total, label) => {
+              progress$.next({ done, total, label });
+              this.cdr.markForCheck();
+            }
+          : undefined,
+      )
+      .subscribe({
+        next: () => {
+          this.cdr.markForCheck();
+        },
+        error: (err: any) => {
+          console.error('[ToolsComponent] Save failed.', err);
+          this.isSaving = false;
+          dialogRef?.close();
+          progress$.complete();
+        },
+        complete: () => {
+          this.isSaving = false;
+          if (dialogRef) {
+            progress$.next({ done: stagedCount, total: stagedCount, label: 'Done!' });
+            setTimeout(() => {
+              dialogRef.close();
+              progress$.complete();
+            }, 600);
+          }
+        },
+      });
   }
 
   toggleMenu(): void {

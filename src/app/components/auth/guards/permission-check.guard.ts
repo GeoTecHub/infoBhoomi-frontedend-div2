@@ -5,6 +5,7 @@ import { CanActivateFn, Router } from '@angular/router';
 import { APIsService } from '../../../services/api.service';
 import { NotificationService } from '../../../services/notifications.service';
 import { AdminService } from '../../../services/admin.service';
+import { UserService } from '../../../services/user.service';
 
 type PermissionId = 251 | 252 | 253;
 type PermissionAction = 'view' | 'add' | 'edit' | 'delete';
@@ -15,6 +16,7 @@ export const permissionCheck: CanActivateFn = (route, state) => {
   const apiService = inject(APIsService);
   const notificationsService = inject(NotificationService);
   const adminService = inject(AdminService);
+  const userService = inject(UserService);
 
   if (!isPlatformBrowser(platformId)) return false;
 
@@ -23,6 +25,9 @@ export const permissionCheck: CanActivateFn = (route, state) => {
     | undefined;
 
   if (!required) return true;
+
+  // Super admins bypass all permission checks — they have full access.
+  if (userService.getUser()?.user_type === 'super_admin') return true;
 
   apiService.loadFromStorage();
 
@@ -54,8 +59,6 @@ export const permissionCheck: CanActivateFn = (route, state) => {
       next: (permissions: any) => {
         const permissionsArray = Array.isArray(permissions) ? permissions : [];
         adminService.setPermissions(permissionsArray);
-
-        console.log('Permissions loaded:', permissionsArray);
 
         const ok = evaluate();
         if (ok) return resolve(true);

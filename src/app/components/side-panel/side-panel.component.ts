@@ -833,30 +833,34 @@ export class SidePanelComponent {
             relationships,
           });
 
-          // Second phase: fetch restrictions & responsibilities per RRR entry
-          const rrr_ids = Array.from(this.fetchedRRRMap.entries()); // [entryId, rrr_id][]
-          if (rrr_ids.length > 0) {
-            const restrictionReqs = rrr_ids.map(([, rid]) =>
-              this.apiService.getRRRRestrictions(rid).pipe(catchError(() => of([]))),
+          // Second phase: fetch restrictions & responsibilities per BA unit (property level)
+          const ba_unit_entries = Array.from(this.fetchedRRRBaUnitIds).map(
+            (id) => [`BU-${id}`, id] as [string, number],
+          );
+          if (ba_unit_entries.length > 0) {
+            const restrictionReqs = ba_unit_entries.map(([, bid]) =>
+              this.apiService.getRRRRestrictions(bid).pipe(catchError(() => of([]))),
             );
-            const responsibilityReqs = rrr_ids.map(([, rid]) =>
-              this.apiService.getRRRResponsibilities(rid).pipe(catchError(() => of([]))),
+            const responsibilityReqs = ba_unit_entries.map(([, bid]) =>
+              this.apiService.getRRRResponsibilities(bid).pipe(catchError(() => of([]))),
             );
             forkJoin([...restrictionReqs, ...responsibilityReqs])
               .pipe(takeUntilDestroyed(this.destroyRef))
               .subscribe((results: any[]) => {
-                const half = rrr_ids.length;
+                const half = ba_unit_entries.length;
                 const updatedEntries = [...rrrEntries];
-                rrr_ids.forEach(([entryId], idx) => {
+                ba_unit_entries.forEach(([entryId], idx) => {
                   const entry = updatedEntries.find((e) => e.rrrId === entryId);
                   if (!entry) return;
                   entry.restrictions = (results[idx] as any[]).map((r: any) => ({
+                    id: r.id,
                     type: r.rrr_restriction_type as RestrictionType,
                     description: r.description || '',
                     validFrom: r.time_begin || '',
                     validTo: r.time_end || '',
                   }));
                   entry.responsibilities = (results[half + idx] as any[]).map((r: any) => ({
+                    id: r.id,
                     type: r.rrr_responsibility_type as ResponsibilityType,
                     description: r.description || '',
                     validFrom: r.time_begin || '',
@@ -1009,30 +1013,34 @@ export class SidePanelComponent {
             rrr: { entries: rrrEntries },
           });
 
-          // Second phase: fetch restrictions & responsibilities per RRR entry
-          const rrr_ids = Array.from(this.fetchedRRRMap.entries());
-          if (rrr_ids.length > 0) {
-            const restrictionReqs = rrr_ids.map(([, rid]) =>
-              this.apiService.getRRRRestrictions(rid).pipe(catchError(() => of([]))),
+          // Second phase: fetch restrictions & responsibilities per BA unit (property level)
+          const ba_unit_entries_bld = Array.from(this.fetchedRRRBaUnitIds).map(
+            (id) => [`BU-${id}`, id] as [string, number],
+          );
+          if (ba_unit_entries_bld.length > 0) {
+            const restrictionReqs = ba_unit_entries_bld.map(([, bid]) =>
+              this.apiService.getRRRRestrictions(bid).pipe(catchError(() => of([]))),
             );
-            const responsibilityReqs = rrr_ids.map(([, rid]) =>
-              this.apiService.getRRRResponsibilities(rid).pipe(catchError(() => of([]))),
+            const responsibilityReqs = ba_unit_entries_bld.map(([, bid]) =>
+              this.apiService.getRRRResponsibilities(bid).pipe(catchError(() => of([]))),
             );
             forkJoin([...restrictionReqs, ...responsibilityReqs])
               .pipe(takeUntilDestroyed(this.destroyRef))
               .subscribe((results: any[]) => {
-                const half = rrr_ids.length;
+                const half = ba_unit_entries_bld.length;
                 const updatedEntries = [...rrrEntries];
-                rrr_ids.forEach(([entryId], idx) => {
+                ba_unit_entries_bld.forEach(([entryId], idx) => {
                   const entry = updatedEntries.find((e) => e.rrrId === entryId);
                   if (!entry) return;
                   entry.restrictions = (results[idx] as any[]).map((r: any) => ({
+                    id: r.id,
                     type: r.rrr_restriction_type as RestrictionType,
                     description: r.description || '',
                     validFrom: r.time_begin || '',
                     validTo: r.time_end || '',
                   }));
                   entry.responsibilities = (results[half + idx] as any[]).map((r: any) => ({
+                    id: r.id,
                     type: r.rrr_responsibility_type as ResponsibilityType,
                     description: r.description || '',
                     validFrom: r.time_begin || '',
@@ -1148,22 +1156,21 @@ export class SidePanelComponent {
       const localFiles = (entry.documents || []).filter((d) => d.file);
       const fd = new FormData();
       fd.append('su_id', String(su_id));
-      fd.append('sl_ba_unit_name', entry.holder);
-      fd.append('sl_ba_unit_type', 'OWNERSHIP');
+      fd.append('code', entry.holder);
+      fd.append('la_ba_unit_type', 'basicPropertyUnit');
       fd.append('admin_source_type', entry.documentRef || 'Title Deed');
       // First file goes with the initial RRR creation
       if (localFiles.length > 0) fd.append('file', localFiles[0].file as File);
       fd.append(
-        'parties',
+        'rights',
         JSON.stringify([
           {
-            pid: entry.holderId,
+            party: entry.holderId,
             share_type: entry.type,
             share: entry.share,
-            party_role_type: entry.holderType || 'Owner',
-            rrr_type: 'RIGHT',
-            time_begin: entry.validFrom || null,
-            time_end: entry.validTo || null,
+            right_type: entry.holderType || 'Ownership',
+            date_start: entry.validFrom || null,
+            date_end: entry.validTo || null,
             description: '',
           },
         ]),
@@ -1196,9 +1203,9 @@ export class SidePanelComponent {
 
     // Sync restrictions, responsibilities, and new document uploads for existing RRR entries
     for (const entry of currentEntries.filter((e) => e.rrrId.startsWith('BU-'))) {
-      const rrr_id = this.fetchedRRRMap.get(entry.rrrId);
-      if (!rrr_id) continue;
-      this.syncRRRSubRecords(rrr_id, entry);
+      const ba_unit_id = Number(entry.rrrId.replace('BU-', ''));
+      if (!ba_unit_id) continue;
+      this.syncRRRSubRecords(ba_unit_id, entry);
 
       // Upload every new local file as an additional doc on this BA unit
       const baUnitId = Number(entry.rrrId.replace('BU-', ''));
@@ -1369,22 +1376,21 @@ export class SidePanelComponent {
       const localFiles = (entry.documents || []).filter((d) => d.file);
       const fd = new FormData();
       fd.append('su_id', String(su_id));
-      fd.append('sl_ba_unit_name', entry.holder);
-      fd.append('sl_ba_unit_type', 'OWNERSHIP');
+      fd.append('code', entry.holder);
+      fd.append('la_ba_unit_type', 'basicPropertyUnit');
       fd.append('admin_source_type', entry.documentRef || 'Title Deed');
       // First file goes with the initial RRR creation
       if (localFiles.length > 0) fd.append('file', localFiles[0].file as File);
       fd.append(
-        'parties',
+        'rights',
         JSON.stringify([
           {
-            pid: entry.holderId,
+            party: entry.holderId,
             share_type: entry.type,
             share: entry.share,
-            party_role_type: entry.holderType || 'Owner',
-            rrr_type: 'RIGHT',
-            time_begin: entry.validFrom || null,
-            time_end: entry.validTo || null,
+            right_type: entry.holderType || 'Ownership',
+            date_start: entry.validFrom || null,
+            date_end: entry.validTo || null,
             description: '',
           },
         ]),
@@ -1418,7 +1424,6 @@ export class SidePanelComponent {
     // Update + sync existing RRR entries (those fetched from backend, identified by 'BU-' prefix)
     for (const entry of currentEntries.filter((e) => e.rrrId.startsWith('BU-'))) {
       const baUnitId = Number(entry.rrrId.replace('BU-', ''));
-      const rrr_id = this.fetchedRRRMap.get(entry.rrrId);
 
       // PATCH core fields: BA unit name, share, dates, type, doc reference
       const updatePayload = {
@@ -1443,9 +1448,9 @@ export class SidePanelComponent {
         )
         .subscribe();
 
-      // Sync restrictions and responsibilities
-      if (rrr_id) {
-        this.syncRRRSubRecords(rrr_id, entry);
+      // Sync restrictions and responsibilities (per BA unit = per property)
+      if (baUnitId) {
+        this.syncRRRSubRecords(baUnitId, entry);
       }
 
       // Upload any new local documents
@@ -1466,7 +1471,7 @@ export class SidePanelComponent {
   // Diff-based sync: only deletes removed records and only creates new ones.
   // Records that already have an `id` (fetched from backend) and are still
   // present in the local list are left untouched.
-  private syncRRRSubRecords(rrr_id: number, entry: RRREntry): void {
+  private syncRRRSubRecords(ba_unit_id: number, entry: RRREntry): void {
     const localRestrictionIds = new Set(
       entry.restrictions.map((r) => r.id).filter((id) => id != null),
     );
@@ -1475,12 +1480,12 @@ export class SidePanelComponent {
     );
 
     this.apiService
-      .getRRRRestrictions(rrr_id)
+      .getRRRRestrictions(ba_unit_id)
       .pipe(
         switchMap((existing: any) => {
           const toDelete = (existing as any[]).filter((r: any) => !localRestrictionIds.has(r.id));
           const delObs = toDelete.map((r: any) =>
-            this.apiService.deleteRRRRestriction(rrr_id, r.id).pipe(catchError(() => of(null))),
+            this.apiService.deleteRRRRestriction(ba_unit_id, r.id).pipe(catchError(() => of(null))),
           );
           return delObs.length > 0 ? forkJoin(delObs) : of([]);
         }),
@@ -1488,7 +1493,7 @@ export class SidePanelComponent {
           const toCreate = entry.restrictions.filter((r) => r.id == null);
           const createObs = toCreate.map((r) =>
             this.apiService
-              .postRRRRestriction(rrr_id, {
+              .postRRRRestriction(ba_unit_id, {
                 rrr_restriction_type: r.type,
                 description: r.description,
                 time_begin: r.validFrom || null,
@@ -1503,14 +1508,14 @@ export class SidePanelComponent {
       .subscribe();
 
     this.apiService
-      .getRRRResponsibilities(rrr_id)
+      .getRRRResponsibilities(ba_unit_id)
       .pipe(
         switchMap((existing: any) => {
           const toDelete = (existing as any[]).filter(
             (r: any) => !localResponsibilityIds.has(r.id),
           );
           const delObs = toDelete.map((r: any) =>
-            this.apiService.deleteRRRResponsibility(rrr_id, r.id).pipe(catchError(() => of(null))),
+            this.apiService.deleteRRRResponsibility(ba_unit_id, r.id).pipe(catchError(() => of(null))),
           );
           return delObs.length > 0 ? forkJoin(delObs) : of([]);
         }),
@@ -1518,7 +1523,7 @@ export class SidePanelComponent {
           const toCreate = entry.responsibilities.filter((r) => r.id == null);
           const createObs = toCreate.map((r) =>
             this.apiService
-              .postRRRResponsibility(rrr_id, {
+              .postRRRResponsibility(ba_unit_id, {
                 rrr_responsibility_type: r.type,
                 description: r.description,
                 time_begin: r.validFrom || null,

@@ -136,14 +136,50 @@
   justify-content: center;
 }
 
-.save-undo {
+.header-actions {
   display: flex;
-  margin-left: 124px;
   align-items: center;
+  gap: 2px;
+  padding: 0 8px;
+  flex-shrink: 0;
 }
 
-.save-undo-btns {
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  padding: 4px 10px;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: not-allowed;
+  font-size: 13px;
+  height: 28px;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.action-btn--active {
   color: white;
+  cursor: pointer;
+}
+
+.action-btn--active:hover {
+  background-color: var(--color-primary-l1);
+  color: var(--color-primary-d1);
+}
+
+.action-icon {
+  font-size: 16px;
+  height: 16px;
+  width: 16px;
+}
+
+.action-label {
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .city-text {

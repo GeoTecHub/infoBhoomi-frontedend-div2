@@ -79,13 +79,13 @@
             [matMenuTriggerFor]="orgMenu"
             (menuOpened)="isOrgsMenuOpen = true"
             (menuClosed)="isOrgsMenuOpen = false"
-            [matTooltip]="current_org.display_name"
+            [matTooltip]="current_org?.display_name ?? ''"
             matTooltipPosition="above"
           >
             <div class="button-h-b px-2 d-flex align-items-center" matRipple>
               <mat-icon class="dropdown-icon-mat">business</mat-icon>
               <span class="dropdown-icon-span">
-                {{ current_org.display_name.slice(0, 35) }}
+                {{ current_org?.display_name?.slice(0, 35) ?? 'Select Organization' }}
               </span>
               <mat-icon class="arrow-icon" [ngClass]="{ 'rotate-180': isOrgsMenuOpen }"
                 >arrow_drop_down</mat-icon
@@ -119,10 +119,24 @@
           >
             <mat-icon class="icon-mat-only">notifications</mat-icon>
           </button>
+        </div>
 
-          <mat-menu #notifiMenu="matMenu" class="settings-menu-container">
-            <button mat-menu-item class="settings-menu-item">
-              <mat-icon>history</mat-icon>Available in Pro Version
+        <div class="header-icon -me-1">
+          <button
+            mat-icon-button
+            aria-label="settings"
+            [matMenuTriggerFor]="settingsMenu"
+            class="h-100 d-flex align-items-center"
+          >
+            <mat-icon class="icon-mat-only">settings</mat-icon>
+          </button>
+
+          <mat-menu #settingsMenu="matMenu" class="settings-menu-container">
+            <button mat-menu-item class="settings-menu-item" (click)="OpenActivityLog()">
+              <mat-icon>history</mat-icon>Activity Log
+            </button>
+            <button mat-menu-item class="settings-menu-item" (click)="openContact()">
+              <mat-icon>contact_support</mat-icon>Contact Admin
             </button>
           </mat-menu>
         </div>

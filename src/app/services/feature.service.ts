@@ -4,8 +4,8 @@ import { Feature } from 'ol';
 import { Coordinate } from 'ol/coordinate';
 import GeoJSON from 'ol/format/GeoJSON'; // Keep if used elsewhere, though helper avoids direct use here
 import VectorSource from 'ol/source/Vector';
-import { forkJoin, Observable, of, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { concatMap, forkJoin, from, Observable, of, throwError } from 'rxjs';
+import { catchError, map, tap, toArray } from 'rxjs/operators';
 import { APIsService } from './api.service';
 import { MapService } from './map.service';
 import { NotificationService } from './notifications.service';
@@ -140,6 +140,18 @@ export class FeatureService {
     console.log('[FeatureService] Staging ADD for UUID:', newFeatureData.properties.uuid);
     this.stagedChanges.push({ type: 'add', newFeatureData, originalFeatureData });
     this.appStateService.setCanUndo(true); // An undo is now possible
+  }
+
+  /** Stages multiple features for addition in one operation. Avoids per-feature console spam
+   *  and redundant undo-state updates that make bulk imports slow. */
+  stageBulkAddition(items: FeatureData[]): void {
+    if (!items.length) return;
+    this.clearRedoStack();
+    for (const featureData of items) {
+      this.stagedChanges.push({ type: 'add', newFeatureData: featureData, originalFeatureData: featureData });
+    }
+    this.appStateService.setCanUndo(true);
+    console.log(`[FeatureService] Staged bulk ADD of ${items.length} features.`);
   }
 
   /** Stages a feature to be updated. Called by DrawService after processModifiedFeature modifies map feature. */
@@ -408,7 +420,9 @@ export class FeatureService {
    * Saves all staged changes (adds, updates, deletes) to the backend.
    * Ideally uses a single batch endpoint, otherwise makes separate calls.
    */
-  saveStagedChanges(): Observable<any> {
+  saveStagedChanges(
+    progressFn?: (done: number, total: number, label: string) => void,
+  ): Observable<any> {
     const headers = this.getAuthHeaders();
     if (this.stagedChanges.length === 0) {
       this.clearStagedChanges();
@@ -427,30 +441,15 @@ export class FeatureService {
       `[SAVE⏱] ── Staged: adds=${adds.length} updates=${updates.length} deletes=${deletes.length} splits=${splits.length} merges=${merges.length}`,
     );
 
-    const requests: Observable<any>[] = [];
+    // --- Build other (non-add) requests ---
+    const otherRequests: Observable<any>[] = [];
 
+    // add-only-update PATCHes (isUpdateOnly flag)
+    let payloadNew: FeatureData[] = [];
     if (adds.length) {
-      const payloadNew: FeatureData[] = adds
+      payloadNew = adds
         .filter((a) => !a.newFeatureData?.properties?.isUpdateOnly)
         .map((a) => a.newFeatureData);
-
-      if (payloadNew.length) {
-        console.log(
-          `[SAVE] ADD payload (${payloadNew.length} features):`,
-          payloadNew.map((f) => ({
-            uuid: f.properties.uuid,
-            layer_id: f.properties.layer_id,
-            geom_type: f.geometry?.type,
-            area: f.properties.area,
-            gnd_id: f.properties.gnd_id,
-            parent_uuid: f.properties.parent_uuid,
-            feature_Id: f.properties.feature_Id,
-          })),
-        );
-        requests.push(
-          this.http.post(this.apisService.POST_SURVEY_REP_DATA, payloadNew, { headers }),
-        );
-      }
 
       const payloadUpdate: FeatureData[] = adds
         .filter((a) => !!a.newFeatureData?.properties?.isUpdateOnly)
@@ -462,76 +461,88 @@ export class FeatureService {
           console.warn('[saveStagedChanges] Skipping PATCH: missing feature_Id/ref_id on', fd);
           continue;
         }
-        const updateUrl = this.apisService.UPDATE_SURVEY_REP_DATA(featureId);
-        requests.push(this.http.patch(updateUrl, fd, { headers }));
+        otherRequests.push(
+          this.http.patch(this.apisService.UPDATE_SURVEY_REP_DATA(featureId), fd, { headers }),
+        );
       }
     }
 
     if (deletes.length) {
       const ids = deletes.map((d) => d.identifierToDelete);
-      requests.push(
-        this.http.delete(this.apisService.DELETE_SURVEY_BATCH_DATA, {
-          headers,
-          body: { ids },
-        }),
+      otherRequests.push(
+        this.http.delete(this.apisService.DELETE_SURVEY_BATCH_DATA, { headers, body: { ids } }),
       );
     }
 
     if (splits.length) {
       const payload = splits.flatMap((s) => s.newFeaturesData ?? []);
-      console.log(
-        `[SAVE] SPLIT payload (${payload.length} child features):`,
-        payload.map((f) => ({
-          uuid: f.properties.uuid,
-          layer_id: f.properties.layer_id,
-          geom_type: f.geometry?.type,
-          area: f.properties.area,
-          gnd_id: f.properties.gnd_id,
-          parent_uuid: f.properties.parent_uuid,
-          feature_Id: f.properties.feature_Id,
-        })),
+      otherRequests.push(
+        this.http.post(this.apisService.POST_SURVEY_REP_DATA, payload, { headers }),
       );
-      requests.push(this.http.post(this.apisService.POST_SURVEY_REP_DATA, payload, { headers }));
     }
 
     if (merges.length) {
       const payload = merges.map((m) => m.newFeatureData);
-      console.log(
-        `[SAVE] MERGE payload (${payload.length} features):`,
-        payload.map((f) => ({
-          uuid: f.properties.uuid,
-          layer_id: f.properties.layer_id,
-          gnd_id: f.properties.gnd_id,
-          parent_uuid: f.properties.parent_uuid,
-        })),
+      otherRequests.push(
+        this.http.post(this.apisService.POST_SURVEY_REP_DATA, payload, { headers }),
       );
-      requests.push(this.http.post(this.apisService.POST_SURVEY_REP_DATA, payload, { headers }));
     }
 
     for (const u of updates) {
-      const updateUrl = this.apisService.UPDATE_SURVEY_REP_DATA(
-        u.newFeatureData.properties.feature_Id,
+      otherRequests.push(
+        this.http.patch(
+          this.apisService.UPDATE_SURVEY_REP_DATA(u.newFeatureData.properties.feature_Id),
+          u.newFeatureData,
+          { headers },
+        ),
       );
-      requests.push(this.http.patch(updateUrl, u.newFeatureData, { headers }));
     }
 
-    if (!requests.length) {
+    if (!payloadNew.length && !otherRequests.length) {
       this.clearStagedChanges();
       this.notificationService.showInfo('No server operations needed.');
       return of({ success: true, message: 'No server operations needed.' });
     }
 
-    const _tRequest = performance.now();
-    console.log(`[SAVE⏱] Payload built in ${(_tRequest - _t0).toFixed(1)}ms — sending HTTP request...`);
+    // --- Batch the large add payload into chunks of 500 (sequential) ---
+    const BATCH_SIZE = 500;
+    const addTotal = payloadNew.length;
+    let addsDone = 0;
+    const addBatches: FeatureData[][] = [];
+    for (let i = 0; i < payloadNew.length; i += BATCH_SIZE) {
+      addBatches.push(payloadNew.slice(i, i + BATCH_SIZE));
+    }
 
-    return forkJoin(requests).pipe(
-      tap((results) => {
-        const _tResponse = performance.now();
-        console.log(`[SAVE⏱] HTTP round-trip (request → response): ${(_tResponse - _tRequest).toFixed(1)}ms`);
+    const addBatch$: Observable<any[]> = addBatches.length
+      ? from(addBatches).pipe(
+          concatMap((batch) =>
+            this.http.post(this.apisService.POST_SURVEY_REP_DATA, batch, { headers }).pipe(
+              tap(() => {
+                addsDone += batch.length;
+                progressFn?.(
+                  addsDone,
+                  addTotal,
+                  `Uploading features... (${addsDone} / ${addTotal})`,
+                );
+              }),
+            ),
+          ),
+          toArray(),
+        )
+      : of([] as any[]);
 
-        const _tProcess = performance.now();
+    const other$: Observable<any[]> = otherRequests.length
+      ? forkJoin(otherRequests)
+      : of([] as any[]);
+
+    return forkJoin([addBatch$, other$]).pipe(
+      map(([addResults, otherResults]) => [
+        ...addResults,
+        ...(Array.isArray(otherResults) ? otherResults : [otherResults]),
+      ]),
+      tap((allResults) => {
         const savedRecords: any[] = [];
-        for (const r of results) {
+        for (const r of allResults) {
           if (!r) continue;
           if (Array.isArray(r)) {
             for (const item of r) {
@@ -541,7 +552,6 @@ export class FeatureService {
             }
             continue;
           }
-
           if (r.saved_records && Array.isArray(r.saved_records)) {
             savedRecords.push(...r.saved_records);
           } else if (r.properties?.uuid) {
@@ -549,24 +559,18 @@ export class FeatureService {
           }
         }
 
-        // Collect warnings from all POST responses
         const allWarnings: string[] = [];
-        for (const r of results) {
+        for (const r of allResults) {
           if (r?.warnings && Array.isArray(r.warnings) && r.warnings.length > 0) {
             allWarnings.push(...r.warnings.map((w: any) => String(w.detail)));
           }
         }
 
         if (savedRecords.length) {
-          console.log(`[SAVE⏱] Backend saved ${savedRecords.length} record(s).`);
-          const _tMapUpdate = performance.now();
           this.mapService.updateAllFeatureIdsAfterSave(savedRecords, this.layerService);
-          console.log(`[SAVE⏱] Map feature ID update: ${(performance.now() - _tMapUpdate).toFixed(1)}ms`);
         }
 
         this.clearStagedChanges();
-        console.log(`[SAVE⏱] Response processing + map update: ${(performance.now() - _tProcess).toFixed(1)}ms`);
-        console.log(`[SAVE⏱] ══ TOTAL end-to-end: ${(performance.now() - _t0).toFixed(1)}ms ══`);
 
         if (allWarnings.length > 0) {
           this.notificationService.showSuccess(

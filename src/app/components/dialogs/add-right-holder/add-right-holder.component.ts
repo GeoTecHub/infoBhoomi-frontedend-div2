@@ -255,6 +255,7 @@ export class AddRightHolderComponent implements OnInit {
         error: () => {
           this.isSearching = false;
           this.handleNotFound();
+          this.cdr.markForCheck();
         },
       });
       return;
@@ -286,6 +287,7 @@ export class AddRightHolderComponent implements OnInit {
         } else {
           this.notificationService.showError('Search failed. Please try again.');
         }
+        this.cdr.markForCheck();
       },
     });
   }
@@ -314,6 +316,7 @@ export class AddRightHolderComponent implements OnInit {
     };
     this.dataSaved = false;
     this.currentStep = 'create-new';
+    this.cdr.markForCheck();
   }
 
   // ─── Step 3: View found party and select ───────────────────

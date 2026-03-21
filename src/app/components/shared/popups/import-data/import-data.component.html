@@ -38,6 +38,20 @@
       </div>
     }
 
+    <!-- Import Progress -->
+    @if (importProgress) {
+      <div class="import-progress-section">
+        <div class="import-progress-header">
+          <span>Processing features...</span>
+          <span class="import-progress-count">{{ importProgress.done | number }} / {{ importProgress.total | number }}</span>
+        </div>
+        <mat-progress-bar
+          mode="determinate"
+          [value]="(importProgress.done / importProgress.total) * 100"
+        ></mat-progress-bar>
+      </div>
+    }
+
     <!-- 3. Source Projection -->
     @if (processedGeoJsonData && !isLoading) {
       <div class="form-section mt-3">

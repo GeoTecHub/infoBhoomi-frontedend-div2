@@ -1,0 +1,36 @@
+.progress-dialog-content {
+  padding: 8px 4px 4px;
+  min-width: 360px;
+}
+
+.progress-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 12px;
+  color: #1a2a3a;
+}
+
+.progress-label {
+  font-size: 13px;
+  color: #555;
+  margin: 0 0 10px;
+  min-height: 18px;
+}
+
+.progress-bar {
+  border-radius: 4px;
+  height: 8px;
+}
+
+.progress-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #777;
+  margin-top: 6px;
+}
+
+.progress-pct {
+  font-weight: 600;
+  color: #3c71a6;
+}
