@@ -2,14 +2,15 @@
 
 ## Project Overview
 
-InfoBhoomi V2 is an Angular 19 web GIS (Geographic Information System) application for land and property management. It provides 2D/3D map visualization, parcel/building data management based on the **LADM ISO 19152** standard, role-based access control, and administrative tools for organizations, users, and layers.
+InfoBhoomi V2 is an Angular 21 web GIS (Geographic Information System) application for land and property management. It provides 2D/3D map visualization, parcel/building data management based on the **LADM ISO 19152** standard, role-based access control, and administrative tools for organizations, users, and layers.
 
 ## Tech Stack
 
-- **Framework**: Angular 19.2.8 (standalone components, SSR-enabled)
-- **Language**: TypeScript 5.7.3 (strict mode, target ES2022)
-- **Mapping**: OpenLayers 10.5 (2D), iTowns 2.46 (3D), Turf.js 7.2 (spatial analysis)
-- **UI**: Angular Material 19.2.8, ng-bootstrap 18, ng-select 14.7, Bootstrap 5 (CDN), Bootstrap Icons
+- **Framework**: Angular 21.2.0 (standalone components, SSR-enabled)
+- **Language**: TypeScript 5.9.3 (strict mode, target ES2022)
+- **Mapping**: OpenLayers 10.8 (2D), iTowns 2.46 (3D), Turf.js 7.2 (spatial analysis)
+- **UI**: Angular Material 21.2.0, ng-bootstrap 20, ng-select 14.7, Bootstrap 5 (CDN), Bootstrap Icons
+
 - **State**: Angular Signals (side panel) + RxJS 7.8 BehaviorSubjects (services)
 - **Notifications**: Angular Material `MatSnackBar` (via `NotificationService`)
 - **Styling**: Plain CSS with CSS custom properties (no SCSS, no Tailwind)
@@ -504,6 +505,16 @@ The following components/services have no `.spec.ts` files:
 - `feature-link.service`
 - `style-factory.service`
 - `vertext.service`
+
+## Current Optimization Priorities (March 2026)
+
+Work on these in order using Claude Code CLI (`/optimize-change-detection`, `/optimize-bundle`):
+
+1. **`ChangeDetectionStrategy.OnPush`** — Add to all components. Biggest perf win for map + side panel.
+2. **Turf.js tree-shaking** — Replace `@turf/turf` (full bundle) with individual `@turf/*` imports.
+3. **Lazy loading admin routes** — All `/admin-*` routes should be lazy-loaded modules.
+4. **Virtual scrolling** — Use Angular CDK `VirtualScrollViewport` for parcel/user/layer lists.
+5. **Web Workers** — Move ShpJS parsing, KML conversion, PapaParse CSV to a Web Worker.
 
 ## Recent Development History
 
