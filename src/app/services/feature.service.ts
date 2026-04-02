@@ -106,11 +106,14 @@ export class FeatureService {
   private UPDATE_SURVEY_REP_DATA = this.apisService.UPDATE_SURVEY_REP_DATA; // Use the API service to get the URL
 
   private subscribeToSplitEvents(): void {
-    this.splitService.splitStatus$.subscribe((splitStatus) => {
-      if (splitStatus === true) {
-        console.log('[FeatureService] Split detected. Performing undoSplit()...');
-        this.isSplitActive = true; // Set split active state
-      }
+    this.splitService.splitStatus$.subscribe({
+      next: (splitStatus) => {
+        if (splitStatus === true) {
+          console.log('[FeatureService] Split detected. Performing undoSplit()...');
+          this.isSplitActive = true;
+        }
+      },
+      error: (err) => console.error('[FeatureService] splitStatus$ error:', err),
     });
   }
 
@@ -1332,8 +1335,9 @@ export class FeatureService {
       uuid: properties['uuid'] ?? uuidv4(),
       ref_id: properties['ref_id'] ?? null,
       crs: properties['crs'] ?? null,
-      // <<< ROBUST FIX: Check for both 'gnd_id' and 'gnd_Id' >>>
-      gnd_id: properties['gnd_id'] ?? gnd_id ?? null,
+      // Features loaded from the backend store the GND ID under 'gnd_Id' (capital I).
+      // Features built at draw-time use 'gnd_id' (lowercase). Check both.
+      gnd_id: properties['gnd_Id'] ?? properties['gnd_id'] ?? gnd_id ?? null,
       isUpdateOnly: properties['isUpdateOnly'] ? true : false,
     };
 

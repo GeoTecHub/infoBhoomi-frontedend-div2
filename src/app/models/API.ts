@@ -114,6 +114,7 @@ export class UpdateLayerModel {
   }
 }
 
+// Matches Survey_Rep_Map_Serializer fields returned by /survey_rep_data_user/
 export interface API_LAYER_GEOM_RESPONSE {
   type: string;
   features: Array<{
@@ -122,22 +123,15 @@ export interface API_LAYER_GEOM_RESPONSE {
     geometry: {
       type: string;
       coordinates: any;
-    };
+    } | null;
     properties: {
       uuid: string;
-      username: string;
+      su_id: number | null;
       layer_id: number;
-      infobhoomi_id: number | null;
-      geom_type: string;
-      area: number | null;
-      dimension_2d_3d: string;
-      reference_coordinate: number | null;
-      geom_level: number;
-      status: string;
-      parent_id: number | null;
-      date_created: Date;
-      date_modified: Date;
-      reference_id: number | null;
+      gnd_id: number | null;
+      calculated_area: string | null; // DecimalField serialises as string
+      parent_id: number[] | null;
+      status: boolean;
     };
   }>;
 }

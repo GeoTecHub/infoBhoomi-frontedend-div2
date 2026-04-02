@@ -1369,17 +1369,21 @@ export class ToolsComponent implements OnInit, OnDestroy {
 
     // 2. Prepare all data needed for staging the operation.
     //    The FeatureService's converters will handle the final transformation to WGS84 for the backend.
-    const parentId = originalFeature.get('feature_Id') || originalFeature.get('uuid');
+    const originalUuid = originalFeature.get('uuid'); // Always use UUID string (not numeric feature_Id)
     const gnd_id = originalFeature.get('gnd_Id') || null;
     const originalFeatureData = this.featureService.convertFeatureToFeatureData(originalFeature);
+    // Set parent_uuid as an array on split pieces so the backend's isinstance(list) check passes
+    // and the original polygon gets soft-deleted (status=False) on save.
+    newFeature1.set('parent_uuid', originalUuid ? [originalUuid] : null);
+    newFeature2.set('parent_uuid', originalUuid ? [originalUuid] : null);
     const newFeatureData1 = this.featureService.convertFeatureToFeatureData(
       newFeature1,
-      parentId,
+      null,
       gnd_id,
     );
     const newFeatureData2 = this.featureService.convertFeatureToFeatureData(
       newFeature2,
-      parentId,
+      null,
       gnd_id,
     );
 

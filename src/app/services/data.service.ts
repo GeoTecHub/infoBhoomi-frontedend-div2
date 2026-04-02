@@ -82,10 +82,13 @@ export class DataService {
     //   Authorization: `Token ${token}`, // Set the Authorization header
     // });
 
-    this.http.get(link, { headers, responseType: 'blob' }).subscribe((response) => {
-      const blob = new Blob([response], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      window.open(url, '_blank');
+    this.http.get(link, { headers, responseType: 'blob' }).subscribe({
+      next: (response) => {
+        const blob = new Blob([response], { type: 'application/pdf' });
+        const url = window.URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      },
+      error: (err) => console.error('[DataService] Failed to load PDF:', err),
     });
   }
 

@@ -195,7 +195,12 @@ export class LayerService {
     layerIds.forEach((layerId) => this._createOrUpdateOlLayer(layerId));
 
     // 2. Fetch geometry data from the backend
-    const layerRequest = { user_id: Number(this.userService.getUser()?.user_id) || 0 };
+    const user = this.userService.getUser();
+    const userId = Number(user?.user_id) || 0;
+    const layerRequest = { user_id: userId };
+
+    console.debug('[LayerService] Requesting geometry — user_id:', userId, '| layer IDs:', layerIds);
+
     return this.http
       .post<API_LAYER_GEOM_RESPONSE>(
         `${environment.API_URL}${'survey_rep_data_user/'}`,
@@ -205,11 +210,37 @@ export class LayerService {
       .pipe(
         tap((response) => {
           if (!response || !response.features) {
-            console.warn('Received no features from geometry endpoint.');
+            console.error(
+              '[LayerService] Geometry endpoint returned a null/malformed response.',
+              { sentUserId: userId, response },
+            );
             return;
           }
+
+          if (response.features.length === 0) {
+            console.warn(
+              '[LayerService] Geometry endpoint returned 0 features.',
+              {
+                sentUserId: userId,
+                cachedLayerIds: layerIds,
+                hint: 'Check that survey_rep_data_user/ filters by user_id and that records exist for this user.',
+              },
+            );
+            return;
+          }
+
+          console.debug('[LayerService] Received', response.features.length, 'features from backend.');
           // 3. Add features to their respective layers
           this._processAndAddFeatures(response.features);
+        }),
+        catchError((err) => {
+          console.error('[LayerService] HTTP error loading feature geometry:', {
+            sentUserId: userId,
+            status: err?.status,
+            message: err?.message,
+            error: err,
+          });
+          return of(null);
         }),
       );
   }
@@ -271,19 +302,25 @@ export class LayerService {
       if (feature) {
         feature.set('layer_id', layerId); // Ensure layer_id is on the feature
         feature.set('gnd_Id', item.properties?.gnd_id || null); // Set the backend ID
-        if (item.properties?.feature_Id) {
-          feature.set('feature_Id', item.properties.feature_Id);
-        } else if (item.properties?.su_id) {
+        if (item.properties?.su_id) {
+          // su_id is the numeric spatial-unit ID the side panel and save logic need.
+          // Store under both keys so getFeatureIdentifier('feature_Id') resolves correctly.
           feature.set('su_id', item.properties.su_id);
+          feature.set('feature_Id', item.properties.su_id);
         } else {
-          // fallback if you want to display some ID
+          // Fallback for features that have no spatial unit yet (e.g. geometry-only records)
           feature.set('feature_Id', item.id);
         }
         olLayer.getSource()?.addFeature(feature);
         layersWithFeatures.add(layerId);
       }
     }
-    this.selectedLayerIdsSubject.next(Array.from(layersWithFeatures));
+    // Preserve any existing string layer IDs (e.g. 'gnd_boundary_layer') already in the
+    // subject so they are not evicted when numeric feature-layer IDs are written.
+    const existingStringIds = this.selectedLayerIdsSubject.value.filter(
+      (id) => typeof id === 'string',
+    );
+    this.selectedLayerIdsSubject.next([...existingStringIds, ...Array.from(layersWithFeatures)]);
     const map = this.mapService.getMapInstance?.();
     map?.getLayers().forEach((l) => l.changed?.());
     console.log('Finished processing and adding features to map.');
@@ -322,12 +359,19 @@ export class LayerService {
         const gndLayer = new VectorLayer({
           source: vectorSource,
           style: gndStyle,
-          visible: this.selectedLayerIdsSubject.value.includes(layerName),
+          visible: true, // GND boundary is visible by default on load
           zIndex: 0,
         });
         gndLayer.set('layerId', layerName);
 
         this.mapInstance?.addLayer(gndLayer);
+
+        // Register the GND layer as selected so updateMapLayerVisibility keeps it visible.
+        // Use a non-destructive merge: add the string ID only if not already present.
+        const currentIds = this.selectedLayerIdsSubject.value;
+        if (!currentIds.includes(layerName)) {
+          this.selectedLayerIdsSubject.next([...currentIds, layerName]);
+        }
         console.log('GND Layer added to the map successfully.');
       }),
       catchError((err) => {
@@ -473,6 +517,14 @@ export class LayerService {
   public setSelectedCurrentLayerIdForDrawing(layerId: number | null | string): void {
     if (this.currentLayerIdForDrawingSubject.value !== layerId) {
       this.currentLayerIdForDrawingSubject.next(layerId);
+      // Ensure the drawing layer is visible so newly drawn features are immediately seen,
+      // even if the layer has no existing backend features (which would otherwise leave it hidden).
+      if (layerId !== null) {
+        const currentIds = this.selectedLayerIdsSubject.value;
+        if (!currentIds.includes(layerId)) {
+          this.selectedLayerIdsSubject.next([...currentIds, layerId]);
+        }
+      }
     }
   }
 
