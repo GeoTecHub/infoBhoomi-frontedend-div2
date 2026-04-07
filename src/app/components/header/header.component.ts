@@ -523,7 +523,7 @@ export class HeaderComponent implements OnDestroy, OnInit {
     this.router.navigateByUrl('/main');
   }
 
-  isGndVisible = false;
+  isGndVisible = false; // GND layer is visible by default on load
 
   toggleGndLayer() {
     this.layerService.toggleLayerVisibility('gnd_boundary_layer');
