@@ -6,7 +6,7 @@ import TileLayer from 'ol/layer/Tile';
 import VectorLayer, { Options as VectorLayerOptions } from 'ol/layer/Vector'; // Import Options
 import VectorSource from 'ol/source/Vector';
 import proj4 from 'proj4';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { NotificationService } from './notifications.service';
 // Removed unused fromLonLat
 import Feature from 'ol/Feature'; // <-- Import Feature
@@ -102,6 +102,9 @@ export class MapService {
   // Use BehaviorSubject to track the mapInstance state
   private mapSubject = new BehaviorSubject<OLMap | null>(null);
   readonly mapInstance$ = this.mapSubject.asObservable(); // Expose as Observable
+
+  /** Emits after updateAllFeatureIdsAfterSave so DrawService can re-emit selection info. */
+  readonly selectionRefresh$ = new Subject<void>();
   private vectorLayers = new Map<string, VectorLayer<VectorSource<Feature<Geometry>>>>();
 
   private readonly SHOW_LABELS_STORAGE_KEY = 'showLabels';
@@ -746,6 +749,7 @@ export class MapService {
         recordByUuid.set(record.properties.uuid, record);
       }
     }
+    console.log('[updateAllFeatureIdsAfterSave] recordByUuid keys:', Array.from(recordByUuid.keys()));
     if (recordByUuid.size === 0) return;
 
     const styleFn = makePerFeatureStyleFn(
@@ -758,7 +762,10 @@ export class MapService {
       .getArray()
       .filter((l) => l instanceof VectorLayer) as VectorLayer<any>[];
 
+    console.log('[updateAllFeatureIdsAfterSave] VectorLayers found:', layers.length);
+
     // Single pass through layers × features — O(layers × features)
+    let updatedCount = 0;
     for (const layer of layers) {
       const source = layer.getSource();
       if (!source) continue;
@@ -772,13 +779,19 @@ export class MapService {
         const { su_id, gnd_id, calculated_area, layer_id } = record.properties;
         feature.set('layer_id', layer_id);
         feature.set('feature_Id', su_id);
-        feature.set('gnd_Id', gnd_id);
+        feature.set('gnd_id', gnd_id);
         feature.set('area', calculated_area);
         const layerColor = layerService.getLayerColor(layer_id) ?? '#2c7be5';
         feature.set('baseHex', this.normalizeToHex(layerColor));
         feature.setStyle(styleFn);
+        updatedCount++;
+        console.log('[updateAllFeatureIdsAfterSave] Updated feature:', uuid, '→ su_id:', su_id);
       }
     }
+    console.log('[updateAllFeatureIdsAfterSave] Total features updated:', updatedCount);
+    // Signal DrawService to re-emit selection info so the side panel
+    // refreshes with the new integer su_id without requiring a re-click.
+    this.selectionRefresh$.next();
   }
 
   public updateFeatureAfterUpdateOnlySave(savedRecord: any, layerService: LayerService): void {
@@ -805,7 +818,7 @@ export class MapService {
 
       feature.set('layer_id', layer_id);
       feature.set('feature_Id', su_id);
-      feature.set('gnd_Id', gnd_id);
+      feature.set('gnd_id', gnd_id);
       feature.set('area', area);
 
       const layerColor = layerService.getLayerColor(layer_id) ?? '#2c7be5';

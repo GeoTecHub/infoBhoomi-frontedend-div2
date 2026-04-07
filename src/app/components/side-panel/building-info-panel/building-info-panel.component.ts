@@ -185,7 +185,7 @@ export class BuildingInfoPanelComponent {
   hasBuilding = computed(() => this.buildingInfo() !== null);
 
   panelState = computed<'empty' | 'save-prompt' | 'details'>(() => {
-    if (this.editMode()) return 'details';
+    if (this.editMode() || this.buildingInfo() !== null) return 'details';
     if (this.modelLoaded()) return 'save-prompt';
     return 'empty';
   });

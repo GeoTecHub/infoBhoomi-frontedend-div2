@@ -980,7 +980,10 @@ export class ToolsComponent implements OnInit, OnDestroy {
       const cleanup = () => {
         if (mapOL) {
           mapOL.removeLayer(resources.drawLayer);
-          if (resources.drawInteraction) mapOL.removeInteraction(resources.drawInteraction);
+          if (resources.drawInteraction) {
+            resources.drawInteraction.abortDrawing();
+            mapOL.removeInteraction(resources.drawInteraction);
+          }
           mapOL.removeInteraction(resources.snapInteraction);
         }
         if (resources.keyListener) document.removeEventListener('keydown', resources.keyListener);

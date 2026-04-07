@@ -143,6 +143,12 @@ export class HeaderComponent implements OnDestroy, OnInit {
 
       this.cdr.markForCheck();
     });
+    this.layerService.selectedLayerIds$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((ids) => {
+        this.isGndVisible = ids.includes('gnd_boundary_layer');
+        this.cdr.markForCheck();
+      });
     this.getCurrentLocation();
     // this.mapService.showLabels$.subscribe((v) => (this.showLabels = v));
   }
@@ -470,6 +476,10 @@ export class HeaderComponent implements OnDestroy, OnInit {
         // Success message handled by FeatureService on success
         console.log('[ToolsComponent] Save successful.', response);
 
+        // Switch to select tool so the user can immediately click the saved feature.
+        // Without this, toolUsesSelection=false in DrawService and clicks are ignored.
+        this.drawService.setActiveTool({ type: 'select', multi: false });
+
         this.cdr.markForCheck();
       },
       error: (err) => {
@@ -516,7 +526,6 @@ export class HeaderComponent implements OnDestroy, OnInit {
   isGndVisible = false;
 
   toggleGndLayer() {
-    this.isGndVisible = !this.isGndVisible;
     this.layerService.toggleLayerVisibility('gnd_boundary_layer');
   }
 

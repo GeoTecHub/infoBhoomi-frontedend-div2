@@ -138,8 +138,23 @@ export class SidePanelComponent {
 
         const featureInfo = Array.isArray(info) ? info[0] : info;
 
-        if (typeof featureInfo.featureId !== 'number' || isNaN(featureInfo.featureId)) {
-          this.notificationService.showError('Please save features.');
+        if (featureInfo.featureId == null) {
+          return;
+        }
+
+        // feature_Id is still a UUID string — feature drawn but not yet saved to DB.
+        // Skip all API calls to avoid the "expected a number but got UUID" backend error.
+        console.log('[SidePanel] featureId:', featureInfo.featureId, '| type:', typeof featureInfo.featureId);
+        if (typeof featureInfo.featureId !== 'number') {
+          this.selected_featureInfo = featureInfo;
+          this.selected_feature_ID = featureInfo.featureId || '';
+          this.selected_layer_ID = featureInfo.layerId || '';
+          this.currentBuildingInfo.set(null);
+          this.buildingModelLoaded.set(false);
+          this.currentLandParcelInfo.set(null);
+          this.activeSidebarTab.set('land');
+          this.makeExtend();
+          this.cdr.markForCheck();
           return;
         }
 
@@ -558,7 +573,7 @@ export class SidePanelComponent {
     enumObj: T,
     defaultValue: T[keyof T],
   ): T[keyof T] {
-    if (!raw) return defaultValue;
+    if (!raw || typeof raw !== 'string') return defaultValue;
     const values = Object.values(enumObj);
     if (values.includes(raw as any)) return raw as T[keyof T];
     // Try uppercase match
@@ -1220,6 +1235,16 @@ export class SidePanelComponent {
           .subscribe();
       }
     }
+  }
+
+  onNewParcelRequested(parcel: LandParcelInfo): void {
+    // User clicked "+ New Parcel" from the empty state panel.
+    // Switch to the land tab with a blank parcel so the form is visible,
+    // and activate the draw tool so the user can draw the geometry.
+    this.currentLandParcelInfo.set(parcel);
+    this.activeSidebarTab.set('land');
+    this.drawService.setActiveTool({ type: 'draw', drawType: 'Polygon' });
+    this.cdr.markForCheck();
   }
 
   onSaveLandParcel(info: LandParcelInfo): void {

@@ -248,6 +248,12 @@ export class DrawService implements OnDestroy {
       }
     });
 
+    // After a save, feature_Id properties are updated with integer su_id.
+    // Re-emit current selection so the side panel refreshes without a re-click.
+    this.mapService.selectionRefresh$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.refreshCurrentSelection());
+
     // Manages GLOBAL tools (Draw, Select, Modify).
     this._activeTool.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((tool) => {
       this.handleActiveToolChange(tool);
@@ -479,6 +485,11 @@ export class DrawService implements OnDestroy {
         // The filter option is a function that runs for every feature under the cursor.
         // It will only select the feature if the function returns true.
         filter: (feature, layer) => {
+          // GND boundary polygons are a read-only reference layer and must never be selectable.
+          if (layer.get('layerId') === 'gnd_boundary_layer') {
+            return false;
+          }
+
           // If we are NOT in special export selection mode, allow selection
           // from ANY visible layer. This is for your general "Select Tool".
           if (!this._isExportSelectionMode) {
@@ -957,14 +968,17 @@ export class DrawService implements OnDestroy {
     // --- Destroy dynamic interactions (CRITICAL PART) ---
     // This is the interaction that gets created and removed on the fly.
     if (this.currentActiveOlDrawInteraction) {
-      // 1. Unsubscribe from events to prevent memory leaks
+      // 1. Abort any in-progress sketch so the rubber-band line disappears
+      this.currentActiveOlDrawInteraction.abortDrawing();
+
+      // 2. Unsubscribe from events to prevent memory leaks
       unByKey(this.olDrawEndKey as any); // Use 'as any' or check if defined
       unByKey(this.olDrawAbortKey as any);
 
-      // 2. Remove the interaction from the map
+      // 3. Remove the interaction from the map
       this.mapInstance?.removeInteraction(this.currentActiveOlDrawInteraction);
 
-      // 3. Clear the local reference to it
+      // 4. Clear the local reference to it
       this.currentActiveOlDrawInteraction = null;
 
       console.log('[DrawService] Previous Draw interaction removed.');
@@ -1223,6 +1237,16 @@ export class DrawService implements OnDestroy {
   }
 
   /**
+   * Re-emits the current selection state through selectedFeatureInfo$.
+   * Call this after external code updates feature properties (e.g. after save
+   * replaces UUID feature_Id with the integer su_id) so the side panel
+   * refreshes without requiring the user to deselect and re-click.
+   */
+  public refreshCurrentSelection(): void {
+    this.onOlSelectChange();
+  }
+
+  /**
    * Updates the source for the snapping interaction.
    * IMPORTANT: OpenLayers Snap interactions cannot have their source changed after creation.
    * Therefore, this method always removes the old Snap interaction and creates a new one
@@ -1332,8 +1356,9 @@ export class DrawService implements OnDestroy {
     }
     // Now that the feature has its ID, properties, and style, add it to the source.
 
-    // Deactivate the tool after a successful draw.
-    this.setActiveTool(null);
+    // Switch to single-select after a successful draw so the newly drawn feature
+    // is immediately clickable without the user having to manually re-activate a tool.
+    this.setActiveTool({ type: 'select', multi: false });
     this.resetRefFeatureActions(); // Reset any reference feature actions
   };
 
@@ -2222,8 +2247,10 @@ export class DrawService implements OnDestroy {
 
     // 1. Collect backend identifiers and map OL features
     for (const feature of featuresToDelete) {
-      // Prioritize 'feature_Id' for backend, fallback to 'uuid'
-      const backendId = feature.get('feature_Id') ?? feature.get('uuid');
+      // Prioritize 'feature_Id' (set by updateAllFeatureIdsAfterSave), then 'su_id'
+      // (set on features loaded from the DB via GeoJSON), then fall back to 'uuid'
+      // (newly drawn but not yet saved — deletion will fail on backend, but shouldn't happen).
+      const backendId = feature.get('feature_Id') ?? feature.get('su_id') ?? feature.get('uuid');
 
       if (backendId !== undefined && backendId !== null) {
         const backendIdStr = String(backendId); // Ensure it's a string for map key

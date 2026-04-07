@@ -308,8 +308,9 @@ export class LayerService {
           feature.set('su_id', item.properties.su_id);
           feature.set('feature_Id', item.properties.su_id);
         } else {
-          // Fallback for features that have no spatial unit yet (e.g. geometry-only records)
-          feature.set('feature_Id', item.id);
+          // su_id is null (trigger didn't run on this record) — use the model PK (id)
+          // which is always non-null and is what the backend delete/get views use.
+          feature.set('feature_Id', item.properties?.id ?? item.id);
         }
         olLayer.getSource()?.addFeature(feature);
         layersWithFeatures.add(layerId);

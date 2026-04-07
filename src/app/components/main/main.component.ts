@@ -575,6 +575,7 @@ export class MainComponent implements OnInit, OnDestroy {
     if (this.selectedFeatureInfo) {
       this.contextMenuVisible = true;
       this.contextMenuPosition = { x: event.clientX, y: event.clientY };
+      this.cdr.markForCheck(); // native event runs outside Angular zone — trigger OnPush detection
     } else {
       this.hideContextMenu();
     }
@@ -582,6 +583,7 @@ export class MainComponent implements OnInit, OnDestroy {
 
   hideContextMenu = (): void => {
     this.contextMenuVisible = false;
+    this.cdr.markForCheck();
   };
 
   handleGlobalClick = (event: MouseEvent): void => {
