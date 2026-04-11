@@ -776,13 +776,14 @@ export class SidePanelComponent {
             for (const rrr of record.rrrs || []) {
               const entryId = `BU-${record.ba_unit_id}`;
               if (rrr.rrr_id) this.fetchedRRRMap.set(entryId, rrr.rrr_id);
+              const primaryParty = (rrr.parties || [])[0];
               rrrEntries.push({
                 rrrId: entryId,
                 type: (rrr.share_type as RightType) || RightType.OWN_FREE,
-                holder: rrr.party_name || '',
-                holderId: String(rrr.pid),
+                holder: primaryParty?.party_name || '',
+                holderId: String(primaryParty?.pid || ''),
                 holderType: undefined,
-                share: rrr.share,
+                share: primaryParty?.share ?? rrr.share,
                 validFrom: rrr.time_begin || '',
                 validTo: rrr.time_end || '',
                 documentRef: record.sl_ba_unit_name || '',
@@ -977,13 +978,14 @@ export class SidePanelComponent {
             for (const rrr of record.rrrs || []) {
               const entryId = `BU-${record.ba_unit_id}`;
               if (rrr.rrr_id) this.fetchedRRRMap.set(entryId, rrr.rrr_id);
+              const primaryParty = (rrr.parties || [])[0];
               rrrEntries.push({
                 rrrId: entryId,
                 type: (rrr.share_type as RightType) || RightType.OWN_FREE,
-                holder: rrr.party_name || '',
-                holderId: String(rrr.pid),
+                holder: primaryParty?.party_name || '',
+                holderId: String(primaryParty?.pid || ''),
                 holderType: undefined,
-                share: rrr.share,
+                share: primaryParty?.share ?? rrr.share,
                 validFrom: rrr.time_begin || '',
                 validTo: rrr.time_end || '',
                 documentRef: record.sl_ba_unit_name || '',
