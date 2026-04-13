@@ -59,6 +59,8 @@ import {
   Condition,
   RoofType,
   TopologyStatus,
+  UnitType,
+  AccessType,
 } from '../../models/building-info.model';
 import { APIsService } from '../../services/api.service';
 import { DrawService, SelectedFeatureInfo } from '../../services/draw.service';
@@ -903,10 +905,11 @@ export class SidePanelComponent {
       this.apiService.getRRRData(su_id).pipe(catchError(() => of(null))),
       this.apiService.getBuildingOverViewInfo(su_id).pipe(catchError(() => of({}))),
       this.apiService.getBuildItInfo(su_id).pipe(catchError(() => of({}))),
+      this.apiService.getBuildingUnits(su_id).pipe(catchError(() => of({ count: 0, units: [] }))),
     ])
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(
-        ([adminData, taxData, rrrData, overviewData, utilData]: [any, any, any, any, any]) => {
+        ([adminData, taxData, rrrData, overviewData, utilData, unitsData]: [any, any, any, any, any, any]) => {
           const current = this.currentBuildingInfo();
           if (!current) return;
 
@@ -1021,6 +1024,23 @@ export class SidePanelComponent {
             garbageDisposal: utilData?.garbage_dispose || '',
           };
 
+          // Map DB-backed apartment units → BuildingUnit[]
+          const dbUnits: BuildingUnit[] = (unitsData?.units ?? []).map((u: any) => ({
+            unitId:           String(u.su_id),
+            parentBuilding:   String(su_id),
+            floorNumber:      u.floor_no ?? 0,
+            unitType:         (u.bld_property_type as UnitType) ?? UnitType.APT,
+            boundary:         u.geom_3d_wkt ?? '',
+            accessType:       AccessType.COR,
+            cadastralRef:     u.apt_name ?? '',
+            floorArea:        u.floor_area ?? 0,
+            registrationDate: u.registration_date ?? '',
+            primaryUse:       (u.ext_builduse_type as PrimaryUse) ?? PrimaryUse.RES,
+            rooms:            [],
+            tax:  { taxUnitArea: u.floor_area ?? 0, assessedValue: 0, lastValuationDate: '', taxDue: 0 },
+            rrr:  { entries: [] },
+          }));
+
           this.currentBuildingInfo.set({
             ...current,
             summary,
@@ -1028,6 +1048,7 @@ export class SidePanelComponent {
             taxValuation,
             utilities,
             rrr: { entries: rrrEntries },
+            units: dbUnits.length > 0 ? dbUnits : current.units,
           });
 
           // Second phase: fetch restrictions & responsibilities per BA unit (property level)

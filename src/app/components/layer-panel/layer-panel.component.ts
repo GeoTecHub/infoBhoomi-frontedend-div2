@@ -281,15 +281,15 @@ export class LayerPanelComponent implements OnInit, OnDestroy {
               }
             }
             this.allLayerIDs = this.LayerList.map((layer: { layer_id: any }) => layer.layer_id); // all the lisy of layers
+            this.cdr.markForCheck(); // Trigger CD after LayerList is populated
           },
           error: (error) => {
             console.error('LayerPanel: Error fetching layer list:', error);
             this.LayerList = []; // Ensure list is empty on error
             this.notifcationService.showError('Unable to load the layer list!'); // Use notification service
+            this.cdr.markForCheck();
           },
         });
-
-      this.cdr.markForCheck();
     });
   }
 

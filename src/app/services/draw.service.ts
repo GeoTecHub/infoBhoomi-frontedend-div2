@@ -477,7 +477,21 @@ export class DrawService implements OnDestroy {
 
     try {
       // Select
-      this.olSelectSingle = new Select({ style: olSelectedStyle, multi: false });
+      this.olSelectSingle = new Select({
+        style: olSelectedStyle,
+        multi: false,
+        filter: (feature, layer) => {
+          // GND boundary is never selectable
+          if (layer.get('layerId') === 'gnd_boundary_layer') return false;
+          if (!layer.getVisible()) return false;
+          // When an active drawing layer is set, only select from that layer
+          const activeLayerId = this.layerService.getSelectedCurrentLayerIdForDrawing();
+          if (activeLayerId !== null) {
+            return layer.get('layerId') === String(activeLayerId);
+          }
+          return true; // No active layer — allow any visible layer
+        },
+      });
       this.olSelectMulti = new Select({
         style: olSelectedStyle,
         multi: true,
@@ -490,10 +504,14 @@ export class DrawService implements OnDestroy {
             return false;
           }
 
-          // If we are NOT in special export selection mode, allow selection
-          // from ANY visible layer. This is for your general "Select Tool".
+          // If we are NOT in special export selection mode, restrict to the active drawing layer.
           if (!this._isExportSelectionMode) {
-            return layer.getVisible();
+            if (!layer.getVisible()) return false;
+            const activeLayerId = this.layerService.getSelectedCurrentLayerIdForDrawing();
+            if (activeLayerId !== null) {
+              return layer.get('layerId') === String(activeLayerId);
+            }
+            return true; // No active layer — allow any visible layer
           }
 
           // 1. Get the custom 'layerId' property from the layer.
@@ -513,9 +531,11 @@ export class DrawService implements OnDestroy {
       });
       console.log('[DrawService Init] Select interactions created.');
 
-      // Modify (targets multi-select's collection by default)
+      // Modify targets single-select's collection so that exactly one feature
+      // is ever selected for editing, and the active-layer filter on olSelectSingle
+      // prevents features from other layers being picked up at the same pixel.
       this.olModify = new Modify({
-        features: this.olSelectMulti.getFeatures(),
+        features: this.olSelectSingle.getFeatures(),
         style: olModifyInteractionStyle,
       });
       this.olModify.on('modifystart', (event) => {
@@ -663,14 +683,14 @@ export class DrawService implements OnDestroy {
 
       // --- MODIFY TOOL ---
       case 'modify': {
-        // For 'modify', we first activate multi-select to allow the user to pick features.
-        // The `onOlSelectChange` handler is then responsible for activating the `olModify` interaction itself
-        // once a single feature is selected.
-        if (this.olSelectMulti) {
-          this.currentActiveOlSelectInteraction = this.olSelectMulti;
-          this.olSelectMulti.setActive(true);
+        // Use single-select so only one feature can be picked per click, and the
+        // active-layer filter on olSelectSingle prevents cross-layer selections.
+        // The `onOlSelectChange` handler activates olModify once a feature is selected.
+        if (this.olSelectSingle) {
+          this.currentActiveOlSelectInteraction = this.olSelectSingle;
+          this.olSelectSingle.setActive(true);
           // The Modify interaction itself remains inactive until a selection is made.
-          this.notificationService.showInfo('Modify tool: Select one or more features to edit.');
+          this.notificationService.showInfo('Modify tool: Click a feature to select and edit it.');
         } else {
           this.notificationService.showError('Modify tool is not available.');
           this._activeTool.next(null);
@@ -1202,9 +1222,12 @@ export class DrawService implements OnDestroy {
 
     // Deactivate Select interactions
     if (this.olSelectSingle?.getActive()) {
-      // If single select was the one active in the _activeTool state, clear its features.
-      // Otherwise, it might have been active for 'modify' and its features are important.
-      if (currentActiveTool?.type === 'select' && !currentActiveTool.multi) {
+      // olSelectSingle is used for both single-select tool and modify tool.
+      // Clear its features when deactivating from either of those states.
+      if (
+        (currentActiveTool?.type === 'select' && !currentActiveTool.multi) ||
+        currentActiveTool?.type === 'modify'
+      ) {
         this.olSelectSingle.getFeatures().clear();
         this.onOlSelectChange(); // Manually trigger to update BehaviorSubjects
       }

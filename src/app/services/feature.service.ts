@@ -491,16 +491,27 @@ export class FeatureService {
       );
     }
 
-    for (const u of updates) {
+   for (const u of updates) {
+      // 1. Grab the payload
+      const payload = u.newFeatureData;
+      
+      // 2. SANITIZER: Convert string booleans back to actual booleans
+      if (payload && payload.properties) {
+        Object.keys(payload.properties).forEach(key => {
+          if (payload.properties[key] === "true") payload.properties[key] = true;
+          if (payload.properties[key] === "false") payload.properties[key] = false;
+        });
+      }
+
+      // 3. Send the clean payload
       otherRequests.push(
         this.http.patch(
-          this.apisService.UPDATE_SURVEY_REP_DATA(u.newFeatureData.properties.feature_Id),
-          u.newFeatureData,
+          this.apisService.UPDATE_SURVEY_REP_DATA(payload.properties.feature_Id),
+          payload,
           { headers },
         ),
       );
     }
-
     if (!payloadNew.length && !otherRequests.length) {
       this.clearStagedChanges();
       this.notificationService.showInfo('No server operations needed.');

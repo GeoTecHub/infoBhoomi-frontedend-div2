@@ -460,6 +460,44 @@ export class APIsService {
   }
 
   // =============================================================================
+  // BUILDING UNITS (Strata / Apartment — layer_id=12)
+  // =============================================================================
+
+  /**
+   * List all apartment units (layer_id=12) that are children of a building.
+   * Returns { count: number, units: BuildingUnitDto[] }
+   */
+  getBuildingUnits(parentSuId: string | number): Observable<any> {
+    this.loadFromStorage();
+    return this.http.get(`${this.baseUrl}bld-units/?parent_su_id=${parentSuId}`, {
+      headers: this.h(),
+    });
+  }
+
+  /** Retrieve a single apartment unit by its su_id. */
+  getBuildingUnit(suId: string | number): Observable<any> {
+    this.loadFromStorage();
+    return this.http.get(`${this.baseUrl}bld-unit/su_id=${suId}/`, { headers: this.h() });
+  }
+
+  /**
+   * Create a new apartment unit.
+   * Minimum payload: { parent_su_id, apt_name, floor_no }
+   */
+  createBuildingUnit(data: Record<string, any>): Observable<any> {
+    this.loadFromStorage();
+    return this.http.post(`${this.baseUrl}bld-unit/create/`, data, { headers: this.h() });
+  }
+
+  /** Patch admin and/or utility attributes of an apartment unit. */
+  updateBuildingUnit(suId: string | number, data: Record<string, any>): Observable<any> {
+    this.loadFromStorage();
+    return this.http.patch(`${this.baseUrl}bld-unit/update/su_id=${suId}/`, data, {
+      headers: this.h(),
+    });
+  }
+
+  // =============================================================================
   // BUILDING TAB — PATCH / UPDATE
   // =============================================================================
 

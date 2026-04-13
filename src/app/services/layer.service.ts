@@ -60,7 +60,9 @@ export class LayerService {
   // For UI to show a loading spinner
   private isLoadingSubject = new BehaviorSubject<boolean>(false);
   public isLoading$ = this.isLoadingSubject.asObservable();
-  private buildingsDisabledSubject = new BehaviorSubject<boolean>(true); // Default to disabled
+  // Buildings are disabled for plain 'user' role; admin / super_admin can edit.
+  // Resolved in constructor once userService is available.
+  private buildingsDisabledSubject = new BehaviorSubject<boolean>(true);
   public buildingsDisabled$ = this.buildingsDisabledSubject.asObservable();
 
   // For UI to display the list of all available layers (e.g., in side-panel)
@@ -96,6 +98,19 @@ export class LayerService {
   }
 
   constructor() {
+    // Reactively resolve buildings-disabled state from user role.
+    // LayerService is constructed before user data is loaded from the token, so we
+    // must subscribe to user$ and update whenever the user becomes available.
+    this.userService.user$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((user) => {
+        const role = user?.user_type || '';
+        const isDisabled = role !== 'admin' && role !== 'super_admin';
+        if (this.buildingsDisabledSubject.value !== isDisabled) {
+          this.buildingsDisabledSubject.next(isDisabled);
+        }
+      });
+
     this.mapService.mapInstance$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((map) => {
       this.mapInstance = map;
     });
@@ -119,6 +134,15 @@ export class LayerService {
   public loadInitialMapLayers(): void {
     if (this.isLoadingSubject.value) return; // Prevent concurrent loading
     console.log('LayerService: Starting initial layer load...');
+
+    // Restore the previously selected drawing layer so the select/modify filter
+    // keeps working across page reloads without the user having to re-open the layer panel.
+    const savedLayerId = typeof window !== 'undefined' ? localStorage.getItem('selected_layer_id') : null;
+    if (savedLayerId) {
+      const parsed = parseInt(savedLayerId, 10);
+      this.setSelectedCurrentLayerIdForDrawing(isNaN(parsed) ? savedLayerId : parsed);
+      console.log(`LayerService: Restored active drawing layer from localStorage: ${savedLayerId}`);
+    }
     // Defer to next tick to avoid NG0100 (ExpressionChangedAfterItHasBeenCheckedError)
     // when isLoading$ is read by an async pipe during Angular's current CD cycle.
     setTimeout(() => this.isLoadingSubject.next(true), 0);
@@ -360,20 +384,15 @@ export class LayerService {
         const gndLayer = new VectorLayer({
           source: vectorSource,
           style: gndStyle,
-          visible: true, // GND boundary is visible by default on load
+          visible: false, // GND boundary is OFF by default — user can enable it under Settings tab
           zIndex: 0,
         });
         gndLayer.set('layerId', layerName);
 
         this.mapInstance?.addLayer(gndLayer);
 
-        // Register the GND layer as selected so updateMapLayerVisibility keeps it visible.
-        // Use a non-destructive merge: add the string ID only if not already present.
-        const currentIds = this.selectedLayerIdsSubject.value;
-        if (!currentIds.includes(layerName)) {
-          this.selectedLayerIdsSubject.next([...currentIds, layerName]);
-        }
-        console.log('GND Layer added to the map successfully.');
+        // Do NOT register the GND layer as selected on load — it starts hidden.
+        console.log('GND Layer added to the map successfully (hidden by default).');
       }),
       catchError((err) => {
         console.error('Error loading GND layer:', err);
