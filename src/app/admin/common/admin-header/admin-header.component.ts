@@ -149,8 +149,8 @@ export class AdminHeaderComponent implements OnInit {
 
   getOrgs() {
     if (this.userType !== 'super_admin') return;
-    this.apiService.getOrganizationsList().subscribe((res) => {
-      this.organizations_list = res;
+    this.apiService.getOrganizationsList().subscribe((res: any) => {
+      this.organizations_list = res.results || [];
       this.current_org = this.organizations_list.find(
         (org: any) => org.org_id === this.user_org_id,
       );

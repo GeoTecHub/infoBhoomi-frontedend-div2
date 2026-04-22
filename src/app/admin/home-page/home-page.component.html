@@ -190,7 +190,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    @for (login of logins; track login) {
+                    @for (login of logins; track $index) {
                       <tr>
                         <td class="f-12">{{ login.username }}</td>
                         <td class="f-12">{{ login.email }}</td>
