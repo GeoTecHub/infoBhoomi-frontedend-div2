@@ -14,6 +14,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { MatDialog } from '@angular/material/dialog';
+import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute } from '@angular/router';
 
@@ -115,6 +116,7 @@ function isOLFeature<T extends Geometry = Geometry>(v: unknown): v is OLFeature<
     UserAuthenticatorComponent,
     ToolsComponent,
     MatProgressSpinnerModule,
+    MatIconModule,
   ],
   templateUrl: './main.component.html',
   styleUrl: './main.component.css',
@@ -148,6 +150,7 @@ export class MainComponent implements OnInit, OnDestroy {
   public selectedDisplayProjection!: ProjectionCode;
   public currentLayerName: string = 'Not Selected';
   public isSidebarClosed = false;
+  public panelWidth = 340;
 
   public extendWidth = false;
   public contextMenuVisible = false;
@@ -155,8 +158,20 @@ export class MainComponent implements OnInit, OnDestroy {
   public selectedFeatureInfo: SelectedFeatureInfo | null = null;
   public user: any | null = null;
 
+  toggleSidebar(): void {
+    this.sidebarService.toggleSidebar();
+  }
+
   onExtendChanged(value: boolean) {
     this.extendWidth = value;
+    this.panelWidth = value ? 450 : 340;
+    this.cdr.markForCheck();
+  }
+
+  onPanelResized(width: number): void {
+    this.panelWidth = width;
+    this.extendWidth = false;
+    this.cdr.markForCheck();
   }
 
   get canConvertToInfobhoomi(): boolean {

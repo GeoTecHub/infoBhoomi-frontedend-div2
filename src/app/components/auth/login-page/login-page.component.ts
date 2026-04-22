@@ -54,13 +54,14 @@ export class LoginPageComponent {
       }
     }
 
-    this.loginservice.login(this.loginObj).subscribe(
-      (res: API_LOGIN_RESPONSE) => {
+    this.loginservice.login(this.loginObj).subscribe({
+      next: (res: API_LOGIN_RESPONSE) => {
         if (res.user && res.token) {
           localStorage.setItem('Token', res.token);
           localStorage.setItem('emp_id', res.user.emp_id);
           localStorage.setItem('role_id', res.user.role_id.toString());
 
+          this.apiService.clearPermissionsCache();
           this.apiService.loadFromStorage();
           this.loginService.setLoggedIn();
 
@@ -75,14 +76,14 @@ export class LoginPageComponent {
           this.notificationService.showError('Login Failed');
         }
       },
-      (error) => {
+      error: (error) => {
         console.error('Error occurred during login:', error);
         const msg =
           error?.error?.error || error?.error?.detail || 'Login failed. Please try again.';
         this.notificationService.showError(msg, 5000);
         // alert('Login Failed');
       },
-    );
+    });
 
     this.passwordRequired = false; // Reset the flags if username & password is valid
     this.usernameRequired = false;

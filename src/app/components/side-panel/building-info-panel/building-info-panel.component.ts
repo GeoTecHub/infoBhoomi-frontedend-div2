@@ -76,7 +76,8 @@ type CollapsibleSection =
   | 'physical'
   | 'utilities'
   | 'relationships'
-  | 'metadata';
+  | 'metadata'
+  | 'tax';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -172,7 +173,7 @@ export class BuildingInfoPanelComponent {
   rrrEntries = signal<RRREntry[]>([]);
 
   // Local state
-  expandedSections = signal<Set<CollapsibleSection>>(new Set(['summary', 'units']));
+  expandedSections = signal<Set<CollapsibleSection>>(new Set(['summary']));
   activeRRRTab = signal<RRRTab>('ownership');
   selectedUnit = signal<BuildingUnit | null>(null);
   expandedRRRId = signal<string | null>(null);

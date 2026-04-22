@@ -21,7 +21,7 @@
     <div class="card_">
       <div class="card-body">
         <div class="row g-3 mb-2">
-          <app-loader [isLoading]="loading" class="m-0"></app-loader>
+          <app-loader *ngIf="loading" [isLoading]="loading" class="m-0"></app-loader>
           <!-- Organization Details -->
           <div class="col-md-6 mt-0">
             <div class="card h-100 shadow-sm py-3">

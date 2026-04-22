@@ -2,29 +2,6 @@
   <!-- Resize Handle -->
   <div class="resize-handle" (mousedown)="onResizeStart($event)"></div>
 
-  <!-- Toggle Button -->
-  <button
-    class="sidebar-toggle"
-    (click)="toggleSidebar()"
-    [attr.aria-label]="isSidebarClosed() ? 'Open sidebar' : 'Close sidebar'"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-    >
-      @if (isSidebarClosed()) {
-        <polyline points="9 18 15 12 9 6" />
-      } @else {
-        <polyline points="15 18 9 12 15 6" />
-      }
-    </svg>
-  </button>
-
   @if (!isSidebarClosed()) {
     <!-- Tab Bar -->
     <div class="sidebar-tab-bar">

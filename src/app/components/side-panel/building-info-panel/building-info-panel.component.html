@@ -1877,8 +1877,8 @@
         <div class="collapsible-section">
           <button
             class="section-header"
-            [class.expanded]="false"
-            (click)="toggleSection('physical')"
+            [class.expanded]="isSectionExpanded('tax')"
+            (click)="toggleSection('tax')"
           >
             <span class="section-icon"
               ><svg
@@ -1907,6 +1907,7 @@
                 <polyline points="6 9 12 15 18 9" /></svg
             ></span>
           </button>
+          @if (isSectionExpanded('tax')) {
           <div class="section-content">
             <table class="info-table">
               <tr>
@@ -1939,6 +1940,7 @@
               </tr>
             </table>
           </div>
+          }
         </div>
       }
 

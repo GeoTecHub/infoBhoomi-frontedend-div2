@@ -1,5 +1,5 @@
 <mat-dialog-content class="mat-typography">
-  <app-loader [isLoading]="loading"></app-loader>
+  <app-loader *ngIf="loading" [isLoading]="loading"></app-loader>
   <div class="about-main-content">
     <div class="about-contact-block">
       <h3 class="about-title">Admin Contact Information</h3>

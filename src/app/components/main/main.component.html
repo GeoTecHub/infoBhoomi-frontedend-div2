@@ -7,12 +7,24 @@
   </div>
 
   <div class="main-body">
-    <div
-      class="side-panel-container"
-      [class.collapsed]="isSidebarClosed"
-      [class.extended]="extendWidth"
-    >
-      <app-side-panel (emitExtend)="onExtendChanged($event)"></app-side-panel>
+    <div class="side-panel-wrapper">
+      <div
+        class="side-panel-container"
+        [class.collapsed]="isSidebarClosed"
+        [style.width.px]="isSidebarClosed ? 12 : panelWidth"
+      >
+        <app-side-panel
+          (emitExtend)="onExtendChanged($event)"
+          (resizeWidth)="onPanelResized($event)"
+        ></app-side-panel>
+      </div>
+      <button
+        class="sidebar-toggle-btn"
+        (click)="toggleSidebar()"
+        [attr.aria-label]="isSidebarClosed ? 'Open sidebar' : 'Close sidebar'"
+      >
+        <mat-icon>{{ isSidebarClosed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+      </button>
     </div>
 
     <!-- Map rendering target - MUST have position: relative -->
@@ -64,21 +76,18 @@
           left: contextMenuPosition.x + 'px',
         }"
       >
-        <ul class="context-menu-list" (click)="$event.stopPropagation()">
+        <div class="context-menu-list" (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
           @if (selectedFeatureInfo?.layerId !== 3) {
-            <li (click)="onAddBuilding()">Add Building</li>
+            <button class="context-menu-item" (click)="onAddBuilding()">Add Building</button>
           }
           @if (selectedFeatureInfo?.layerId !== 3) {
-            <li (click)="onConvertToBuilding()">Convert to building</li>
+            <button class="context-menu-item" (click)="onConvertToBuilding()">Convert to building</button>
           }
-          <li (click)="onAddLegalForms()">Add Legal Forms</li>
+          <button class="context-menu-item" (click)="onAddLegalForms()">Add Legal Forms</button>
           @if (user?.user_type === 'admin' || user?.user_type === 'super_admin') {
-            <li (click)="onClickInfo()">Feature Info</li>
+            <button class="context-menu-item" (click)="onClickInfo()">Feature Info</button>
           }
-          <!-- <li (click)="onConvertToInfobhoomi()" [class.disabled]="!canConvertToInfobhoomi">
-          Convert to Infobhoomi
-        </li> -->
-        </ul>
+        </div>
       </div>
     }
   </div>
