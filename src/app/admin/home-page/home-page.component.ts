@@ -140,7 +140,7 @@ export class HomePageComponent implements OnInit, AfterViewInit {
     return new Promise((resolve, reject) => {
       this.apiService.getRecentLogins().subscribe({
         next: (res: any) => {
-          this.logins = res;
+          this.logins = res.results || [];
           resolve(true);
 
           this.cdr.markForCheck();

@@ -18,7 +18,7 @@
 }
 
 .sidebar.collapsed {
-  width: 30px;
+  width: 12px;
 }
 
 /* ─── Resize Handle ─────────────────────────────────────── */
@@ -55,32 +55,6 @@
 .resize-handle:hover,
 .resize-handle:active {
   background: var(--surface-sidebar-hover); /* UI-only change — was rgba(79,70,229,0.15) indigo */
-}
-
-/* ─── Toggle Button ─────────────────────────────────────── */
-.sidebar-toggle {
-  position: absolute;
-  right: -14px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 24px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--surface-panel); /* UI-only change — was rgba(30,41,59,0.9) dark slate */
-  border: 1px solid var(--border-default); /* UI-only change — was rgba(148,163,184,0.2) */
-  border-radius: 0 8px 8px 0;
-  color: var(--text-secondary); /* UI-only change — was #94a3b8 (Tailwind slate-400) */
-  cursor: pointer;
-  z-index: 10;
-  transition: all 0.2s ease;
-  padding: 0;
-}
-
-.sidebar-toggle:hover {
-  background: var(--surface-sidebar-hover); /* UI-only change — was rgba(79,70,229,0.2) indigo */
-  color: var(--text-primary); /* UI-only change — was #e2e8f0 */
 }
 
 /* ─── Tab Bar ───────────────────────────────────────────── */

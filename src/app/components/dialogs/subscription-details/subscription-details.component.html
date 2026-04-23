@@ -1,6 +1,6 @@
 <h4 mat-dialog-title>Subscription Details</h4>
 <mat-dialog-content class="mat-typography">
-  <app-loader [isLoading]="loading"></app-loader>
+  <app-loader *ngIf="loading" [isLoading]="loading"></app-loader>
   <div class="about-main-content">
     <div class="form-section mb-2">
       <label for="fileInput" class="section-label">Current Plan :</label>

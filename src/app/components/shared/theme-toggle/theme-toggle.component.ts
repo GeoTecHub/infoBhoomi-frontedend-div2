@@ -17,8 +17,11 @@ import { ThemeService } from '../../../services/theme.service';
         themeService.theme() === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'
       "
       aria-label="Toggle light/dark theme"
+      class="h-100 d-flex align-items-center"
     >
-      <mat-icon>{{ themeService.theme() === 'light' ? 'dark_mode' : 'light_mode' }}</mat-icon>
+      <mat-icon class="icon-mat-only">{{
+        themeService.theme() === 'light' ? 'dark_mode' : 'light_mode'
+      }}</mat-icon>
     </button>
   `,
   styles: [
@@ -26,6 +29,9 @@ import { ThemeService } from '../../../services/theme.service';
       /* UI-only */
       button {
         color: var(--text-on-header);
+      }
+      .icon-mat-only {
+        font-size: 20px;
       }
     `,
   ],

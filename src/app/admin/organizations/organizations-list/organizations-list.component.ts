@@ -66,8 +66,8 @@ export class OrganizationsListComponent implements OnInit {
   }
 
   getOrganizationsList() {
-    this.apiService.getOrganizationsList().subscribe((res) => {
-      this.organizations_list = res;
+    this.apiService.getOrganizationsList().subscribe((res: any) => {
+      this.organizations_list = res.results || [];
 
       this.cdr.markForCheck();
     });

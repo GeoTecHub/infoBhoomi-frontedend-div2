@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
-  API_URL: 'http://localhost:8000/api/user/',
-  // API_URL: 'https://infobhoomiback.geoinfobox.com/api/user/', // production
+  // API_URL: 'http://localhost:8000/api/user/',
+  API_URL: 'https://infobhoomi-v1back.geoinfobox.com/api/user/', // production
   VERTEXT_BASE_URL: 'https://vertextback.geoinfobox.com/api/user/',
   // LOGIN: 'login/',
   // LAYERS: 'layerdata/',

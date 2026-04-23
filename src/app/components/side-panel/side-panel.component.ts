@@ -68,7 +68,7 @@ import { MapService } from '../../services/map.service';
 import { NotificationService } from '../../services/notifications.service';
 import { PermissionService } from '../../services/permissions.service';
 import { SidebarControlService } from '../../services/sidebar-control.service';
-import { LandSectionPermissions, BuildingSectionPermissions } from '../../core/constant';
+import { LandSectionPermissions } from '../../core/constant';
 import { BuildingInfoPanelComponent } from './building-info-panel/building-info-panel.component';
 import { HomeTabComponent } from './home-tab/home-tab.component';
 import { LandInfoPanelComponent } from './land-info-panel/land-info-panel.component';
@@ -93,6 +93,7 @@ export class SidePanelComponent {
   private destroyRef = inject(DestroyRef);
 
   @Output() emitExtend = new EventEmitter<boolean>();
+  @Output() resizeWidth = new EventEmitter<number>();
 
   selected_feature_ID: any = '';
   selected_layer_ID: any = '';
@@ -229,10 +230,9 @@ export class SidePanelComponent {
       10,
     );
     if (!roleId) return;
-    const allIds = [
-      ...Object.values(LandSectionPermissions),
-      ...Object.values(BuildingSectionPermissions),
-    ];
+    // Building section permissions are not yet configured in the backend.
+    // Omitting them here so canView() defaults to true for all building sections.
+    const allIds = [...Object.values(LandSectionPermissions)];
     this.permissionService.loadPermissions(roleId, allIds).subscribe({
       next: (perms) => this.sectionPerms.set(perms),
       error: () => {
@@ -277,9 +277,12 @@ export class SidePanelComponent {
 
     const onMove = (e: MouseEvent) => {
       if (!this._resizing) return;
-      const delta = startX - e.clientX;
+      const delta = e.clientX - startX;
       const newWidth = Math.max(240, Math.min(600, startWidth + delta));
-      this.ngZone.run(() => this.sidebarWidth.set(newWidth));
+      this.ngZone.run(() => {
+        this.sidebarWidth.set(newWidth);
+        this.resizeWidth.emit(newWidth);
+      });
     };
 
     const onUp = () => {
