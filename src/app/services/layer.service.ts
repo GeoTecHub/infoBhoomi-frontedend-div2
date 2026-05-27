@@ -326,6 +326,8 @@ export class LayerService {
       if (feature) {
         feature.set('layer_id', layerId); // Ensure layer_id is on the feature
         feature.set('gnd_Id', item.properties?.gnd_id || null); // Set the backend ID
+        feature.set('ref_id', item.properties?.ref_id ?? null);
+        feature.set('ref_ids', item.properties?.ref_id ?? null);
         if (item.properties?.su_id) {
           // su_id is the numeric spatial-unit ID the side panel and save logic need.
           // Store under both keys so getFeatureIdentifier('feature_Id') resolves correctly.

@@ -144,10 +144,15 @@
       </button>
     </div>
 
-    <!-- Measure Button (Placeholder Action) -->
+    <!-- Measure Distance -->
     <div class="map-tool">
-      <button mat-fab aria-label="measure" matTooltip="Measure Distance/Area" disabled>
-        <!-- Add (click)="activateMeasureTool()" or similar if you implement it -->
+      <button
+        mat-fab
+        aria-label="measure distance"
+        matTooltip="Measure Distance"
+        [ngClass]="{ 'active-btn': activeUtilityTool === 'distance' }"
+        (click)="activateDistanceMeasure()"
+      >
         <mat-icon>square_foot</mat-icon>
       </button>
     </div>
@@ -166,38 +171,91 @@
       </button>
     </div>
 
-    <!-- Buffer Button (Placeholder Action) -->
+    <!-- Measure Angle -->
     <div class="map-tool">
-      <button mat-fab aria-label="buffer" matTooltip="Buffer Feature" disabled>
-        <!-- Add (click)="activateBufferTool()" or similar -->
-        <mat-icon>settings_ethernet</mat-icon>
-        <!-- Changed icon example -->
+      <button
+        mat-fab
+        aria-label="measure angle"
+        matTooltip="Measure Angle"
+        [ngClass]="{ 'active-btn': activeUtilityTool === 'angle' }"
+        (click)="activateAngleMeasure()"
+      >
+        <mat-icon>architecture</mat-icon>
       </button>
     </div>
 
-    <!-- Tag Button (Placeholder Action) -->
-    <div class="map-tool">
-      <button mat-fab aria-label="Tag" matTooltip="Tag Feature" disabled>
-        <!-- Add (click)="activateTagTool()" or similar -->
+    <!-- GeoTag -->
+    <div class="map-tool tag-tool">
+      <button
+        mat-fab
+        aria-label="GeoTag"
+        matTooltip="GeoTag"
+        [ngClass]="{ 'active-btn': activeUtilityTool === 'geotag' || showGeoTagMenu }"
+        (click)="toggleGeoTagMenu()"
+      >
         <mat-icon>sell</mat-icon>
       </button>
+      @if (showGeoTagMenu) {
+        <div class="geotag-menu">
+          @for (tag of geoTagTypes; track tag.type) {
+            <button type="button" (click)="selectGeoTagType(tag)">
+              <mat-icon>{{ tag.icon }}</mat-icon>
+              <span>{{ tag.label }}</span>
+            </button>
+          }
+        </div>
+      }
     </div>
   </div>
 </div>
+
+@if (geoTagContextMenu.visible) {
+  <div
+    class="geotag-context-menu"
+    [style.left.px]="geoTagContextMenu.x"
+    [style.top.px]="geoTagContextMenu.y"
+  >
+    <strong>{{ geoTagContextMenu.feature?.get('label') }}</strong>
+    <small>Status: {{ geoTagContextMenu.feature?.get('status') === false ? 'Inactive' : 'Active' }}</small>
+    <button type="button" (click)="setGeoTagStatus(true)">Mark Active</button>
+    <button type="button" (click)="setGeoTagStatus(false)">Mark Inactive</button>
+    <button type="button" class="danger" (click)="deleteGeoTag()">Delete</button>
+  </div>
+}
 
 <!--  -->
 @if (getChangesCount() > 0) {
   <div class="top-tools-group" [ngClass]="isSidebarClosed ? '' : 'offset-sidebar'">
     <div class="map-tool-set-4-content">
       <!-- Save Button -->
-      <div class="map-tool">
-        <button mat-fab aria-label="save" (click)="saveFeatures()" matTooltip="Save Features">
-          <mat-icon>save</mat-icon>
+      <div class="map-tool save-tool-container">
+        <button
+          mat-fab
+          aria-label="save"
+          (click)="saveFeatures()"
+          matTooltip="Save Features"
+          [disabled]="isSaving"
+          [ngClass]="{ 'saving-active': isSaving }"
+        >
+          @if (isSaving) {
+            <mat-icon class="spinning-icon">sync</mat-icon>
+          } @else {
+            <mat-icon>save</mat-icon>
+          }
         </button>
+        @if (isSaving) {
+          <div class="save-spinner-overlay"></div>
+        }
       </div>
       <!-- Undo Button -->
       <div class="map-tool">
-        <button mat-fab aria-label="undo" (click)="undoFeature()" matTooltip="Undo Features">
+        <button
+          mat-fab
+          aria-label="undo"
+          (click)="undoFeature()"
+          matTooltip="Undo Features"
+          [disabled]="isSaving"
+        >
           <mat-icon>undo</mat-icon>
         </button>
       </div>

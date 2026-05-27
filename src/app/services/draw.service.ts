@@ -189,6 +189,8 @@ export class DrawService implements OnDestroy {
   public readonly _activeTool = new BehaviorSubject<ActiveTool>(null);
   public readonly activeTool$ = this._activeTool.asObservable();
 
+  private isEndingDraw = false;
+
   public readonly _isSnappingEnabled = new BehaviorSubject<boolean>(false);
   public readonly isSnappingEnabled$ = this._isSnappingEnabled.asObservable();
 
@@ -276,11 +278,12 @@ export class DrawService implements OnDestroy {
   }
 
   getSelectedFeatureId(): number | null {
-    const id =
+    const rawId =
       Array.isArray(this._selectedFeatureInfo.value) && this._selectedFeatureInfo.value.length > 0
         ? this._selectedFeatureInfo.value[0].featureId
         : null;
-    return typeof id === 'number' ? id : null;
+    const id = Number(rawId);
+    return Number.isFinite(id) ? id : null;
   }
 
   private shouldUpdateSnapSource(): boolean {
@@ -1339,7 +1342,9 @@ export class DrawService implements OnDestroy {
       console.warn(
         '[DrawService] DrawEnd fired with an invalid state, feature, or geometry. Aborting.',
       );
+      this.isEndingDraw = true;
       this.setActiveTool(null);
+      this.isEndingDraw = false;
       this.resetRefFeatureActions(); // Reset any reference feature actions
       return;
     }
@@ -1350,7 +1355,9 @@ export class DrawService implements OnDestroy {
     if (targetLayerId === null) {
       this.notificationService.showError('No target layer selected for drawing.');
       // Consider automatically deactivating draw tool or providing more guidance
+      this.isEndingDraw = true;
       this.setActiveTool(null);
+      this.isEndingDraw = false;
       this.resetRefFeatureActions(); // Reset any reference feature actions
       return;
     }
@@ -1359,7 +1366,9 @@ export class DrawService implements OnDestroy {
 
     if (!feature) {
       console.warn('[DrawService] DrawEnd event fired without a feature object.');
+      this.isEndingDraw = true;
       this.setActiveTool(null); // Deactivate tool if something went wrong
+      this.isEndingDraw = false;
       this.resetRefFeatureActions(); // Reset any reference feature actions
       return;
     }
@@ -1371,7 +1380,9 @@ export class DrawService implements OnDestroy {
     if (!processedFeature) {
       // processNewFeature can return null if something goes wrong.
       this.notificationService.showError('Failed to process the new feature. Aborting.');
+      this.isEndingDraw = true;
       this.setActiveTool(null);
+      this.isEndingDraw = false;
       this.resetRefFeatureActions(); // Reset any reference feature actions
       return;
     } else {
@@ -1381,11 +1392,17 @@ export class DrawService implements OnDestroy {
 
     // Switch to single-select after a successful draw so the newly drawn feature
     // is immediately clickable without the user having to manually re-activate a tool.
+    this.isEndingDraw = true;
     this.setActiveTool({ type: 'select', multi: false });
+    this.isEndingDraw = false;
     this.resetRefFeatureActions(); // Reset any reference feature actions
   };
 
   private onOlDrawAbort = (): void => {
+    if (this.isEndingDraw) {
+      console.log('[DrawService] Draw cleanup (intentional).');
+      return;
+    }
     console.log('[DrawService] Draw Aborted.');
     this.notificationService.showInfo('Drawing cancelled.');
     this.setActiveTool(null); // Deactivate current tool

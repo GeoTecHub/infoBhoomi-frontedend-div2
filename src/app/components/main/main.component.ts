@@ -45,6 +45,7 @@ import {
   LandParcelReportComponent,
   LandParcelReportData,
 } from '../dialogs/land-parcel-report/land-parcel-report.component';
+import { ParcelHistoryComponent } from '../dialogs/parcel-history/parcel-history.component';
 import {
   BoundaryType,
   createDefaultLandParcel,
@@ -594,7 +595,12 @@ export class MainComponent implements OnInit, OnDestroy {
   };
 
   onAddBuilding(): void {
-    this.drawService.selectedRefFeatureId = this.drawService.getSelectedFeatureId();
+    const selectedId = Number(this.selectedFeatureInfo?.featureId);
+    const selectedLayerId = Number(this.selectedFeatureInfo?.layerId);
+    this.drawService.selectedRefFeatureId =
+      Number.isFinite(selectedId) && [1, 6].includes(selectedLayerId)
+        ? selectedId
+        : this.drawService.getSelectedFeatureId();
     this.layerService.setSelectedCurrentLayerIdForDrawing(3); // 'Building' layer
     this.layerService.setLayerVisibility(3, true);
     this.drawService.setActiveTool({ type: 'draw', drawType: 'Polygon' });
@@ -616,6 +622,46 @@ export class MainComponent implements OnInit, OnDestroy {
     if (this.dialogRef) return;
     this.dialogRef = this.dialog.open(InfoModalComponent, { minWidth: '480px' });
     this.dialogRef.afterClosed().subscribe(() => (this.dialogRef = null));
+  }
+
+  onOpenHistory(): void {
+    const featureId = this.selectedFeatureInfo?.featureId;
+    if (!featureId) {
+      this.notificationService.showError('Please select a parcel or building first.');
+      this.hideContextMenu();
+      return;
+    }
+
+    if (this.dialogRef) return;
+    this.dialogRef = this.dialog.open(ParcelHistoryComponent, {
+      panelClass: 'parcel-history-dialog',
+      width: '980px',
+      maxWidth: '96vw',
+      height: '78vh',
+      data: {
+        suId: featureId,
+        layerId: this.selectedFeatureInfo?.layerId,
+        label: this.selectedFeatureInfo?.layerId === 3 ? 'Building' : 'Parcel',
+        onRestored: (result: { refreshMap?: boolean; refreshSelection?: boolean }) => {
+          if (result?.refreshMap) {
+            this.layerService.loadInitialMapLayers();
+          }
+          if (result?.refreshSelection !== false) {
+            this.drawService.refreshCurrentSelection();
+          }
+        },
+      },
+    });
+    this.dialogRef.afterClosed().subscribe((result: any) => {
+      this.dialogRef = null;
+      if (result?.refreshMap) {
+        this.layerService.loadInitialMapLayers();
+        this.drawService.refreshCurrentSelection();
+      } else if (result?.refreshSelection) {
+        this.drawService.refreshCurrentSelection();
+      }
+    });
+    this.hideContextMenu();
   }
 
   onGenerateReport(): void {
@@ -709,6 +755,7 @@ export class MainComponent implements OnInit, OnDestroy {
       waterSupply: '',
       electricity: '',
       drainageSystem: '',
+      sanitationSewer: '',
       sanitationGully: '',
       garbageDisposal: '',
     };

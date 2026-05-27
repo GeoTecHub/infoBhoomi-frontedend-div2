@@ -337,6 +337,7 @@ export interface RRRDocument {
 
 export interface RRREntry {
   rrrId: string;
+  backendRrrId?: number;
   type: RightType;
   holder: string;
   holderId?: string; // Party PID from backend
@@ -374,6 +375,7 @@ export interface BuildingUnit {
   parentBuilding: string;
   floorNumber: number;
   unitType: UnitType;
+  postalAddressRef?: string;
   boundary: string;
   accessType: AccessType;
   cadastralRef: string;
@@ -381,6 +383,9 @@ export interface BuildingUnit {
   registrationDate: string;
   primaryUse: PrimaryUse;
   rooms: string[]; // CityJSON object IDs of rooms composing this unit
+  physicalAttributes?: PhysicalAttributes;
+  utilities?: UtilityInfo;
+  cadastralCertificates?: RRRDocument[];
   tax: UnitTaxValuation;
   rrr: RRRInfo;
 }

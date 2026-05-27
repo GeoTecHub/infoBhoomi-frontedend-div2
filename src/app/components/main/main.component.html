@@ -72,6 +72,7 @@
             <li (click)="onConvertToBuilding()">Convert to building</li>
           }
           <li (click)="onAddLegalForms()">Add Legal Forms</li>
+          <li (click)="onOpenHistory()">History</li>
           @if (user?.user_type === 'admin' || user?.user_type === 'super_admin') {
             <li (click)="onClickInfo()">Feature Info</li>
           }

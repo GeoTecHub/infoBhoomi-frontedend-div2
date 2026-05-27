@@ -221,18 +221,6 @@
                     />
                   </td>
                 </tr>
-                <tr>
-                  <td class="label">Local Authority</td>
-                  <td class="value">
-                    <input
-                      type="text"
-                      class="field-input"
-                      [ngModel]="parcelInfo()!.identification.localAuthority"
-                      (ngModelChange)="onIdentificationFieldChange('localAuthority', $event)"
-                      placeholder="Municipality / District"
-                    />
-                  </td>
-                </tr>
               </table>
             </div>
           }
@@ -437,13 +425,16 @@
                 <tr>
                   <td class="label">Vegetation</td>
                   <td class="value">
-                    <input
-                      type="text"
-                      class="field-input"
+                    <select
+                      class="field-select"
                       [ngModel]="parcelInfo()!.physical.vegetationCover"
                       (ngModelChange)="onPhysicalFieldChange('vegetationCover', $event)"
-                      placeholder="e.g., Grass, Trees"
-                    />
+                    >
+                      <option value="">— Select —</option>
+                      @for (opt of vegetationOptions(); track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                      }
+                    </select>
                   </td>
                 </tr>
                 <tr>
@@ -464,61 +455,91 @@
                 <tr>
                   <td class="label">Water Supply</td>
                   <td class="value">
-                    <input
-                      type="text"
-                      class="field-input"
+                    <select
+                      class="field-select"
                       [ngModel]="parcelInfo()!.physical.waterSupply"
                       (ngModelChange)="onPhysicalFieldChange('waterSupply', $event)"
-                      placeholder="e.g., Municipal, Borehole"
-                    />
+                    >
+                      <option value="">— Select —</option>
+                      @for (opt of waterSupplyOptions(); track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                      }
+                    </select>
                   </td>
                 </tr>
                 <tr>
                   <td class="label">Electricity</td>
                   <td class="value">
-                    <input
-                      type="text"
-                      class="field-input"
+                    <select
+                      class="field-select"
                       [ngModel]="parcelInfo()!.physical.electricity"
                       (ngModelChange)="onPhysicalFieldChange('electricity', $event)"
-                      placeholder="e.g., Grid, Solar"
-                    />
+                    >
+                      <option value="">— Select —</option>
+                      @for (opt of electricityOptions(); track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                      }
+                    </select>
                   </td>
                 </tr>
                 <tr>
                   <td class="label">Drainage</td>
                   <td class="value">
-                    <input
-                      type="text"
-                      class="field-input"
+                    <select
+                      class="field-select"
                       [ngModel]="parcelInfo()!.physical.drainageSystem"
                       (ngModelChange)="onPhysicalFieldChange('drainageSystem', $event)"
-                      placeholder="e.g., Storm drain, Channel"
-                    />
+                    >
+                      <option value="">— Select —</option>
+                      @for (opt of drainageOptions(); track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                      }
+                    </select>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="label">Sanitation (Sewer)</td>
+                  <td class="value">
+                    <select
+                      class="field-select"
+                      [ngModel]="parcelInfo()!.physical.sanitationSewer"
+                      (ngModelChange)="onPhysicalFieldChange('sanitationSewer', $event)"
+                    >
+                      <option value="">— Select —</option>
+                      @for (opt of sanitationSewerOptions(); track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                      }
+                    </select>
                   </td>
                 </tr>
                 <tr>
                   <td class="label">Sanitation Gully</td>
                   <td class="value">
-                    <input
-                      type="text"
-                      class="field-input"
+                    <select
+                      class="field-select"
                       [ngModel]="parcelInfo()!.physical.sanitationGully"
                       (ngModelChange)="onPhysicalFieldChange('sanitationGully', $event)"
-                      placeholder="e.g., Cesspit, None"
-                    />
+                    >
+                      <option value="">— Select —</option>
+                      @for (opt of sanitationGullyOptions(); track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                      }
+                    </select>
                   </td>
                 </tr>
                 <tr>
                   <td class="label">Garbage Disposal</td>
                   <td class="value">
-                    <input
-                      type="text"
-                      class="field-input"
+                    <select
+                      class="field-select"
                       [ngModel]="parcelInfo()!.physical.garbageDisposal"
                       (ngModelChange)="onPhysicalFieldChange('garbageDisposal', $event)"
-                      placeholder="e.g., Municipal collection"
-                    />
+                    >
+                      <option value="">— Select —</option>
+                      @for (opt of garbageDisposalOptions(); track opt) {
+                        <option [value]="opt">{{ opt }}</option>
+                      }
+                    </select>
                   </td>
                 </tr>
               </table>
@@ -729,8 +750,8 @@
                           <td>
                             <div
                               class="rrr-holder-linked"
-                              (click)="openHolderDetails(entry)"
-                              title="Click to view party details"
+                              (click)="toggleRRRExpand(entry.rrrId)"
+                              title="Click to view RRR details"
                             >
                               <span class="rrr-holder-name">{{
                                 entry.holder || 'Unknown holder'
@@ -759,6 +780,7 @@
                               class="field-input rrr-cell-input rrr-share-input"
                               [ngModel]="entry.share"
                               (ngModelChange)="onRRRFieldChange(i, 'share', $event)"
+                              (blur)="onRRRFieldBlur(i, 'share')"
                               min="0"
                               max="100"
                             />
@@ -802,6 +824,7 @@
                                     class="field-input"
                                     [ngModel]="entry.rrrId"
                                     (ngModelChange)="onRRRFieldChange(i, 'rrrId', $event)"
+                                    (blur)="onRRRFieldBlur(i, 'rrrId')"
                                   />
                                 </div>
                                 <div class="rrr-inline-field">
@@ -811,6 +834,7 @@
                                     class="field-input"
                                     [ngModel]="entry.validFrom"
                                     (ngModelChange)="onRRRFieldChange(i, 'validFrom', $event)"
+                                    (blur)="onRRRFieldBlur(i, 'validFrom')"
                                   />
                                   <span>&ndash;</span>
                                   <input
@@ -818,6 +842,7 @@
                                     class="field-input"
                                     [ngModel]="entry.validTo"
                                     (ngModelChange)="onRRRFieldChange(i, 'validTo', $event)"
+                                    (blur)="onRRRFieldBlur(i, 'validTo')"
                                   />
                                 </div>
                                 <div class="rrr-inline-field">
@@ -827,6 +852,7 @@
                                     class="field-input"
                                     [ngModel]="entry.documentRef"
                                     (ngModelChange)="onRRRFieldChange(i, 'documentRef', $event)"
+                                    (blur)="onRRRFieldBlur(i, 'documentRef')"
                                     placeholder="Deed / Title reference"
                                   />
                                 </div>
@@ -1379,7 +1405,17 @@
       }
       <!-- ═══ Save / Delete Footer ═══ -->
       <div class="panel-footer">
-        <button class="footer-btn save-btn" (click)="onSaveParcel()">
+        @if (saving()) {
+          <div class="save-progress" aria-live="polite">
+            <span class="save-spinner"></span>
+            <span>Saving parcel details...</span>
+          </div>
+        }
+        <button class="footer-btn save-btn" [disabled]="saving()" (click)="onSaveParcel()">
+          @if (saving()) {
+            <span class="save-spinner save-spinner--button"></span>
+            Processing
+          } @else {
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="16"
@@ -1394,23 +1430,7 @@
             <polyline points="7 3 7 8 15 8" />
           </svg>
           Save Parcel Details
-        </button>
-        <button class="footer-btn delete-btn" (click)="onDeleteParcel()">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <polyline points="3 6 5 6 21 6" />
-            <path
-              d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-            />
-          </svg>
-          Delete
+          }
         </button>
       </div>
     </div>

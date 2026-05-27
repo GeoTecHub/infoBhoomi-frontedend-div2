@@ -18,6 +18,7 @@ import type { Position } from 'geojson';
 import { Feature } from 'ol';
 import { Coordinate } from 'ol/coordinate'; // Import Coordinate
 import LineString from 'ol/geom/LineString';
+import Point from 'ol/geom/Point';
 import Polygon from 'ol/geom/Polygon';
 import { Draw, Snap } from 'ol/interaction';
 import { DrawEvent } from 'ol/interaction/Draw';
@@ -47,11 +48,21 @@ import { UserService } from '../../services/user.service';
 import { GeomService } from '../../services/geom.service';
 import { MatDialog } from '@angular/material/dialog';
 import { Subject } from 'rxjs';
+import { Circle as CircleStyle, Fill, Icon, Stroke, Style, Text } from 'ol/style';
+import { getLength } from 'ol/sphere';
+import { unByKey } from 'ol/Observable';
+import { EventsKey } from 'ol/events';
 import {
   ProgressDialogComponent,
   ProgressDialogData,
   ProgressUpdate,
 } from '../shared/progress-dialog/progress-dialog.component';
+
+type GeoTagType = {
+  type: string;
+  label: string;
+  icon: string;
+};
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -87,6 +98,31 @@ export class ToolsComponent implements OnInit, OnDestroy {
   public isSidebarClosed = false;
 
   public extendWidth = false;
+  public activeUtilityTool: 'distance' | 'angle' | 'geotag' | null = null;
+  public showGeoTagMenu = false;
+  public selectedGeoTagType: GeoTagType | null = null;
+  public geoTagContextMenu: {
+    visible: boolean;
+    x: number;
+    y: number;
+    feature: Feature<Point> | null;
+  } = { visible: false, x: 0, y: 0, feature: null };
+
+  public readonly geoTagTypes: GeoTagType[] = [
+    { type: 'tree', label: 'Tree', icon: 'park' },
+    { type: 'garbage', label: 'Garbage Collection', icon: 'delete' },
+    { type: 'fire', label: 'Fire Risk', icon: 'local_fire_department' },
+    { type: 'drainage', label: 'Drainage Issue', icon: 'water_drop' },
+    { type: 'street_light', label: 'Street Light', icon: 'lightbulb' },
+    { type: 'road_damage', label: 'Road Damage', icon: 'traffic' },
+    { type: 'other', label: 'Other', icon: 'place' },
+  ];
+
+  private measureLayer: VectorLayer<VectorSource<Feature<Geometry>>> | null = null;
+  private geoTagLayer: VectorLayer<VectorSource<Feature<Point>>> | null = null;
+  private activeDraw: Draw | null = null;
+  private mapClickKey: EventsKey | null = null;
+  private contextMenuHandler: ((evt: MouseEvent) => void) | null = null;
 
   constructor(
     private mapService: MapService,
@@ -136,6 +172,12 @@ export class ToolsComponent implements OnInit, OnDestroy {
     this.toolbarSaveSubscription = this.toolbarActionService.saveAllTriggered$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.saveAllChanges());
+    this.mapService.mapInstance$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((map) => {
+      if (!map) return;
+      this.ensureUtilityLayers();
+      this.loadGeoTags();
+      this.installGeoTagContextMenu();
+    });
   }
 
   ngAfterViewInit(): void {
@@ -163,6 +205,10 @@ export class ToolsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.cleanupUtilityInteractions();
+    if (this.contextMenuHandler) {
+      this.mapService.mapInstance?.getViewport().removeEventListener('contextmenu', this.contextMenuHandler, true);
+    }
     this.drawService.setActiveTool(null);
   }
 
@@ -1553,6 +1599,303 @@ export class ToolsComponent implements OnInit, OnDestroy {
           }
         },
       });
+  }
+
+  activateDistanceMeasure(): void {
+    if (this.activeUtilityTool === 'distance') {
+      this.cleanupUtilityInteractions();
+      return;
+    }
+    this.startMeasureDraw('distance');
+  }
+
+  activateAngleMeasure(): void {
+    if (this.activeUtilityTool === 'angle') {
+      this.cleanupUtilityInteractions();
+      return;
+    }
+    this.startMeasureDraw('angle');
+  }
+
+  toggleGeoTagMenu(): void {
+    if (this.activeUtilityTool === 'geotag') {
+      this.cleanupUtilityInteractions();
+      this.showGeoTagMenu = false;
+      this.notifications.showInfo('GeoTag mode deactivated.');
+      return;
+    }
+    this.showGeoTagMenu = !this.showGeoTagMenu;
+    this.geoTagContextMenu.visible = false;
+  }
+
+  selectGeoTagType(tag: GeoTagType): void {
+    this.cleanupUtilityInteractions();
+    this.activeUtilityTool = 'geotag';
+    this.selectedGeoTagType = tag;
+    this.showGeoTagMenu = false;
+    this.drawService.setActiveTool(null);
+    this.notifications.showInfo(`Click the map to place: ${tag.label}`);
+
+    const map = this.mapService.getMapInstance();
+    this.mapClickKey = map.on('singleclick', (evt) => {
+      if (!this.selectedGeoTagType) return;
+      const lonLat = transform(evt.coordinate, 'EPSG:3857', 'EPSG:4326');
+      this.apiService
+        .createGeoTag({
+          tag_type: this.selectedGeoTagType.type,
+          label: this.selectedGeoTagType.label,
+          longitude: lonLat[0],
+          latitude: lonLat[1],
+        })
+        .subscribe({
+          next: (tagRow) => {
+            this.addGeoTagFeature(tagRow);
+            this.notifications.showSuccess(`${tagRow.label} tag placed.`);
+          },
+          error: (err) => this.notifications.showError(err?.error?.error || 'Could not save GeoTag.'),
+        });
+    });
+  }
+
+  setGeoTagStatus(active: boolean): void {
+    const feature = this.geoTagContextMenu.feature;
+    const tagId = feature?.get('tagId');
+    if (!feature || !tagId) return;
+    this.apiService.updateGeoTag(tagId, { status: active }).subscribe({
+      next: (row) => {
+        feature.set('status', row.status);
+        feature.setStyle(this.geoTagStyle(feature));
+        this.geoTagContextMenu.visible = false;
+      },
+      error: (err) => this.notifications.showError(err?.error?.error || 'Could not update GeoTag.'),
+    });
+  }
+
+  deleteGeoTag(): void {
+    const feature = this.geoTagContextMenu.feature;
+    const tagId = feature?.get('tagId');
+    if (!feature || !tagId) return;
+    this.apiService.deleteGeoTag(tagId).subscribe({
+      next: () => {
+        this.geoTagLayer?.getSource()?.removeFeature(feature);
+        this.geoTagContextMenu.visible = false;
+      },
+      error: (err) => this.notifications.showError(err?.error?.error || 'Could not delete GeoTag.'),
+    });
+  }
+
+  private startMeasureDraw(kind: 'distance' | 'angle'): void {
+    this.cleanupUtilityInteractions();
+    this.ensureUtilityLayers();
+    this.drawService.setActiveTool(null);
+    this.activeUtilityTool = kind;
+
+    const map = this.mapService.getMapInstance();
+    const source = this.measureLayer?.getSource();
+    if (!source) return;
+
+    this.activeDraw = new Draw({
+      source,
+      type: 'LineString',
+      maxPoints: kind === 'angle' ? 3 : undefined,
+      style: this.measureStyle(''),
+    });
+    map.addInteraction(this.activeDraw);
+    this.notifications.showInfo(
+      kind === 'distance'
+        ? 'Draw a temporary line to measure distance.'
+        : 'Click three points to measure the angle.',
+    );
+    this.activeDraw.on('drawend', (event: DrawEvent) => {
+      const line = event.feature.getGeometry() as LineString;
+      const label = kind === 'distance' ? this.distanceLabel(line) : this.angleLabel(line);
+      event.feature.set('measureLabel', label);
+      event.feature.setStyle(this.measureStyle(label));
+      this.cleanupUtilityInteractions(false);
+    });
+  }
+
+  private ensureUtilityLayers(): void {
+    const map = this.mapService.getMapInstance();
+    if (!this.measureLayer) {
+      this.measureLayer = new VectorLayer({
+        source: new VectorSource(),
+        zIndex: 9998,
+      });
+      map.addLayer(this.measureLayer);
+    }
+    if (!this.geoTagLayer) {
+      this.geoTagLayer = new VectorLayer({
+        source: new VectorSource<Feature<Point>>(),
+        zIndex: 9999,
+      });
+      map.addLayer(this.geoTagLayer);
+    }
+  }
+
+  private loadGeoTags(): void {
+    this.ensureUtilityLayers();
+    const source = this.geoTagLayer?.getSource();
+    if (!source) return;
+    source.clear();
+    this.apiService.getGeoTags().subscribe({
+      next: (tags) => tags.forEach((tag) => this.addGeoTagFeature(tag)),
+      error: (err) => console.warn('Could not load GeoTags.', err),
+    });
+  }
+
+  private addGeoTagFeature(tag: any): void {
+    this.ensureUtilityLayers();
+    if (tag.longitude == null || tag.latitude == null) return;
+    const coordinate = transform([tag.longitude, tag.latitude], 'EPSG:4326', 'EPSG:3857');
+    const feature = new Feature(new Point(coordinate));
+    feature.setProperties({
+      tagId: tag.id,
+      tagType: tag.tag_type,
+      label: tag.label,
+      status: tag.status,
+      note: tag.note,
+      isGeoTag: true,
+    });
+    feature.setStyle(this.geoTagStyle(feature));
+    this.geoTagLayer?.getSource()?.addFeature(feature);
+  }
+
+  private installGeoTagContextMenu(): void {
+    if (this.contextMenuHandler) return;
+    const map = this.mapService.getMapInstance();
+    this.contextMenuHandler = (evt: MouseEvent) => {
+      const pixel = map.getEventPixel(evt);
+      const feature = map.forEachFeatureAtPixel(pixel, (candidate) => {
+        return candidate.get('isGeoTag') ? candidate : null;
+      }) as Feature<Point> | null;
+      if (!feature) return;
+      evt.preventDefault();
+      evt.stopPropagation();
+      this.geoTagContextMenu = {
+        visible: true,
+        x: evt.clientX,
+        y: evt.clientY,
+        feature,
+      };
+      this.cdr.markForCheck();
+    };
+    map.getViewport().addEventListener('contextmenu', this.contextMenuHandler, true);
+  }
+
+  private cleanupUtilityInteractions(clearTool = true): void {
+    const map = this.mapService.mapInstance;
+    if (this.activeDraw && map) {
+      map.removeInteraction(this.activeDraw);
+    }
+    if (this.mapClickKey) {
+      unByKey(this.mapClickKey);
+    }
+    this.activeDraw = null;
+    this.mapClickKey = null;
+    if (clearTool) {
+      this.activeUtilityTool = null;
+      this.selectedGeoTagType = null;
+    }
+  }
+
+  private distanceLabel(line: LineString): string {
+    const meters = getLength(line, { projection: 'EPSG:3857' });
+    return meters >= 1000 ? `${(meters / 1000).toFixed(2)} km` : `${meters.toFixed(1)} m`;
+  }
+
+  private angleLabel(line: LineString): string {
+    const coords = line.getCoordinates();
+    if (coords.length < 3) return 'Angle: incomplete';
+    const [a, b, c] = coords;
+    const angle1 = Math.atan2(a[1] - b[1], a[0] - b[0]);
+    const angle2 = Math.atan2(c[1] - b[1], c[0] - b[0]);
+    let deg = Math.abs(((angle2 - angle1) * 180) / Math.PI);
+    if (deg > 180) deg = 360 - deg;
+    return `${deg.toFixed(1)} deg`;
+  }
+
+  private measureStyle(label: string): Style[] {
+    return [
+      new Style({
+        stroke: new Stroke({ color: '#2563eb', width: 3 }),
+        image: new CircleStyle({
+          radius: 5,
+          fill: new Fill({ color: '#2563eb' }),
+          stroke: new Stroke({ color: '#ffffff', width: 2 }),
+        }),
+      }),
+      new Style({
+        text: new Text({
+          text: label,
+          offsetY: -16,
+          fill: new Fill({ color: '#111827' }),
+          stroke: new Stroke({ color: '#ffffff', width: 4 }),
+          font: '600 13px Arial',
+        }),
+      }),
+    ];
+  }
+
+  private geoTagStyle(feature: Feature<Point>): Style {
+    const active = feature.get('status') !== false;
+    const label = feature.get('label') || 'Tag';
+    const type = String(feature.get('tagType') || 'other');
+    const color = this.geoTagColor(type, active);
+    return new Style({
+      image: new Icon({
+        src: this.geoTagIconSrc(type, color),
+        anchor: [0.5, 1],
+        scale: 1,
+      }),
+      text: new Text({
+        text: label,
+        offsetY: -34,
+        fill: new Fill({ color: '#111827' }),
+        stroke: new Stroke({ color: '#ffffff', width: 4 }),
+        font: '600 12px Arial',
+      }),
+    });
+  }
+
+  private geoTagColor(type: string, active: boolean): string {
+    if (type === 'tree') return '#16a34a';
+    if (type === 'other') return '#4f46e5';
+    if (['road_damage', 'garbage', 'fire'].includes(type)) {
+      return active ? '#dc2626' : '#16a34a';
+    }
+    return active ? '#dc2626' : '#16a34a';
+  }
+
+  private geoTagIconSrc(type: string, color: string): string {
+    const symbol = this.geoTagSymbolSvg(type);
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="34" height="42" viewBox="0 0 34 42">
+        <path d="M17 41s14-13.2 14-24A14 14 0 1 0 3 17c0 10.8 14 24 14 24z" fill="${color}" stroke="#fff" stroke-width="2"/>
+        <circle cx="17" cy="17" r="10.5" fill="rgba(255,255,255,0.16)"/>
+        ${symbol}
+      </svg>
+    `;
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+  }
+
+  private geoTagSymbolSvg(type: string): string {
+    switch (type) {
+      case 'tree':
+        return '<path d="M17 7l-6 9h3l-4 6h5v5h4v-5h5l-4-6h3z" fill="#fff"/>';
+      case 'garbage':
+        return '<path d="M12 12h10l-1 14h-8z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M10 10h14M14 8h6M15 15v8M19 15v8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/><path d="M12 12l10 14" stroke="#fff" stroke-width="1.5" stroke-linecap="round" opacity=".85"/>';
+      case 'fire':
+        return '<path d="M17 27c4.3 0 7-3 7-7.2 0-3.6-2.4-5.8-4.5-8.6-.4 2.4-1.3 3.5-2.6 4.7.2-3.2-1.7-5.4-3.4-7.5.2 4.7-4 6.6-4 11.4C9.5 24 12.7 27 17 27z" fill="#fff"/><path d="M17 24c1.5 0 2.5-1 2.5-2.4 0-1.1-.7-1.9-1.7-3.1-.3 1-.8 1.6-1.5 2.2-.2-1.1-.7-1.9-1.3-2.6.1 1.9-1.2 2.8-1.2 4.2 0 1 1.1 1.7 3.2 1.7z" fill="rgba(255,255,255,0.45)"/>';
+      case 'road_damage':
+        return '<path d="M11 26l4-18h4l4 18M17 9l-2 5 3 3-3 4 2 5" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+      case 'drainage':
+        return '<path d="M10 12h14v11H10z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M13 15v5M17 15v5M21 15v5M11 25c2 1.2 4 1.2 6 0s4-1.2 6 0" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>';
+      case 'street_light':
+        return '<path d="M13 9h8l-2 6h-4zM17 15v11M13 26h8" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>';
+      default:
+        return '<path d="M17 9a8 8 0 1 0 0 16 8 8 0 0 0 0-16zm0 4v5m0 4h.01" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>';
+    }
   }
 
   toggleMenu(): void {

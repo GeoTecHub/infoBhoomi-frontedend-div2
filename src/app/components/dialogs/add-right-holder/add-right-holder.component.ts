@@ -109,6 +109,12 @@ export class AddRightHolderComponent implements OnInit {
   groupNames: any[] = [];
   selectedGroupId = '';
 
+  // View-only mode: when set, the dialog skips the wizard and renders the
+  // existing party's details. Activated by passing
+  //   data: { viewOnly: true, holderId, holderType, holderRegType, holderRegNumber }
+  // — used when the user clicks an existing right holder row to inspect it.
+  viewOnly = false;
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: any,
     public dialogRef: MatDialogRef<AddRightHolderComponent>,
@@ -123,6 +129,34 @@ export class AddRightHolderComponent implements OnInit {
 
       this.cdr.markForCheck();
     });
+
+    // View-only: pre-populate from the backend instead of running the wizard.
+    if (this.data?.viewOnly && this.data?.holderId) {
+      this.viewOnly = true;
+      this.selectedPartyType = this.data.holderType || null;
+      this.registrationType = this.data.holderRegType || '';
+      this.registrationNumber = this.data.holderRegNumber || '';
+      this.apiService
+        .getPartyDataFromPID({ registration_number: this.data.holderId })
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (res: any) => {
+            const row = Array.isArray(res) ? res[0] : res;
+            if (row) {
+              this.partyData = row;
+              this.partyFound = true;
+              this.currentStep = 'search-result';
+            } else {
+              this.notificationService.showError('Could not load party details.');
+            }
+            this.cdr.markForCheck();
+          },
+          error: () => {
+            this.notificationService.showError('Failed to load party details.');
+            this.cdr.markForCheck();
+          },
+        });
+    }
   }
 
   // ─── Step 1: Select Party Type ─────────────────────────────
@@ -405,14 +439,30 @@ export class AddRightHolderComponent implements OnInit {
   // ─── Dropdown loading ──────────────────────────────────────
 
   private loadCivilianDropdowns(): void {
-    this.apiService.loadGenderTypes().subscribe((res: any) => (this.genderTypes = res || []));
-    this.apiService
-      .getEducationLevelTypes()
-      .subscribe((res: any) => (this.educationLevels = res || []));
-    this.apiService.grtMarriedStatus().subscribe((res: any) => (this.marriedStatuses = res || []));
-    this.apiService.getRaceTypes().subscribe((res: any) => (this.raceTypes = res || []));
-    this.apiService.getReligionTypes().subscribe((res: any) => (this.religionTypes = res || []));
-    this.apiService.getHelthdTypes().subscribe((res: any) => (this.healthStatuses = res || []));
+    this.apiService.loadGenderTypes().subscribe((res: any) => {
+      this.genderTypes = res || [];
+      this.cdr.markForCheck();
+    });
+    this.apiService.getEducationLevelTypes().subscribe((res: any) => {
+      this.educationLevels = res || [];
+      this.cdr.markForCheck();
+    });
+    this.apiService.grtMarriedStatus().subscribe((res: any) => {
+      this.marriedStatuses = res || [];
+      this.cdr.markForCheck();
+    });
+    this.apiService.getRaceTypes().subscribe((res: any) => {
+      this.raceTypes = res || [];
+      this.cdr.markForCheck();
+    });
+    this.apiService.getReligionTypes().subscribe((res: any) => {
+      this.religionTypes = res || [];
+      this.cdr.markForCheck();
+    });
+    this.apiService.getHelthdTypes().subscribe((res: any) => {
+      this.healthStatuses = res || [];
+      this.cdr.markForCheck();
+    });
   }
 
   private loadGroupNames(type: string): void {

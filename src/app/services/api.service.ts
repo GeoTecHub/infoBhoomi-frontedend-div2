@@ -188,6 +188,12 @@ export class APIsService {
     `${this.baseUrl}survey_rep_data/update/id=${uuid}/`;
   public readonly DELETE_SURVEY_BATCH_DATA = `${this.baseUrl}survey_rep_data/bulk_delete/`;
 
+  updateSurveyRepData(id: string | number, data: Record<string, any>): Observable<any> {
+    return this.http.patch(`${this.baseUrl}survey_rep_data/update/id=${id}/`, data, {
+      headers: this.h(),
+    });
+  }
+
   queryParcels(
     layerId: number,
     conditions: { field: string; operator: string; value: string }[],
@@ -309,7 +315,7 @@ export class APIsService {
       'dist',
       // gnd_id intentionally excluded: auto-derived from parcel geometry on the backend
       'eletorate',
-      'local_auth',
+      // local_auth removed: now derived read-only from sl_elect_local_auth lookup (keyed by GND)
       'remark',
       'access_road',
       'postal_ad_lnd',
@@ -323,6 +329,9 @@ export class APIsService {
       'parcel_status',
       // Relationship & tenure fields — backend reads these directly from request.data
       'tenure_type',
+      'adjacent_parcels',
+      'parent_parcel',
+      'child_parcels',
       'part_of_estate',
     ]);
     return this.http.patch(`${this.baseUrl}lnd-admin-info/update/su_id=${su_id}/`, filteredData, {
@@ -354,7 +363,7 @@ export class APIsService {
       'electricity',
       'garbage_disposal',
       'sanitation_gully',
-      'sanitation_sewerage',
+      'sanitation_sewer',
       'water_supply',
     ]);
     return this.http.patch(`${this.baseUrl}lnd-utinet-info/update/su_id=${su_id}/`, filteredData, {
@@ -368,7 +377,7 @@ export class APIsService {
       'electricity',
       'garbage_disposal',
       'sanitation_gully',
-      'sanitation_sewerage',
+      'sanitation_sewer',
       'water_supply',
     ]);
     filteredData['user_id'] = this.userService.getUser()?.user_id;
@@ -415,6 +424,12 @@ export class APIsService {
       filteredData,
       { headers: this.h() },
     );
+  }
+
+  postSpatialSource(formData: FormData): Observable<any> {
+    return this.http.post(`${this.baseUrl}la-spatial-source/`, formData, {
+      headers: this.h(false),
+    });
   }
 
   updateZoningInfo(su_id: any, data: any) {
@@ -695,6 +710,67 @@ export class APIsService {
     return this.http.get(`${this.baseUrl}rrr-history/?su_id=${suId}`, { headers: this.h() });
   }
 
+  getParcelHistory(suId: string | number): Observable<any> {
+    return this.http.get(`${this.baseUrl}parcel-history/su_id=${suId}/`, { headers: this.h() });
+  }
+
+  restoreParcelHistory(historyId: string | number, payload: { reason: string }): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}parcel-history/restore/id=${historyId}/`,
+      payload,
+      { headers: this.h() },
+    );
+  }
+
+  restoreParcelGeometry(
+    historyId: string | number,
+    payload: { reason: string; cancel_children?: boolean },
+  ): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}parcel-history/restore-geometry/id=${historyId}/`,
+      payload,
+      { headers: this.h() },
+    );
+  }
+
+  restoreParcelRRR(historyId: string | number, payload: { reason: string }): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}parcel-history/restore-rrr/id=${historyId}/`,
+      payload,
+      { headers: this.h() },
+    );
+  }
+
+  undoParcelRectification(eventId: string | number, payload: { reason: string }): Observable<any> {
+    return this.http.post(
+      `${this.baseUrl}parcel-history/undo-rectification/event=${eventId}/`,
+      payload,
+      { headers: this.h() },
+    );
+  }
+
+  getGeoTags(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}geotags/`, { headers: this.h() });
+  }
+
+  createGeoTag(payload: {
+    tag_type: string;
+    label: string;
+    longitude: number;
+    latitude: number;
+    note?: string | null;
+  }): Observable<any> {
+    return this.http.post(`${this.baseUrl}geotags/`, payload, { headers: this.h() });
+  }
+
+  updateGeoTag(tagId: number | string, payload: { status?: boolean; note?: string | null }): Observable<any> {
+    return this.http.patch(`${this.baseUrl}geotags/${tagId}/`, payload, { headers: this.h() });
+  }
+
+  deleteGeoTag(tagId: number | string): Observable<any> {
+    return this.http.delete(`${this.baseUrl}geotags/${tagId}/`, { headers: this.h() });
+  }
+
   // =============================================================================
   // LOOKUP DROPDOWNS
   // =============================================================================
@@ -713,6 +789,27 @@ export class APIsService {
 
   getSanitationSewerage() {
     return this.http.get(`${this.baseUrl}lst-su-sl-sanitation-23/`, { headers: this.h() });
+  }
+
+  // ── Physical & Environmental dropdowns (Land panel) ────────────────────────
+  getVegetationOptions() {
+    return this.http.get(`${this.baseUrl}lst-su-sl-vegetation-42/`, { headers: this.h() });
+  }
+
+  getElectricityOptions() {
+    return this.http.get(`${this.baseUrl}lst-su-sl-electricity-43/`, { headers: this.h() });
+  }
+
+  getDrainageOptions() {
+    return this.http.get(`${this.baseUrl}lst-su-sl-drainage-44/`, { headers: this.h() });
+  }
+
+  getGullyOptions() {
+    return this.http.get(`${this.baseUrl}lst-su-sl-gully-45/`, { headers: this.h() });
+  }
+
+  getGarbageOptions() {
+    return this.http.get(`${this.baseUrl}lst-su-sl-garbage-46/`, { headers: this.h() });
   }
 
   loadRoofTypes() {

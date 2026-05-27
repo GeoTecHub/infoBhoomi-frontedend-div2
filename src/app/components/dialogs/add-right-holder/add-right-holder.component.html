@@ -217,9 +217,15 @@
         </div>
 
         <div class="arh-actions">
-          <button class="arh-btn arh-btn--primary" (click)="selectFoundParty()">
-            <mat-icon>person_add</mat-icon> Select this Party
-          </button>
+          @if (viewOnly) {
+            <button class="arh-btn arh-btn--primary" (click)="closeDialog()">
+              <mat-icon>close</mat-icon> Close
+            </button>
+          } @else {
+            <button class="arh-btn arh-btn--primary" (click)="selectFoundParty()">
+              <mat-icon>person_add</mat-icon> Select this Party
+            </button>
+          }
         </div>
       </div>
     }

@@ -4,7 +4,7 @@ import { Feature } from 'ol';
 import { Coordinate } from 'ol/coordinate';
 import GeoJSON from 'ol/format/GeoJSON'; // Keep if used elsewhere, though helper avoids direct use here
 import VectorSource from 'ol/source/Vector';
-import { concatMap, forkJoin, from, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, concatMap, forkJoin, from, Observable, of, throwError } from 'rxjs';
 import { catchError, map, tap, toArray } from 'rxjs/operators';
 import { APIsService } from './api.service';
 import { MapService } from './map.service';
@@ -78,6 +78,12 @@ export class FeatureService {
   add: boolean = false;
   edit: boolean = false;
   delete: boolean = false;
+  private _isSaving = new BehaviorSubject<boolean>(false);
+  public readonly isSaving$ = this._isSaving.asObservable();
+
+  get isSaving(): boolean {
+    return this._isSaving.value;
+  }
 
   constructor(
     private http: HttpClient,
@@ -444,6 +450,8 @@ export class FeatureService {
       `[SAVE⏱] ── Staged: adds=${adds.length} updates=${updates.length} deletes=${deletes.length} splits=${splits.length} merges=${merges.length}`,
     );
 
+    this._isSaving.next(true);
+
     // --- Build other (non-add) requests ---
     const otherRequests: Observable<any>[] = [];
 
@@ -597,8 +605,10 @@ export class FeatureService {
         } else {
           this.notificationService.showSuccess('All changes saved successfully.');
         }
+        this._isSaving.next(false);
       }),
       catchError((err) => {
+        this._isSaving.next(false);
         console.error('[FeatureService] Error during batch save:', err);
         const errorMsg = this.getApiErrorMessage(err, 'Failed to save some or all changes.');
         this.notificationService.showError(errorMsg);

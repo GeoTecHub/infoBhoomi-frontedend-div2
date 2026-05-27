@@ -18,8 +18,10 @@ import {
   BuildingSummary,
   BuildingUnit,
   UnitTaxValuation,
+  TaxValuation,
   RRREntry,
   RRRInfo,
+  RRRDocument,
   RRRRestriction,
   RRRResponsibility,
   SpatialInfo,
@@ -76,7 +78,8 @@ type CollapsibleSection =
   | 'physical'
   | 'utilities'
   | 'relationships'
-  | 'metadata';
+  | 'metadata'
+  | 'tax';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -90,6 +93,7 @@ export class BuildingInfoPanelComponent {
   // Inputs
   buildingInfo = input<BuildingInfo | null>(null);
   sectionPerms = input<Record<number, any>>({});
+  saving = input<boolean>(false);
 
   // Permission helpers
   readonly BLDG_PERMS = BuildingSectionPermissions;
@@ -107,6 +111,13 @@ export class BuildingInfoPanelComponent {
     const perm = p[permId];
     return !perm || perm.can_edit !== false;
   }
+
+  canAdd(permId: number): boolean {
+    const p = this.sectionPerms();
+    if (!p || Object.keys(p).length === 0) return true;
+    const perm = p[permId];
+    return !perm || perm.can_add !== false;
+  }
   selectedUnitId = input<string | null>(null);
   modelLoaded = input<boolean>(false);
   availableRooms = input<string[]>([]);
@@ -122,6 +133,7 @@ export class BuildingInfoPanelComponent {
   spatialChanged = output<SpatialInfo>();
   physicalChanged = output<PhysicalAttributes>();
   utilitiesChanged = output<UtilityInfo>();
+  taxValuationChanged = output<TaxValuation>();
   relationshipsChanged = output<RelationshipsTopology>();
   metadataChanged = output<MetadataQuality>();
   saveModelRequested = output<void>();
@@ -131,6 +143,11 @@ export class BuildingInfoPanelComponent {
   finishRoomSelection = output<{ unitIndex: number; rooms: string[] }>();
   cancelRoomSelection = output<void>();
   highlightRooms = output<string[]>();
+  rrrCreateRequested = output<{ suId: number | string; entry: RRREntry; unitIndex?: number }>();
+  rrrUpdateRequested = output<{ baUnitId: number; entry: RRREntry; unitIndex?: number }>();
+  rrrDeleteRequested = output<{ baUnitId: number; unitIndex?: number }>();
+  rrrDocumentUploadRequested = output<{ baUnitId: number; file: File; name: string; entryIndex: number; unitIndex?: number }>();
+  rrrDocumentDeleteRequested = output<{ docLinkId: number; entryIndex: number; docIndex: number; unitIndex?: number }>();
 
   // Enum option lists
   readonly legalStatusOptions = Object.values(LegalStatus);
@@ -146,6 +163,21 @@ export class BuildingInfoPanelComponent {
   readonly roofTypeOptions = Object.values(RoofType);
   readonly accuracyLevelOptions = Object.values(AccuracyLevel);
   readonly surveyMethodOptions = Object.values(SurveyMethod);
+  readonly propertyTypeOptions = [
+    'Residential',
+    'Commercial',
+    'Mixed Use',
+    'Industrial',
+    'Institutional',
+    'Government',
+    'Religious',
+    'Educational',
+    'Health',
+    'Other',
+  ];
+  readonly taxStatusOptions: TaxValuation['taxStatus'][] = ['pending', 'paid', 'overdue'];
+  readonly utilityStatusOptions = ['Available', 'Not Available', 'Shared', 'Individual', 'Unknown'];
+  readonly wallTypeOptions = ['Brick', 'Concrete', 'Block', 'Timber', 'Steel', 'Glass', 'Mixed', 'Other'];
 
   readonly legalStatusDisplayMap = LEGAL_STATUS_DISPLAY;
   readonly primaryUseDisplayMap = PRIMARY_USE_DISPLAY;
@@ -336,10 +368,24 @@ export class BuildingInfoPanelComponent {
   }
 
   onRRRFieldChange(index: number, field: keyof RRREntry, value: any): void {
-    const entries = this.cloneEntries();
-    if (!entries[index]) return;
-    (entries[index] as any)[field] = value;
+    const entries = this.rrrEntries().map((e, i) =>
+      i === index ? { ...e, [field]: value } : e,
+    );
     this.updateRRR(entries);
+
+    const entry = entries[index];
+    if (entry && entry.rrrId.startsWith('BU-') && field === 'type') {
+      const baUnitId = Number(entry.rrrId.replace('BU-', ''));
+      this.rrrUpdateRequested.emit({ baUnitId, entry });
+    }
+  }
+
+  onRRRFieldBlur(index: number, field: string): void {
+    const entry = this.rrrEntries()[index];
+    if (entry && entry.rrrId.startsWith('BU-')) {
+      const baUnitId = Number(entry.rrrId.replace('BU-', ''));
+      this.rrrUpdateRequested.emit({ baUnitId, entry });
+    }
   }
 
   addRRREntry(): void {
@@ -354,8 +400,7 @@ export class BuildingInfoPanelComponent {
     dialogRef.afterClosed().subscribe((result: AddRightHolderResult | null) => {
       if (!result) return;
       const newRrrId = `RRR-${Date.now().toString(36).toUpperCase()}`;
-      const entries = this.cloneEntries();
-      entries.push({
+      const newEntry: RRREntry = {
         rrrId: newRrrId,
         type: RightType.OWN_FREE,
         holder: result.partyFullName || result.partyName,
@@ -370,22 +415,33 @@ export class BuildingInfoPanelComponent {
         documents: [],
         restrictions: [],
         responsibilities: [],
+      };
+      this.rrrCreateRequested.emit({
+        suId: this.buildingInfo()?.summary?.buildingId || 0,
+        entry: newEntry,
       });
-      this.updateRRR(entries);
-      // Auto-expand the newly added entry so user can fill in details
-      this.expandedRRRId.set(newRrrId);
     });
   }
 
   confirmRemoveRRREntry(index: number): void {
-    if (!confirm('Are you sure you want to delete this RRR entry?')) return;
-    this.removeRRREntry(index);
+    const entry = this.rrrEntries()[index];
+    if (!entry) return;
+
+    if (entry.rrrId.startsWith('BU-')) {
+      const baUnitId = Number(entry.rrrId.replace('BU-', ''));
+      if (confirm('Are you sure you want to terminate this RRR entry? This action cannot be undone.')) {
+        this.rrrDeleteRequested.emit({ baUnitId });
+      }
+    } else {
+      if (confirm('Are you sure you want to delete this unsaved RRR entry?')) {
+        const entries = this.rrrEntries().filter((_, i) => i !== index);
+        this.updateRRR(entries);
+      }
+    }
   }
 
   removeRRREntry(index: number): void {
-    const entries = this.cloneEntries();
-    if (!entries[index]) return;
-    entries.splice(index, 1);
+    const entries = this.rrrEntries().filter((_, i) => i !== index);
     this.updateRRR(entries);
   }
 
@@ -525,34 +581,51 @@ export class BuildingInfoPanelComponent {
   onDocumentUpload(entryIndex: number, event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
-    const entries = this.cloneEntries();
-    if (!entries[entryIndex]) return;
-    if (!entries[entryIndex].documents) entries[entryIndex].documents = [];
-    for (let i = 0; i < input.files.length; i++) {
-      const f = input.files[i];
-      entries[entryIndex].documents.push({
-        name: f.name,
-        type: f.type,
-        size: f.size,
-        file: f,
-      });
+    const entry = this.rrrEntries()[entryIndex];
+    if (!entry) return;
+
+    const files = Array.from(input.files);
+    if (entry.rrrId.startsWith('BU-')) {
+      const baUnitId = Number(entry.rrrId.replace('BU-', ''));
+      for (const file of files) {
+        this.rrrDocumentUploadRequested.emit({
+          baUnitId,
+          file,
+          name: file.name,
+          entryIndex,
+        });
+      }
+    } else {
+      const docs = [...(entry.documents || [])];
+      for (const f of files) {
+        docs.push({ name: f.name, type: f.type, size: f.size, file: f });
+      }
+      const entries = this.rrrEntries().map((e, i) =>
+        i === entryIndex ? { ...e, documents: docs } : e,
+      );
+      this.updateRRR(entries);
     }
-    this.updateRRR(entries);
     input.value = '';
   }
 
   removeDocument(entryIndex: number, docIndex: number): void {
-    const doc = this.rrrEntries()[entryIndex]?.documents?.[docIndex];
-    // If this is a backend-stored additional doc, delete it immediately via API
-    if (doc?.docLinkId) {
-      this.apiService
-        .deleteRRRDocument(doc.docLinkId)
-        .subscribe({ error: (e) => console.error('Failed to delete document:', e) });
+    const entry = this.rrrEntries()[entryIndex];
+    const doc = entry?.documents?.[docIndex];
+    if (!entry || !doc) return;
+
+    if (doc.docLinkId) {
+      this.rrrDocumentDeleteRequested.emit({
+        docLinkId: doc.docLinkId,
+        entryIndex,
+        docIndex,
+      });
+    } else {
+      const entries = this.rrrEntries().map((e, i) => {
+        if (i !== entryIndex) return e;
+        return { ...e, documents: (e.documents || []).filter((_, di) => di !== docIndex) };
+      });
+      this.updateRRR(entries);
     }
-    const entries = this.cloneEntries();
-    if (!entries[entryIndex]?.documents?.[docIndex]) return;
-    entries[entryIndex].documents.splice(docIndex, 1);
-    this.updateRRR(entries);
   }
 
   formatFileSize(bytes: number): string {
@@ -578,6 +651,9 @@ export class BuildingInfoPanelComponent {
     return info.units.map((u) => ({
       ...u,
       rooms: [...u.rooms],
+      physicalAttributes: u.physicalAttributes ? { ...u.physicalAttributes } : undefined,
+      utilities: u.utilities ? { ...u.utilities } : undefined,
+      cadastralCertificates: [...(u.cadastralCertificates || []).map((d) => ({ ...d }))],
       tax: { ...u.tax },
       rrr: {
         entries: u.rrr.entries.map((e) => ({
@@ -607,6 +683,41 @@ export class BuildingInfoPanelComponent {
     this.emitUnitsUpdate(units);
   }
 
+  onUnitPhysicalFieldChange(unitIndex: number, field: keyof PhysicalAttributes, value: any): void {
+    const units = this.cloneUnits();
+    if (!units[unitIndex]) return;
+    const current = units[unitIndex].physicalAttributes ?? {
+      constructionYear: 0,
+      structureType: StructureType.CONC_REINF,
+      condition: Condition.GOOD,
+      roofType: RoofType.FLAT,
+      wallType: '',
+      grossArea: 0,
+      extBuildUseType: '',
+      extBuildUseSubType: '',
+    };
+    units[unitIndex].physicalAttributes = { ...current, [field]: value };
+    this.emitUnitsUpdate(units);
+  }
+
+  onUnitUtilityFieldChange(unitIndex: number, field: keyof UtilityInfo, value: any): void {
+    const units = this.cloneUnits();
+    if (!units[unitIndex]) return;
+    const current = units[unitIndex].utilities ?? {
+      electricity: '',
+      telephone: '',
+      internet: '',
+      waterDrink: '',
+      water: '',
+      drainage: '',
+      sanitationSewer: '',
+      sanitationGully: '',
+      garbageDisposal: '',
+    };
+    units[unitIndex].utilities = { ...current, [field]: value };
+    this.emitUnitsUpdate(units);
+  }
+
   addUnit(): void {
     const units = this.cloneUnits();
     const parentId = this.buildingInfo()?.summary?.buildingId || '';
@@ -615,6 +726,7 @@ export class BuildingInfoPanelComponent {
       parentBuilding: parentId,
       floorNumber: 0,
       unitType: UnitType.APT,
+      postalAddressRef: '',
       boundary: 'Solid',
       accessType: AccessType.COR,
       cadastralRef: '',
@@ -622,6 +734,28 @@ export class BuildingInfoPanelComponent {
       registrationDate: new Date().toISOString().split('T')[0],
       primaryUse: PrimaryUse.RES,
       rooms: [],
+      physicalAttributes: {
+        constructionYear: 0,
+        structureType: StructureType.CONC_REINF,
+        condition: Condition.GOOD,
+        roofType: RoofType.FLAT,
+        wallType: '',
+        grossArea: 0,
+        extBuildUseType: '',
+        extBuildUseSubType: '',
+      },
+      utilities: {
+        electricity: '',
+        telephone: '',
+        internet: '',
+        waterDrink: '',
+        water: '',
+        drainage: '',
+        sanitationSewer: '',
+        sanitationGully: '',
+        garbageDisposal: '',
+      },
+      cadastralCertificates: [],
       tax: { taxUnitArea: 0, assessedValue: 0, lastValuationDate: '', taxDue: 0 },
       rrr: { entries: [] },
     });
@@ -632,6 +766,32 @@ export class BuildingInfoPanelComponent {
     const units = this.cloneUnits();
     if (!units[unitIndex]) return;
     units.splice(unitIndex, 1);
+    this.emitUnitsUpdate(units);
+  }
+
+  onUnitCertificateUpload(unitIndex: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const units = this.cloneUnits();
+    if (!units[unitIndex]) return;
+    if (!units[unitIndex].cadastralCertificates) units[unitIndex].cadastralCertificates = [];
+    for (let i = 0; i < input.files.length; i++) {
+      const file = input.files[i];
+      units[unitIndex].cadastralCertificates!.push({
+        name: file.name,
+        type: file.type,
+        size: file.size,
+        file,
+      });
+    }
+    input.value = '';
+    this.emitUnitsUpdate(units);
+  }
+
+  removeUnitCertificate(unitIndex: number, docIndex: number): void {
+    const units = this.cloneUnits();
+    if (!units[unitIndex]?.cadastralCertificates?.[docIndex]) return;
+    units[unitIndex].cadastralCertificates!.splice(docIndex, 1);
     this.emitUnitsUpdate(units);
   }
 
@@ -651,7 +811,7 @@ export class BuildingInfoPanelComponent {
       const newRrrId = `URRR-${Date.now().toString(36).toUpperCase()}`;
       const units = this.cloneUnits();
       if (!units[unitIndex]) return;
-      units[unitIndex].rrr.entries.push({
+      const newEntry: RRREntry = {
         rrrId: newRrrId,
         type: RightType.OWN_STR,
         holder: result.partyFullName || result.partyName,
@@ -666,11 +826,31 @@ export class BuildingInfoPanelComponent {
         documents: [],
         restrictions: [],
         responsibilities: [],
+      };
+      this.rrrCreateRequested.emit({
+        suId: units[unitIndex].unitId,
+        entry: newEntry,
+        unitIndex,
       });
-      this.emitUnitsUpdate(units);
-      // Auto-expand the newly added unit-level entry
-      this.expandedUnitRRRId.set(newRrrId);
     });
+  }
+
+  confirmRemoveUnitRRREntry(unitIndex: number, entryIndex: number): void {
+    const entry = this.buildingInfo()?.units?.[unitIndex]?.rrr?.entries?.[entryIndex];
+    if (!entry) return;
+
+    if (entry.rrrId.startsWith('BU-')) {
+      const baUnitId = Number(entry.rrrId.replace('BU-', ''));
+      if (confirm('Are you sure you want to terminate this RRR entry? This action cannot be undone.')) {
+        this.rrrDeleteRequested.emit({ baUnitId, unitIndex });
+      }
+    } else {
+      if (confirm('Are you sure you want to delete this unsaved RRR entry?')) {
+        const units = this.cloneUnits();
+        units[unitIndex].rrr.entries.splice(entryIndex, 1);
+        this.emitUnitsUpdate(units);
+      }
+    }
   }
 
   removeUnitRRREntry(unitIndex: number, entryIndex: number): void {
@@ -690,6 +870,73 @@ export class BuildingInfoPanelComponent {
     if (!units[unitIndex]?.rrr?.entries[entryIndex]) return;
     (units[unitIndex].rrr.entries[entryIndex] as any)[field] = value;
     this.emitUnitsUpdate(units);
+
+    const entry = units[unitIndex].rrr.entries[entryIndex];
+    if (entry && entry.rrrId.startsWith('BU-') && field === 'type') {
+      const baUnitId = Number(entry.rrrId.replace('BU-', ''));
+      this.rrrUpdateRequested.emit({ baUnitId, entry, unitIndex });
+    }
+  }
+
+  onUnitRRRFieldBlur(unitIndex: number, entryIndex: number, field: string): void {
+    const unit = this.buildingInfo()?.units?.[unitIndex];
+    const entry = unit?.rrr?.entries?.[entryIndex];
+    if (entry && entry.rrrId.startsWith('BU-')) {
+      const baUnitId = Number(entry.rrrId.replace('BU-', ''));
+      this.rrrUpdateRequested.emit({ baUnitId, entry, unitIndex });
+    }
+  }
+
+  onUnitRRRDocumentUpload(unitIndex: number, entryIndex: number, event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files?.length) return;
+    const unit = this.buildingInfo()?.units?.[unitIndex];
+    const entry = unit?.rrr?.entries?.[entryIndex];
+    if (!entry) return;
+
+    const files = Array.from(input.files);
+    if (entry.rrrId.startsWith('BU-')) {
+      const baUnitId = Number(entry.rrrId.replace('BU-', ''));
+      for (const file of files) {
+        this.rrrDocumentUploadRequested.emit({
+          baUnitId,
+          file,
+          name: file.name,
+          entryIndex,
+          unitIndex,
+        });
+      }
+    } else {
+      const units = this.cloneUnits();
+      const docs = [...(units[unitIndex].rrr.entries[entryIndex].documents || [])];
+      for (const f of files) {
+        docs.push({ name: f.name, type: f.type, size: f.size, file: f });
+      }
+      units[unitIndex].rrr.entries[entryIndex].documents = docs;
+      this.emitUnitsUpdate(units);
+    }
+    input.value = '';
+  }
+
+  removeUnitRRRDocument(unitIndex: number, entryIndex: number, docIndex: number): void {
+    const unit = this.buildingInfo()?.units?.[unitIndex];
+    const entry = unit?.rrr?.entries?.[entryIndex];
+    const doc = entry?.documents?.[docIndex];
+    if (!entry || !doc) return;
+
+    if (doc.docLinkId) {
+      this.rrrDocumentDeleteRequested.emit({
+        docLinkId: doc.docLinkId,
+        entryIndex,
+        docIndex,
+        unitIndex,
+      });
+    } else {
+      const units = this.cloneUnits();
+      if (!units[unitIndex]?.rrr?.entries?.[entryIndex]?.documents?.[docIndex]) return;
+      units[unitIndex].rrr.entries[entryIndex].documents.splice(docIndex, 1);
+      this.emitUnitsUpdate(units);
+    }
   }
 
   addUnitRestriction(unitIndex: number, entryIndex: number): void {
@@ -803,6 +1050,13 @@ export class BuildingInfoPanelComponent {
     this.relationshipsChanged.emit(updated);
   }
 
+  onTaxValuationFieldChange(field: keyof TaxValuation, value: any): void {
+    const info = this.buildingInfo();
+    if (!info?.taxValuation) return;
+    const updated: TaxValuation = { ...info.taxValuation, [field]: value };
+    this.taxValuationChanged.emit(updated);
+  }
+
   // ─── Metadata & Quality editing ─────────────────────────────
 
   onMetadataFieldChange(field: keyof MetadataQuality, value: any): void {
@@ -821,7 +1075,7 @@ export class BuildingInfoPanelComponent {
 
   onSaveBuilding(): void {
     const info = this.buildingInfo();
-    if (!info) return;
+    if (!info || this.saving()) return;
     this.saveBuildingRequested.emit(info);
   }
 
@@ -916,9 +1170,28 @@ export class BuildingInfoPanelComponent {
     this.dialog.open(AddRightHolderComponent, {
       width: '680px',
       maxWidth: '90vw',
-      data: { context: 'building', viewOnly: true },
+      data: {
+        context: 'building',
+        viewOnly: true,
+        holderId: entry.holderId,
+        holderType: entry.holderType,
+        holderRegType: entry.holderRegType,
+        holderRegNumber: entry.holderRegNumber,
+        holderName: entry.holder,
+      },
       autoFocus: false,
       panelClass: 'arh-dark-dialog',
+    });
+  }
+
+  openDocument(doc: RRRDocument): void {
+    if (!doc.fileUrl) return;
+    this.apiService.getPDF(doc.fileUrl).subscribe({
+      next: (blob) => {
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank');
+      },
+      error: () => console.error('Failed to open document:', doc.fileUrl),
     });
   }
 }

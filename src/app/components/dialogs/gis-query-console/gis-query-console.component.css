@@ -164,9 +164,9 @@
 }
 
 .gqc-cat-btn {
-  display: flex;
+  display: grid;
+  grid-template-columns: 36px 1fr; /* Fixed icon column */
   align-items: center;
-  gap: 8px;
   padding: 9px 14px;
   background: transparent;
   border: none;
@@ -192,8 +192,7 @@
 
 .gqc-cat-icon {
   font-size: 18px;
-  width: 18px;
-  height: 18px;
+  justify-self: center; /* Center icon in its 36px column */
   color: #8aaabe;
 }
 

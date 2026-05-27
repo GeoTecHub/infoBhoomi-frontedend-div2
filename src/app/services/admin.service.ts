@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 
 export type PermId = 251 | 252 | 253;
 
@@ -21,6 +22,7 @@ export class AdminService {
   selectedRoleType: string | null = null;
 
   permissions: Partial<PermRecord> = {};
+  readonly permissionsReady$ = new BehaviorSubject<boolean>(false);
 
   setSelectedRoleType(type: string) {
     this.selectedRoleType = type;
@@ -42,6 +44,7 @@ export class AdminService {
       };
     }
     this.permissions = map;
+    this.permissionsReady$.next(true);
   }
 
   private getPerm(id: PermId) {

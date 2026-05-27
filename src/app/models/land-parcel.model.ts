@@ -237,6 +237,7 @@ export interface ParcelPhysical {
   waterSupply: string; // water_supply → 'water' field
   electricity: string; // electricity → 'elec' field
   drainageSystem: string; // drainage_system → 'drainage' field
+  sanitationSewer: string; // sanitation_sewer → 'sani_sewer' field
   sanitationGully: string; // sanitation_gully → 'sani_gully' field
   garbageDisposal: string; // garbage_disposal → 'garbage_dispose' field
 }
@@ -339,6 +340,7 @@ export function createDefaultLandParcel(parcelId?: string): LandParcelInfo {
       waterSupply: '',
       electricity: '',
       drainageSystem: '',
+      sanitationSewer: '',
       sanitationGully: '',
       garbageDisposal: '',
     },

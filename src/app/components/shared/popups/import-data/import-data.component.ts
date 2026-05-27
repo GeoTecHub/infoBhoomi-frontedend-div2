@@ -33,6 +33,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import WebGLTileLayer from 'ol/layer/WebGLTile.js';
 import GeoTIFF, { default as GeoTIFFSource } from 'ol/source/GeoTIFF';
 import { v4 as uuidv4 } from 'uuid';
+import { validateFile } from '../../../../core/upload-limits';
 
 import { fromUrl } from 'geotiff';
 import { Map as OLMap } from 'ol';
@@ -824,6 +825,14 @@ export class ImportDataComponent implements OnDestroy {
       }
       if (!file.name.toLowerCase().endsWith('.zip')) {
         reject(new Error('Shapefiles must be uploaded as a .zip archive.'));
+        return;
+      }
+
+      // Size guard — protect the browser tab from OOM on oversize ZIPs.
+      // Rules live in src/app/core/upload-limits.ts (category: shapefile_zip).
+      const sizeCheck = validateFile(file, 'shapefile_zip');
+      if (!sizeCheck.ok) {
+        reject(new Error(sizeCheck.error || 'Shapefile ZIP failed size check.'));
         return;
       }
 

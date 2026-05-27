@@ -2,23 +2,30 @@
 :host {
   display: block;
   height: 100%;
+  flex-shrink: 0;
+  /* :host owns the width — driven by HostBinding 'style.width.px'.
+     Transition animates only when the host width changes via class
+     toggles (collapse / extend); during interactive drag the
+     '.resizing' class disables the transition for instant feedback. */
+  transition: width 0.2s ease;
+  will-change: width;
+}
+
+:host(.resizing) {
+  transition: none;
 }
 
 .sidebar {
   position: relative;
   height: 100%;
+  width: 100%; /* fill :host — host element owns the width */
   display: flex;
   flex-direction: column;
   background: var(--surface-sidebar); /* UI-only change — was rgba(22,33,52,0.85) dark navy */
   border-right: 1px solid var(--border-default); /* UI-only change — was rgba(148,163,184,0.1) */
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
-  transition: width 0.2s ease;
-  overflow: hidden;
-}
-
-.sidebar.collapsed {
-  width: 30px;
+  /* overflow: hidden; */ /* Removed to prevent clipping the toggle button */
 }
 
 /* ─── Resize Handle ─────────────────────────────────────── */

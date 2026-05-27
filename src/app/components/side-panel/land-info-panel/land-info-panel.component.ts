@@ -58,6 +58,8 @@ import {
 } from '../../dialogs/add-right-holder/add-right-holder.component';
 import { APIsService } from '../../../services/api.service';
 
+export type LandParcelSaveRequest = LandParcelInfo & { __dirtyFields?: string[] };
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-land-info-panel',
@@ -72,6 +74,7 @@ export class LandInfoPanelComponent {
   // --- Inputs ---
   parcelInfo = input<LandParcelInfo | null>(null);
   sectionPerms = input<Record<number, any>>({});
+  saving = input<boolean>(false);
 
   // --- Permission helpers ---
   readonly LAND_PERMS = LandSectionPermissions;
@@ -99,9 +102,14 @@ export class LandInfoPanelComponent {
   valuationChanged = output<ParcelValuation>();
   relationshipsChanged = output<ParcelRelationships>();
   metadataChanged = output<ParcelMetadata>();
-  saveParcelRequested = output<LandParcelInfo>();
+  saveParcelRequested = output<LandParcelSaveRequest>();
   deleteParcelRequested = output<void>();
   newParcelRequested = output<LandParcelInfo>();
+  rrrCreateRequested = output<{ suId: number | string; entry: RRREntry }>();
+  rrrUpdateRequested = output<{ baUnitId: number; entry: RRREntry }>();
+  rrrDeleteRequested = output<{ baUnitId: number }>();
+  rrrDocumentUploadRequested = output<{ baUnitId: number; file: File; name: string; entryIndex: number }>();
+  rrrDocumentDeleteRequested = output<{ docLinkId: number; entryIndex: number; docIndex: number }>();
 
   // --- Enum Options ---
   landUseOptions = Object.values(LandUse);
@@ -133,19 +141,69 @@ export class LandInfoPanelComponent {
 
   // --- Local RRR State (avoids parent round-trip delay) ---
   rrrEntries = signal<RRREntry[]>([]);
+  private dirtyFields = signal<Set<string>>(new Set());
+  private currentParcelId: string | null = null;
+
+  // --- Physical & Environmental lookup options (loaded from backend lst_* tables) ---
+  vegetationOptions = signal<string[]>([]);
+  waterSupplyOptions = signal<string[]>([]);
+  electricityOptions = signal<string[]>([]);
+  drainageOptions = signal<string[]>([]);
+  sanitationSewerOptions = signal<string[]>([]);
+  sanitationGullyOptions = signal<string[]>([]);
+  garbageDisposalOptions = signal<string[]>([]);
 
   constructor() {
     // Sync local RRR entries from the input signal whenever it changes
     effect(() => {
       const info = this.parcelInfo();
+      const parcelId = info?.identification.parcelId ?? null;
+      if (parcelId !== this.currentParcelId) {
+        this.currentParcelId = parcelId;
+        this.dirtyFields.set(new Set());
+      }
       this.rrrEntries.set(info ? [...info.rrr.entries] : []);
     });
+
+    this.loadPhysicalEnvLookups();
+  }
+
+  /**
+   * Load all dropdown options for the Physical & Environmental section.
+   * Backend endpoints may return either a bare array `[{id, name}, ...]`
+   * or a DRF-paginated object `{count, next, previous, results: [...]}`.
+   * We handle both shapes.
+   */
+  private loadPhysicalEnvLookups(): void {
+    const setFromResp = (sig: ReturnType<typeof signal<string[]>>) => (resp: any) => {
+      const rows: any[] = Array.isArray(resp)
+        ? resp
+        : Array.isArray(resp?.results)
+          ? resp.results
+          : [];
+      sig.set(rows.map((r) => r?.name).filter((n): n is string => typeof n === 'string' && !!n));
+    };
+    this.apiService.getVegetationOptions().subscribe(setFromResp(this.vegetationOptions));
+    this.apiService.getWaterSupply().subscribe(setFromResp(this.waterSupplyOptions));
+    this.apiService.getElectricityOptions().subscribe(setFromResp(this.electricityOptions));
+    this.apiService.getDrainageOptions().subscribe(setFromResp(this.drainageOptions));
+    this.apiService.getSanitationSewerage().subscribe(setFromResp(this.sanitationSewerOptions));
+    this.apiService.getGullyOptions().subscribe(setFromResp(this.sanitationGullyOptions));
+    this.apiService.getGarbageOptions().subscribe(setFromResp(this.garbageDisposalOptions));
   }
 
   /** Update local RRR state immediately and notify parent */
   private updateRRR(entries: RRREntry[]): void {
     this.rrrEntries.set(entries);
     this.rrrChanged.emit({ entries });
+  }
+
+  private markDirty(section: string, field: string): void {
+    this.dirtyFields.update((fields) => {
+      const next = new Set(fields);
+      next.add(`${section}.${field}`);
+      return next;
+    });
   }
 
   // --- UI State ---
@@ -174,6 +232,7 @@ export class LandInfoPanelComponent {
   onIdentificationFieldChange(field: string, value: any): void {
     const info = this.parcelInfo();
     if (!info) return;
+    this.markDirty('identification', field);
     const updated = { ...info.identification, [field]: value };
     this.identificationChanged.emit(updated);
   }
@@ -181,6 +240,7 @@ export class LandInfoPanelComponent {
   onSpatialFieldChange(field: string, value: any): void {
     const info = this.parcelInfo();
     if (!info) return;
+    this.markDirty('spatial', field);
     const updated = { ...info.spatial, [field]: value };
     this.spatialChanged.emit(updated);
   }
@@ -188,6 +248,7 @@ export class LandInfoPanelComponent {
   onPhysicalFieldChange(field: string, value: any): void {
     const info = this.parcelInfo();
     if (!info) return;
+    this.markDirty('physical', field);
     const updated = { ...info.physical, [field]: value };
     this.physicalChanged.emit(updated);
   }
@@ -195,6 +256,7 @@ export class LandInfoPanelComponent {
   onZoningFieldChange(field: string, value: any): void {
     const info = this.parcelInfo();
     if (!info) return;
+    this.markDirty('zoning', field);
     const updated = { ...info.zoning, [field]: value };
     this.zoningChanged.emit(updated);
   }
@@ -202,6 +264,7 @@ export class LandInfoPanelComponent {
   onValuationFieldChange(field: string, value: any): void {
     const info = this.parcelInfo();
     if (!info) return;
+    this.markDirty('valuation', field);
     const updated = { ...info.valuation, [field]: value };
     this.valuationChanged.emit(updated);
   }
@@ -209,6 +272,7 @@ export class LandInfoPanelComponent {
   onRelationshipsFieldChange(field: string, value: any): void {
     const info = this.parcelInfo();
     if (!info) return;
+    this.markDirty('relationships', field);
     const updated = { ...info.relationships, [field]: value };
     this.relationshipsChanged.emit(updated);
   }
@@ -216,6 +280,7 @@ export class LandInfoPanelComponent {
   onMetadataFieldChange(field: string, value: any): void {
     const info = this.parcelInfo();
     if (!info) return;
+    this.markDirty('metadata', field);
     const updated = { ...info.metadata, [field]: value };
     this.metadataChanged.emit(updated);
   }
@@ -227,6 +292,21 @@ export class LandInfoPanelComponent {
       i === entryIndex ? { ...e, [field]: value } : e,
     );
     this.updateRRR(entries);
+
+    // Dropdowns emit save requests immediately on change
+    const entry = entries[entryIndex];
+    if (entry && entry.rrrId.startsWith('BU-') && field === 'type') {
+      const baUnitId = Number(entry.rrrId.replace('BU-', ''));
+      this.rrrUpdateRequested.emit({ baUnitId, entry });
+    }
+  }
+
+  onRRRFieldBlur(entryIndex: number, field: string): void {
+    const entry = this.rrrEntries()[entryIndex];
+    if (entry && entry.rrrId.startsWith('BU-')) {
+      const baUnitId = Number(entry.rrrId.replace('BU-', ''));
+      this.rrrUpdateRequested.emit({ baUnitId, entry });
+    }
   }
 
   addRRREntry(): void {
@@ -242,29 +322,28 @@ export class LandInfoPanelComponent {
 
     dialogRef.afterClosed().subscribe((result: AddRightHolderResult | null) => {
       if (!result) return;
-      const newRrrId = `LRRR-${Date.now()}`;
-      const entries = [
-        ...this.rrrEntries(),
-        {
-          rrrId: newRrrId,
-          type: RightType.OWN_FREE,
-          holder: result.partyFullName || result.partyName,
-          holderId: result.partyId,
-          holderType: result.partyType,
-          holderRegType: result.regType,
-          holderRegNumber: result.regNumber,
-          share: 0,
-          validFrom: new Date().toISOString().split('T')[0],
-          validTo: '',
-          documentRef: '',
-          documents: [],
-          restrictions: [],
-          responsibilities: [],
-        },
-      ];
-      this.updateRRR(entries);
-      // Auto-expand the newly added entry so user can fill in details
-      this.expandedRRRId.set(newRrrId);
+      const tempRrrId = `LRRR-${Date.now()}`;
+      const newEntry: RRREntry = {
+        rrrId: tempRrrId,
+        type: RightType.OWN_FREE,
+        holder: result.partyFullName || result.partyName,
+        holderId: result.partyId,
+        holderType: result.partyType,
+        holderRegType: result.regType,
+        holderRegNumber: result.regNumber,
+        share: 0,
+        validFrom: new Date().toISOString().split('T')[0],
+        validTo: '',
+        documentRef: '',
+        documents: [],
+        restrictions: [],
+        responsibilities: [],
+      };
+      // Emit immediate creation request to parent
+      this.rrrCreateRequested.emit({
+        suId: this.parcelInfo()?.identification.parcelId || 0,
+        entry: newEntry,
+      });
     });
   }
 
@@ -297,7 +376,18 @@ export class LandInfoPanelComponent {
     this.dialog.open(AddRightHolderComponent, {
       width: '680px',
       maxWidth: '90vw',
-      data: { context: 'land', viewOnly: true },
+      // Pass the existing holder identifiers; the dialog uses these in
+      // viewOnly mode to fetch and display the party details, skipping
+      // the "select type / enter ID" wizard.
+      data: {
+        context: 'land',
+        viewOnly: true,
+        holderId: entry.holderId,
+        holderType: entry.holderType,
+        holderRegType: entry.holderRegType,
+        holderRegNumber: entry.holderRegNumber,
+        holderName: entry.holder,
+      },
       autoFocus: false,
       panelClass: 'arh-dark-dialog',
     });
@@ -308,32 +398,51 @@ export class LandInfoPanelComponent {
   onDocumentUpload(entryIndex: number, event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files?.length) return;
-    const entries = this.rrrEntries().map((e, i) => {
-      if (i !== entryIndex) return e;
-      const docs = [...(e.documents || [])];
-      for (let fi = 0; fi < input.files!.length; fi++) {
-        const f = input.files![fi];
+    const entry = this.rrrEntries()[entryIndex];
+    if (!entry) return;
+
+    const files = Array.from(input.files);
+    if (entry.rrrId.startsWith('BU-')) {
+      const baUnitId = Number(entry.rrrId.replace('BU-', ''));
+      for (const file of files) {
+        this.rrrDocumentUploadRequested.emit({
+          baUnitId,
+          file,
+          name: file.name,
+          entryIndex,
+        });
+      }
+    } else {
+      const docs = [...(entry.documents || [])];
+      for (const f of files) {
         docs.push({ name: f.name, type: f.type, size: f.size, file: f });
       }
-      return { ...e, documents: docs };
-    });
-    this.updateRRR(entries);
+      const entries = this.rrrEntries().map((e, i) =>
+        i === entryIndex ? { ...e, documents: docs } : e,
+      );
+      this.updateRRR(entries);
+    }
     input.value = '';
   }
 
   removeDocument(entryIndex: number, docIndex: number): void {
-    const doc = this.rrrEntries()[entryIndex]?.documents?.[docIndex];
-    // If this is a backend-stored additional doc, delete it immediately via API
-    if (doc?.docLinkId) {
-      this.apiService
-        .deleteRRRDocument(doc.docLinkId)
-        .subscribe({ error: (e) => console.error('Failed to delete document:', e) });
+    const entry = this.rrrEntries()[entryIndex];
+    const doc = entry?.documents?.[docIndex];
+    if (!entry || !doc) return;
+
+    if (doc.docLinkId) {
+      this.rrrDocumentDeleteRequested.emit({
+        docLinkId: doc.docLinkId,
+        entryIndex,
+        docIndex,
+      });
+    } else {
+      const entries = this.rrrEntries().map((e, i) => {
+        if (i !== entryIndex) return e;
+        return { ...e, documents: (e.documents || []).filter((_, di) => di !== docIndex) };
+      });
+      this.updateRRR(entries);
     }
-    const entries = this.rrrEntries().map((e, i) => {
-      if (i !== entryIndex) return e;
-      return { ...e, documents: (e.documents || []).filter((_, di) => di !== docIndex) };
-    });
-    this.updateRRR(entries);
   }
 
   openDocument(doc: RRRDocument): void {
@@ -354,8 +463,20 @@ export class LandInfoPanelComponent {
   }
 
   confirmRemoveRRREntry(index: number): void {
-    if (!confirm('Are you sure you want to delete this RRR entry?')) return;
-    this.removeRRREntry(index);
+    const entry = this.rrrEntries()[index];
+    if (!entry) return;
+
+    if (entry.rrrId.startsWith('BU-')) {
+      const baUnitId = Number(entry.rrrId.replace('BU-', ''));
+      if (confirm('Are you sure you want to terminate this RRR entry? This action cannot be undone.')) {
+        this.rrrDeleteRequested.emit({ baUnitId });
+      }
+    } else {
+      if (confirm('Are you sure you want to delete this unsaved RRR entry?')) {
+        const entries = this.rrrEntries().filter((_, i) => i !== index);
+        this.updateRRR(entries);
+      }
+    }
   }
 
   removeRRREntry(index: number): void {
@@ -451,7 +572,9 @@ export class LandInfoPanelComponent {
 
   onSaveParcel(): void {
     const info = this.parcelInfo();
-    if (info) this.saveParcelRequested.emit(info);
+    if (info && !this.saving()) {
+      this.saveParcelRequested.emit({ ...info, __dirtyFields: Array.from(this.dirtyFields()) });
+    }
   }
 
   onDeleteParcel(): void {

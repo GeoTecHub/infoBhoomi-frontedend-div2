@@ -776,11 +776,13 @@ export class MapService {
         const record = recordByUuid.get(uuid);
         if (!record) continue;
 
-        const { su_id, gnd_id, calculated_area, layer_id } = record.properties;
+        const { su_id, gnd_id, calculated_area, layer_id, ref_id } = record.properties;
         feature.set('layer_id', layer_id);
         feature.set('feature_Id', su_id);
         feature.set('gnd_id', gnd_id);
         feature.set('area', calculated_area);
+        feature.set('ref_id', ref_id ?? null);
+        feature.set('ref_ids', ref_id ?? null);
         const layerColor = layerService.getLayerColor(layer_id) ?? '#2c7be5';
         feature.set('baseHex', this.normalizeToHex(layerColor));
         feature.setStyle(styleFn);
@@ -797,7 +799,7 @@ export class MapService {
   public updateFeatureAfterUpdateOnlySave(savedRecord: any, layerService: LayerService): void {
     if (!this.mapInstance || !savedRecord?.properties) return;
 
-    const { uuid, su_id, gnd_id, area, layer_id } = savedRecord.properties;
+    const { uuid, su_id, gnd_id, area, layer_id, ref_id } = savedRecord.properties;
 
     const layers = this.mapInstance
       .getLayers()
@@ -820,6 +822,8 @@ export class MapService {
       feature.set('feature_Id', su_id);
       feature.set('gnd_id', gnd_id);
       feature.set('area', area);
+      feature.set('ref_id', ref_id ?? null);
+      feature.set('ref_ids', ref_id ?? null);
 
       const layerColor = layerService.getLayerColor(layer_id) ?? '#2c7be5';
       feature.set('baseHex', this.normalizeToHex(layerColor));

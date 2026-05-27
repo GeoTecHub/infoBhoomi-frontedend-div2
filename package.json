@@ -33,7 +33,7 @@
     "@angular/router": "21.2.0",
     "@angular/ssr": "^21.2.0",
     "@ng-bootstrap/ng-bootstrap": "^20.0.0",
-    "@ng-select/ng-select": "^14.7.0",
+    "@ng-select/ng-select": "^21.8.2",
     "@popperjs/core": "^2.11.8",
     "@tmcw/togeojson": "^7.1.1",
     "@turf/helpers": "^7.2.0",

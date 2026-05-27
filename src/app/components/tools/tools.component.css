@@ -69,6 +69,7 @@
 /* General .map-tool styling (wrapper for each button) */
 .map-tool {
   /* If you need specific styling for the button wrappers */
+  position: relative;
 }
 
 /* Active button styles */
@@ -152,4 +153,110 @@
     opacity: 1;
     transform: translate(-50%, 0);
   }
+}
+
+/* Save tool specific styles */
+.save-tool-container {
+  position: relative;
+}
+
+.spinning-icon {
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.saving-active {
+  background-color: #f57c00 !important; /* Orange to indicate active save */
+  color: white !important;
+}
+
+.save-spinner-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: 10;
+  pointer-events: all; /* Blocks clicks while saving */
+}
+
+.tag-tool {
+  position: relative;
+}
+
+.geotag-menu {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  bottom: 46px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+  display: grid;
+  gap: 2px;
+  min-width: 210px;
+  padding: 6px;
+  position: absolute;
+  right: 0;
+  z-index: 1200;
+}
+
+.geotag-menu button,
+.geotag-context-menu button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: #111827;
+  cursor: pointer;
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  text-align: left;
+  width: 100%;
+}
+
+.geotag-menu button:hover,
+.geotag-context-menu button:hover {
+  background: #f1f5f9;
+}
+
+.geotag-menu mat-icon {
+  color: #0f766e;
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+}
+
+.geotag-context-menu {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.2);
+  min-width: 190px;
+  padding: 8px;
+  position: fixed;
+  z-index: 3000;
+}
+
+.geotag-context-menu strong,
+.geotag-context-menu small {
+  display: block;
+  padding: 3px 6px;
+}
+
+.geotag-context-menu small {
+  color: #64748b;
+  margin-bottom: 4px;
+}
+
+.geotag-context-menu .danger {
+  color: #b91c1c;
 }

@@ -43,6 +43,11 @@ export class AdminSideBarComponent {
       }
       this.cdr.markForCheck();
     });
+
+    // Re-render when permissions are loaded so permission-gated buttons appear
+    this.adminService.permissionsReady$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(() => this.cdr.markForCheck());
   }
 
   getPermissionView(permissionId: PermId): boolean {

@@ -1,0 +1,200 @@
+<div class="history-shell">
+  <header class="history-header">
+    <div>
+      <h2 mat-dialog-title>Parcel History & Rectification</h2>
+      <p>{{ selectedLabel }}: <strong>{{ selectedSuId }}</strong></p>
+    </div>
+    <button mat-icon-button type="button" aria-label="Close" (click)="close()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </header>
+
+  <mat-dialog-content class="history-content">
+    @if (loading) {
+      <div class="loading-state">
+        <mat-spinner diameter="34"></mat-spinner>
+      </div>
+    } @else {
+      <div class="history-layout" [class.has-units]="buildingUnits.length">
+        @if (buildingUnits.length) {
+          <aside class="unit-history-nav">
+            <span class="affected-label">History subject</span>
+            <button
+              type="button"
+              class="unit-nav-item"
+              [class.active]="selectedSuId === data.suId"
+              (click)="selectHistorySubject(data.suId, 'Building')"
+            >
+              <strong>Whole building</strong>
+              <small>su_id {{ data.suId }}</small>
+            </button>
+            @for (unit of buildingUnits; track unit.su_id) {
+              <button
+                type="button"
+                class="unit-nav-item"
+                [class.active]="selectedSuId === unit.su_id"
+                (click)="selectHistorySubject(unit.su_id, unitLabel(unit))"
+              >
+                <strong>{{ unitLabel(unit) }}</strong>
+                <small>su_id {{ unit.su_id }} · floor {{ unit.floor_no || 'N/A' }}</small>
+              </button>
+            }
+          </aside>
+        }
+
+      <mat-tab-group class="history-tabs">
+        <mat-tab label="Geometry ({{ themeRows('geometry').length }})">
+          <ng-container
+            [ngTemplateOutlet]="eventTimeline"
+            [ngTemplateOutletContext]="{
+              rows: themeRows('geometry'),
+              theme: 'geometry',
+              title: 'Geometry timeline',
+              empty: 'No geometry changes recorded.'
+            }"
+          ></ng-container>
+        </mat-tab>
+
+        <mat-tab label="Attributes ({{ themeRows('attribute').length }})">
+          <ng-container
+            [ngTemplateOutlet]="eventTimeline"
+            [ngTemplateOutletContext]="{
+              rows: themeRows('attribute'),
+              theme: 'attribute',
+              title: 'Attribute timeline',
+              empty: 'No attribute changes recorded.'
+            }"
+          ></ng-container>
+        </mat-tab>
+
+        <mat-tab label="RRR ({{ themeRows('rrr').length }})">
+          <ng-container
+            [ngTemplateOutlet]="eventTimeline"
+            [ngTemplateOutletContext]="{
+              rows: themeRows('rrr'),
+              theme: 'rrr',
+              title: 'RRR timeline',
+              empty: 'No RRR changes recorded.'
+            }"
+          ></ng-container>
+        </mat-tab>
+
+        <mat-tab label="Relationships ({{ relationships.length }})">
+          <section class="affected-panel">
+            <h3>Affected records</h3>
+            <div class="affected-grid">
+              <div>
+                <span class="affected-label">Selected</span>
+                <strong>{{ affectedParcels?.selected?.su_id || selectedSuId }}</strong>
+                <small>{{ affectedParcels?.selected?.is_active ? 'Active' : 'Inactive / superseded' }}</small>
+              </div>
+              <div>
+                <span class="affected-label">Parents</span>
+                <strong>{{ parcelList(affectedParcels?.parents) }}</strong>
+                <small>Source parcels</small>
+              </div>
+              <div>
+                <span class="affected-label">Children / buildings</span>
+                <strong>{{ parcelList(affectedParcels?.children) }}</strong>
+                <small>Linked by parent or reference</small>
+              </div>
+            </div>
+          </section>
+
+          <ng-container
+            [ngTemplateOutlet]="eventTimeline"
+            [ngTemplateOutletContext]="{
+              rows: relationshipRows(),
+              theme: 'relationship',
+              title: 'Relationship timeline',
+              empty: 'No relationship changes recorded.'
+            }"
+          ></ng-container>
+        </mat-tab>
+      </mat-tab-group>
+      </div>
+    }
+  </mat-dialog-content>
+</div>
+
+<ng-template #eventTimeline let-rows="rows" let-theme="theme" let-title="title" let-empty="empty">
+  <section class="theme-summary">
+    <div>
+      <span class="affected-label">{{ title }}</span>
+      <strong>{{ themeSummary(theme) }}</strong>
+    </div>
+    <div class="theme-summary-actions">
+      <span class="summary-pill">{{ rows?.length || 0 }} events</span>
+    </div>
+  </section>
+
+  <div class="event-card-list">
+    @if (rows?.length) {
+      @for (row of rows; track row.id || row.date || row.changed_at || $index) {
+        <article class="history-event-card" [class.selected]="selectedEvent === row">
+          <div class="timeline-marker" [class.current]="row.can_rectify_now"></div>
+          <div class="event-card-content" (click)="selectEvent(row)">
+            <div class="event-card-header">
+              <div class="event-meta">
+                <span>{{ rowDate(row) | date: 'yyyy-MM-dd HH:mm' }}</span>
+                <span>user: {{ rowUser(row) }}</span>
+              </div>
+              <span class="status-pill" [class]="statusClass(row)">{{ statusText(row) }}</span>
+            </div>
+
+            <h3>{{ rowChange(row) }}</h3>
+
+            <div class="event-values">
+              <div>
+                <span>Before</span>
+                <strong>{{ beforeText(row) }}</strong>
+              </div>
+              <div>
+                <span>After</span>
+                <strong>{{ afterText(row) }}</strong>
+              </div>
+            </div>
+
+            @if (row.can_rectify_now || row.can_undo_now) {
+              <div class="event-action-row">
+                @if (row.can_rectify_now) {
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    [disabled]="restoringId !== null"
+                    (click)="rectifySelectedEvent(row); $event.stopPropagation()"
+                  >
+                    <mat-icon>undo</mat-icon>
+                    Rectify Event
+                  </button>
+                }
+                @if (row.can_undo_now) {
+                  <button
+                    mat-stroked-button
+                    type="button"
+                    [disabled]="restoringId !== null"
+                    (click)="undoRectification(row); $event.stopPropagation()"
+                  >
+                    <mat-icon>redo</mat-icon>
+                    Redo Event
+                  </button>
+                }
+              </div>
+            } @else if (isLocked(row)) {
+              <div class="locked-row">
+                <mat-icon>lock</mat-icon>
+                <span>Locked: rectify newer {{ themeLabel(theme) }} event first</span>
+              </div>
+            } @else {
+              <div class="recorded-row">
+                <span>{{ auditText(row) }}</span>
+              </div>
+            }
+          </div>
+        </article>
+      }
+    } @else {
+      <div class="empty-state">{{ empty }}</div>
+    }
+  </div>
+</ng-template>

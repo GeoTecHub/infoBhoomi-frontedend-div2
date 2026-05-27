@@ -5,9 +5,9 @@
 }
 
 .side-panel-button {
-  display: flex;
+  display: grid;
+  grid-template-columns: 32px 1fr; /* Fixed icon column */
   align-items: center;
-  flex-direction: row;
   padding: 10px;
   border-radius: 10px;
   transition: background-color 0.3s ease;
@@ -19,12 +19,13 @@
 }
 
 .button-label {
-  margin-left: 5px;
   font-size: 0.95rem;
+  /* margin-left removed, handled by grid gap */
 }
 
 .side-panel-button mat-icon {
   font-size: 1.25rem;
+  justify-self: center; /* Center icon in its 32px column */
   display: flex;
   align-items: center;
 }

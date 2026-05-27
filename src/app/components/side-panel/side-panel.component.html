@@ -1,4 +1,8 @@
-<aside class="sidebar" [class.collapsed]="isSidebarClosed()" [class.extended]="extendWidth">
+<aside
+  class="sidebar"
+  [class.collapsed]="isSidebarClosed()"
+  [class.extended]="extendWidth"
+>
   <!-- Resize Handle -->
   <div class="resize-handle" (mousedown)="onResizeStart($event)"></div>
 
@@ -133,6 +137,7 @@
         <app-land-info-panel
           [parcelInfo]="currentLandParcelInfo()"
           [sectionPerms]="sectionPerms()"
+          [saving]="isSavingLandParcel()"
           (rrrChanged)="onLandRRRChanged($event)"
           (identificationChanged)="onLandIdentificationChanged($event)"
           (spatialChanged)="onLandSpatialChanged($event)"
@@ -143,6 +148,11 @@
           (metadataChanged)="onLandMetadataChanged($event)"
           (saveParcelRequested)="onSaveLandParcel($event)"
           (newParcelRequested)="onNewParcelRequested($event)"
+          (rrrCreateRequested)="handleRRRCreate($event)"
+          (rrrUpdateRequested)="handleRRRUpdate($event)"
+          (rrrDeleteRequested)="handleRRRDelete($event)"
+          (rrrDocumentUploadRequested)="handleRRRDocumentUpload($event)"
+          (rrrDocumentDeleteRequested)="handleRRRDocumentDelete($event)"
         ></app-land-info-panel>
       </div>
     }
@@ -153,15 +163,22 @@
           [buildingInfo]="currentBuildingInfo()"
           [modelLoaded]="buildingModelLoaded()"
           [sectionPerms]="sectionPerms()"
+          [saving]="isSavingBuilding()"
           (rrrChanged)="onBuildingRRRChanged($event)"
           (summaryChanged)="onBuildingSummaryChanged($event)"
           (unitsChanged)="onBuildingUnitsChanged($event)"
           (spatialChanged)="onBuildingSpatialChanged($event)"
           (physicalChanged)="onBuildingPhysicalChanged($event)"
           (utilitiesChanged)="onBuildingUtilitiesChanged($event)"
+          (taxValuationChanged)="onBuildingTaxValuationChanged($event)"
           (relationshipsChanged)="onBuildingRelationshipsChanged($event)"
           (metadataChanged)="onBuildingMetadataChanged($event)"
           (saveBuildingRequested)="onSaveBuildingInfo($event)"
+          (rrrCreateRequested)="handleRRRCreate($event)"
+          (rrrUpdateRequested)="handleRRRUpdate($event)"
+          (rrrDeleteRequested)="handleRRRDelete($event)"
+          (rrrDocumentUploadRequested)="handleRRRDocumentUpload($event)"
+          (rrrDocumentDeleteRequested)="handleRRRDocumentDelete($event)"
         ></app-building-info-panel>
       </div>
     }

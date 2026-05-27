@@ -58,17 +58,16 @@
   /* Prevent this row itself from scrolling */
 }
 
-/* Container for the side panel */
+/* Container for the side panel.
+   Transparent flex slot — the actual width is owned by <app-side-panel>
+   via a HostBinding on its :host element. We intentionally do NOT set
+   width / min-width / transition here, otherwise the slot fights the
+   sidebar's reactive width during a resize drag and the map's left edge
+   stops tracking the resize handle. */
 .side-panel-container {
-  width: 250px;
-  /* Fixed width, adjust as needed */
+  display: flex; /* host fills the slot vertically */
   flex-shrink: 0;
-  /* Prevent panel from shrinking */
-  overflow-y: auto;
-  /* Allow ONLY the panel content to scroll vertically if needed */
-  /* Optional styling */
   border-right: 1px solid #ccc;
-  /* background-color: #f8f8f8; */
 }
 
 /* =================================================
@@ -222,24 +221,16 @@
   overflow: hidden;
 }
 
+/* Second-pass tweaks for the side-panel slot — overflow:visible lets the
+   sidebar's toggle button stick out past the right edge, and z-index keeps
+   it above the map. Width/min-width/transition are deliberately omitted —
+   <app-side-panel> drives its own host width (collapsed=30, extended=480,
+   resized=240–600). Letting the container size itself would re-introduce
+   the resize-lag / clipping bug. */
 .side-panel-container {
-  overflow-x: hidden;
-  overflow-y: hidden;
+  overflow: visible;
   padding-bottom: 0;
-  width: 340px;
-  z-index: 2;
-  flex-shrink: 0;
-  transition: width 0.15s ease;
-}
-
-.side-panel-container.extended {
-  width: 450px;
-  transition: width 0.15s ease;
-}
-
-.side-panel-container.collapsed {
-  width: 30px;
-  transition: width 0.15s ease;
+  z-index: 1000;
 }
 
 .map-context-menu {
