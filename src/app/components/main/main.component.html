@@ -26,6 +26,19 @@
         <app-tools></app-tools>
       </div>
 
+      <!-- === City 3D View button (Top Left) === -->
+      @if (can3D(Perm3D.CITY_3D, 'can_view')) {
+        <button
+          type="button"
+          class="city-3d-btn"
+          title="View the whole city in 3D"
+          (click)="onCity3D()"
+        >
+          <i class="bi bi-buildings"></i>
+          City 3D
+        </button>
+      }
+
       <!-- === Bottom Controls Container (Bottom Right) === -->
       <div class="map-bottom-controls">
         <!-- Projection Selector -->
@@ -68,10 +81,19 @@
           @if (selectedFeatureInfo?.layerId !== 3) {
             <li (click)="onAddBuilding()">Add Building</li>
           }
+          @if (selectedFeatureIsLandParcel) {
+            <li (click)="onImport2DBuildingFootprint()">Import 2D Building Footprint</li>
+          }
           @if (selectedFeatureInfo?.layerId !== 3) {
             <li (click)="onConvertToBuilding()">Convert to building</li>
           }
           <li (click)="onAddLegalForms()">Add Legal Forms</li>
+          @if (can3D(Perm3D.IMPORT_3D, 'can_add')) {
+            <li (click)="onImport3D()">Import 3D Object</li>
+          }
+          @if (can3D(Perm3D.VIEW_3D, 'can_view')) {
+            <li (click)="onView3D()">View as 3D</li>
+          }
           <li (click)="onOpenHistory()">History</li>
           @if (user?.user_type === 'admin' || user?.user_type === 'super_admin') {
             <li (click)="onClickInfo()">Feature Info</li>

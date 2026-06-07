@@ -1,6 +1,6 @@
 <h4 mat-dialog-title>
   <!-- <mat-icon class="mt-2">download</mat-icon> -->
-  Import Data Layer
+  {{ dialogTitle }}
 </h4>
 
 <mat-dialog-content>
@@ -8,7 +8,15 @@
     <!-- 1. File Upload -->
     <div class="form-section">
       <label for="fileInput" class="section-label">1. Choose File</label>
-      <small>Select KML, SHP (in .zip), GeoJSON, TXT, or GeoTIFF.</small>
+      <small>{{ fileHelpText }}</small>
+      @if (forcedTargetLayerId) {
+        <div class="import-context-note">
+          Target layer: Building
+          @if (parentSuId) {
+            <span>. Linked parcel: {{ parentSuId }}</span>
+          }
+        </div>
+      }
       <input
         id="fileInput"
         type="file"
@@ -43,7 +51,9 @@
       <div class="import-progress-section">
         <div class="import-progress-header">
           <span>Processing features...</span>
-          <span class="import-progress-count">{{ importProgress.done | number }} / {{ importProgress.total | number }}</span>
+          <span class="import-progress-count"
+            >{{ importProgress.done | number }} / {{ importProgress.total | number }}</span
+          >
         </div>
         <mat-progress-bar
           mode="determinate"

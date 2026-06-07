@@ -1,0 +1,217 @@
+.import3d {
+  padding: 20px 22px;
+  min-width: 460px;
+  max-width: 560px;
+}
+
+.import3d__title {
+  margin: 0 0 4px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.import3d__parcel {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+  margin-left: 6px;
+}
+
+.import3d__hint {
+  margin: 0 0 16px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.import3d__drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px;
+  border: 2px dashed var(--color-border-d1);
+  border-radius: 8px;
+  background: var(--color-background-l1);
+  text-align: center;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.import3d__drop.has-file {
+  border-color: var(--color-primary);
+  background: var(--color-primary-l2);
+}
+
+.import3d__drop.has-error {
+  border-color: var(--color-error);
+}
+
+.import3d__drop-icon {
+  font-size: 1.8rem;
+  color: var(--color-primary);
+}
+
+.import3d__filename {
+  font-weight: 600;
+  color: var(--color-text-primary);
+  word-break: break-all;
+}
+
+.import3d__browse {
+  cursor: pointer;
+  color: var(--color-primary);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.import3d__error {
+  margin-top: 8px;
+  color: var(--color-error);
+  font-size: 0.82rem;
+}
+
+.import3d__placement {
+  margin-top: 18px;
+}
+
+.import3d__section {
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.import3d__sub {
+  margin: 0 0 12px;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.import3d__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+}
+
+.import3d__grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.import3d__grid input {
+  padding: 6px 8px;
+  border: 1px solid var(--color-border-d1);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.import3d__progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.import3d__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--color-border-d1);
+  border-radius: 6px;
+  padding: 7px 16px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--color-text-primary);
+}
+
+.btn-ghost:disabled,
+.primary-bg-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Multi-anchor (control points) placement */
+.import3d__modes {
+  display: flex;
+  gap: 16px;
+  margin: 6px 0 12px;
+  font-size: 0.82rem;
+}
+.import3d__modes label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+.import3d__anchors {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.import3d__anchors th,
+.import3d__anchors td {
+  padding: 3px 4px;
+  text-align: left;
+}
+.import3d__anchors th {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+.import3d__anchors input {
+  width: 78px;
+  padding: 4px 6px;
+  border: 1px solid var(--color-border-d1);
+  border-radius: 5px;
+  font-size: 0.78rem;
+}
+.import3d__anchor-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 8px 0;
+}
+.import3d__add {
+  background: var(--color-primary-l2);
+  color: var(--color-primary-d1);
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.import3d__add:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.import3d__rm {
+  background: transparent;
+  border: none;
+  color: var(--color-error);
+  cursor: pointer;
+}
+.import3d__basez {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  max-width: 160px;
+  margin-top: 8px;
+}
+.import3d__basez input {
+  padding: 6px 8px;
+  border: 1px solid var(--color-border-d1);
+  border-radius: 6px;
+}

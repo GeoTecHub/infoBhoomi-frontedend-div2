@@ -40,12 +40,18 @@ import { LayerService } from '../../services/layer.service';
 import { MapService, ProjectionCode } from '../../services/map.service';
 import { SidebarControlService } from '../../services/sidebar-control.service';
 import { UserService } from '../../services/user.service';
+import { PermissionService } from '../../services/permissions.service';
+import { Cadastre3DPermissions } from '../../core/constant';
+import { qa, qaErr } from '../../core/qa-log';
 import { InfoModalComponent } from '../dialogs/info-modal/info-modal.component';
 import {
   LandParcelReportComponent,
   LandParcelReportData,
 } from '../dialogs/land-parcel-report/land-parcel-report.component';
 import { ParcelHistoryComponent } from '../dialogs/parcel-history/parcel-history.component';
+import { Import3dComponent } from '../dialogs/import-3d/import-3d.component';
+import { City3dViewerComponent } from '../dialogs/city-3d-viewer/city-3d-viewer.component';
+import { ImportDataComponent } from '../shared/popups/import-data/import-data.component';
 import {
   BoundaryType,
   createDefaultLandParcel,
@@ -137,6 +143,9 @@ export class MainComponent implements OnInit, OnDestroy {
   private dialog = inject(MatDialog);
   private route = inject(ActivatedRoute);
   private destroyRef = inject(DestroyRef);
+  private permissionService = inject(PermissionService);
+  // exposed for template gating
+  readonly Perm3D = Cadastre3DPermissions;
 
   // --- Private Properties ---
   private mapInstance: OLMap | null = null;
@@ -163,6 +172,11 @@ export class MainComponent implements OnInit, OnDestroy {
   get canConvertToInfobhoomi(): boolean {
     const arr = this.drawService._selectedFeatureInfo?.value ?? [];
     return Array.isArray(arr) && arr.length > 0;
+  }
+
+  get selectedFeatureIsLandParcel(): boolean {
+    const layerId = Number(this.selectedFeatureInfo?.layerId);
+    return [1, 6].includes(layerId);
   }
 
   constructor(
@@ -263,6 +277,39 @@ export class MainComponent implements OnInit, OnDestroy {
   ngAfterViewInit(): void {
     this.initializeMap();
     this.user = this.userService.getUser();
+    this.load3DPermissions();
+  }
+
+  // --- 3D Cadastre permission gating ---------------------------------------
+  // perms3d[permId] = { can_view, can_add, can_edit, can_delete }; empty = allow-all
+  public perms3d: Record<number, any> = {};
+
+  private load3DPermissions(): void {
+    const roleId = parseInt(
+      typeof window !== 'undefined' ? (localStorage.getItem('role_id') ?? '0') : '0',
+      10,
+    );
+    if (!roleId) return; // no role → keep allow-all default
+    this.permissionService.loadPermissions(roleId, Object.values(Cadastre3DPermissions)).subscribe({
+      next: (perms) => {
+        this.perms3d = perms || {};
+        qa('Main', '3D permissions loaded', { roleId, perms: this.perms3d });
+        this.cdr.markForCheck();
+      },
+      error: (e) => {
+        qaErr('Main', '3D permissions load failed (allow-all fallback)', e);
+      },
+    });
+  }
+
+  /** True if no perms loaded (allow-all) OR the role has the action on permId. */
+  can3D(
+    permId: number,
+    action: 'can_view' | 'can_add' | 'can_edit' | 'can_delete' = 'can_view',
+  ): boolean {
+    const p = this.perms3d[permId];
+    if (!p) return true; // unconfigured → don't hide (backend still enforces)
+    return !!p[action];
   }
 
   getChangesCount() {
@@ -607,9 +654,133 @@ export class MainComponent implements OnInit, OnDestroy {
     this.hideContextMenu();
   }
 
+  onImport2DBuildingFootprint(): void {
+    this.hideContextMenu();
+
+    const parentSuId = Number(this.selectedFeatureInfo?.featureId);
+    const selectedLayerId = Number(this.selectedFeatureInfo?.layerId);
+    if (!Number.isFinite(parentSuId) || ![1, 6].includes(selectedLayerId)) {
+      this.notificationService.showError('Please select a land parcel first.');
+      return;
+    }
+
+    const olFeature = this.selectedFeatureInfo?.olFeature;
+    const parcelLabel =
+      (olFeature?.get('label') as string | undefined) ||
+      (olFeature?.get('uli') as string | undefined) ||
+      `Parcel ${parentSuId}`;
+
+    this.drawService.selectedRefFeatureId = parentSuId;
+    this.layerService.setSelectedCurrentLayerIdForDrawing(3);
+    this.layerService.setLayerVisibility(3, true);
+
+    if (this.dialogRef) return;
+    this.dialogRef = this.dialog.open(ImportDataComponent, {
+      minWidth: '450px',
+      maxWidth: '450px',
+      data: {
+        mode: 'building-footprint',
+        defaultLayerId: 3,
+        lockedLayerId: 3,
+        parentSuId,
+        title: 'Import 2D Building Footprint',
+        helpText: `Select a building footprint SHP ZIP, GeoJSON, KML, or TXT file for ${parcelLabel}.`,
+      },
+    });
+    this.dialogRef.afterClosed().subscribe((result: any) => {
+      this.dialogRef = null;
+      if (result?.success) {
+        this.notificationService.showSuccess(
+          'Building footprint imported to Building layer. Save changes to persist it.',
+        );
+      }
+    });
+  }
+
   onAddLegalForms(): void {
     this.openProAlert();
     this.hideContextMenu();
+  }
+
+  /** Right-click → Import a 3D IFC/CityJSON building onto the selected parcel. */
+  onImport3D(): void {
+    this.hideContextMenu();
+    const parentSuId = Number(this.selectedFeatureInfo?.featureId);
+    qa('Main', 'onImport3D', { parentSuId, layerId: this.selectedFeatureInfo?.layerId });
+    if (!Number.isFinite(parentSuId)) {
+      this.notificationService.showError('Please select a parcel first.');
+      return;
+    }
+    const olFeature = this.selectedFeatureInfo?.olFeature;
+    const parcelLabel =
+      (olFeature?.get('label') as string | undefined) ||
+      (olFeature?.get('uli') as string | undefined) ||
+      `Parcel ${parentSuId}`;
+
+    if (this.dialogRef) return;
+    this.dialogRef = this.dialog.open(Import3dComponent, {
+      width: '560px',
+      maxWidth: '96vw',
+      data: { parentSuId, parcelLabel },
+    });
+    this.dialogRef.afterClosed().subscribe((result: any) => {
+      this.dialogRef = null;
+      if (result?.building_su_id) {
+        // refresh the map so the new building footprint + units appear
+        this.layerService.loadInitialMapLayers();
+        this.drawService.refreshCurrentSelection();
+      }
+    });
+  }
+
+  /** Toolbar → open the whole-city 3D view (admin-area filtered). */
+  onCity3D(): void {
+    qa('Main', 'onCity3D (whole-area viewer)');
+    if (this.dialogRef) return;
+    this.dialogRef = this.dialog.open(City3dViewerComponent, {
+      width: '96vw',
+      maxWidth: '1600px',
+      height: '90vh',
+      panelClass: 'city-3d-dialog',
+    });
+    this.dialogRef.afterClosed().subscribe(() => (this.dialogRef = null));
+  }
+
+  /**
+   * Right-click → View the selected parcel in 3D. Routes into the closable,
+   * parcel-focused City-3D viewer (which shows the reused parcel fabric + OSM
+   * ground + the buildings on that parcel) — replacing the old un-closable
+   * single-building modal.
+   */
+  onView3D(): void {
+    this.hideContextMenu();
+    const featureId = this.selectedFeatureInfo?.featureId;
+    qa('Main', 'onView3D', { featureId, layerId: this.selectedFeatureInfo?.layerId });
+    if (featureId == null) {
+      this.notificationService.showError('Please select a parcel first.');
+      return;
+    }
+    const olFeature = this.selectedFeatureInfo?.olFeature;
+    const parcelLabel =
+      (olFeature?.get('label') as string | undefined) ||
+      (olFeature?.get('uli') as string | undefined) ||
+      `Parcel ${featureId}`;
+
+    if (this.dialogRef) return;
+    // Non-modal, right-docked so the real side panel (left) stays visible and
+    // interactive — a 3D pick populates that same panel (B3a).
+    this.dialogRef = this.dialog.open(City3dViewerComponent, {
+      width: '58vw',
+      maxWidth: '58vw',
+      height: '88vh',
+      position: { right: '8px', top: '6vh' },
+      hasBackdrop: false,
+      panelClass: 'city-3d-dialog',
+      autoFocus: false,
+      restoreFocus: false,
+      data: { parcelSuId: Number(featureId), parcelLabel },
+    });
+    this.dialogRef.afterClosed().subscribe(() => (this.dialogRef = null));
   }
 
   openProAlert(): void {

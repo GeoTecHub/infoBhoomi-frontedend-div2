@@ -1,5 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Inject, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -39,6 +40,25 @@ type BuildingUnitHistoryItem = {
   bld_property_type?: string;
 };
 
+type ShapeLineageItem = {
+  su_id: string | number;
+  relation: 'self' | 'parent' | 'child';
+  label?: string;
+  kind: 'current' | 'previous' | 'last-known';
+  date?: string;
+  area?: number | null;
+  status?: boolean;
+  geom?: string | null;
+};
+
+type DeletedParcelResult = {
+  su_id: string | number;
+  label?: string;
+  deleted_at?: string;
+  deleted_by?: string | number;
+  calculated_area?: number | null;
+};
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-parcel-history',
@@ -46,6 +66,7 @@ type BuildingUnitHistoryItem = {
   imports: [
     CommonModule,
     DatePipe,
+    FormsModule,
     MatButtonModule,
     MatDialogModule,
     MatIconModule,
@@ -72,6 +93,15 @@ export class ParcelHistoryComponent {
   selectedSuId: string | number;
   selectedLabel = '';
   buildingUnits: BuildingUnitHistoryItem[] = [];
+  legalSpaces: HistoryRow[] = [];
+  shapeLineage: ShapeLineageItem[] = [];
+  generatedAt = new Date();
+
+  // Deleted-parcel search
+  deletedQuery = '';
+  deletedResults: DeletedParcelResult[] = [];
+  searchingDeleted = false;
+  isDeletedSubject = false;
 
   constructor(
     public dialogRef: MatDialogRef<ParcelHistoryComponent>,
@@ -113,9 +143,12 @@ export class ParcelHistoryComponent {
           this.rrr = res?.rrr ?? [];
           this.relationships = res?.relationships ?? [];
           this.timeline = res?.timeline ?? [];
+          this.legalSpaces = res?.legal_spaces ?? [];
+          this.shapeLineage = res?.shape_lineage ?? [];
           this.affectedParcels = res?.affected_parcels ?? null;
           this.rectificationControls = res?.rectification_controls ?? null;
           this.selectedEvent = this.timeline[0] ?? null;
+          this.generatedAt = new Date();
         },
         error: (err) => {
           this.notificationService.showError(err?.error?.error || 'Could not load history.');
@@ -491,6 +524,119 @@ export class ParcelHistoryComponent {
       if (sourceHistoryId && row.id === sourceHistoryId) return true;
       return row.record_type === type || this.selectedEvent?.record_type === type;
     });
+  }
+
+  // ── Report tab ────────────────────────────────────────────────────────────
+
+  reportCounts(): { attributes: number; geometry: number; rrr: number; legalSpaces: number } {
+    return {
+      attributes: this.attributes.length,
+      geometry: this.geometry.length,
+      rrr: this.rrr.length,
+      legalSpaces: this.legalSpaces.length,
+    };
+  }
+
+  /** Deleted legal-space rows only (buildings/units), excludes terminated-right rows. */
+  removedLegalSpaces(): HistoryRow[] {
+    return this.legalSpaces.filter((row) => String(row['field_name'] || '') === 'legal_space');
+  }
+
+  terminatedRights(): HistoryRow[] {
+    return this.legalSpaces.filter((row) => String(row['category'] || '') === 'RRR');
+  }
+
+  lineageRelationLabel(item: ShapeLineageItem): string {
+    if (item.relation === 'self') return 'This parcel';
+    if (item.relation === 'parent') return 'Parent';
+    return 'Child';
+  }
+
+  /** Build a normalized SVG <path d="..."> from a GeoJSON geometry string. */
+  thumbPath(geom?: string | null): string {
+    if (!geom) return '';
+    let parsed: any;
+    try {
+      parsed = typeof geom === 'string' ? JSON.parse(geom) : geom;
+    } catch {
+      return '';
+    }
+    const rings = this.extractRings(parsed);
+    if (!rings.length) return '';
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const ring of rings) {
+      for (const [x, y] of ring) {
+        if (x < minX) minX = x;
+        if (x > maxX) maxX = x;
+        if (y < minY) minY = y;
+        if (y > maxY) maxY = y;
+      }
+    }
+    const w = maxX - minX || 1;
+    const h = maxY - minY || 1;
+    const scale = 92 / Math.max(w, h);
+    const offX = (100 - w * scale) / 2;
+    const offY = (80 - h * scale) / 2;
+    const px = (x: number) => offX + (x - minX) * scale;
+    const py = (y: number) => offY + (maxY - y) * scale; // flip Y for screen coords
+
+    return rings
+      .map((ring) =>
+        ring
+          .map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${px(x).toFixed(1)},${py(y).toFixed(1)}`)
+          .join(' ') + ' Z',
+      )
+      .join(' ');
+  }
+
+  private extractRings(geo: any): number[][][] {
+    if (!geo || !geo.type) return [];
+    const t = geo.type;
+    const c = geo.coordinates;
+    if (t === 'Polygon') return c;
+    if (t === 'MultiPolygon') return c.flat();
+    if (t === 'LineString') return [c];
+    if (t === 'MultiLineString') return c;
+    if (t === 'Point') return [[c]];
+    return [];
+  }
+
+  // ── Deleted-parcel search ─────────────────────────────────────────────────
+
+  searchDeleted(): void {
+    const q = this.deletedQuery.trim();
+    if (!q) {
+      this.deletedResults = [];
+      return;
+    }
+    this.searchingDeleted = true;
+    this.apiService
+      .searchDeletedParcels(q)
+      .pipe(
+        finalize(() => {
+          this.searchingDeleted = false;
+          this.cdr.markForCheck();
+        }),
+      )
+      .subscribe({
+        next: (res: any) => {
+          this.deletedResults = res?.results ?? res ?? [];
+        },
+        error: () => {
+          this.deletedResults = [];
+          this.notificationService.showError('Could not search deleted parcels.');
+        },
+      });
+  }
+
+  openDeletedParcel(row: DeletedParcelResult): void {
+    this.selectedSuId = row.su_id;
+    this.selectedLabel = row.label || `Parcel ${row.su_id}`;
+    this.isDeletedSubject = true;
+    this.deletedResults = [];
+    this.deletedQuery = '';
+    this.loadHistory();
   }
 
   close(): void {

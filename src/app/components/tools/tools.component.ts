@@ -1660,12 +1660,13 @@ export class ToolsComponent implements OnInit, OnDestroy {
   setGeoTagStatus(active: boolean): void {
     const feature = this.geoTagContextMenu.feature;
     const tagId = feature?.get('tagId');
+    // Close the context menu right away so it doesn't linger during the request.
+    this.geoTagContextMenu.visible = false;
     if (!feature || !tagId) return;
     this.apiService.updateGeoTag(tagId, { status: active }).subscribe({
       next: (row) => {
         feature.set('status', row.status);
         feature.setStyle(this.geoTagStyle(feature));
-        this.geoTagContextMenu.visible = false;
       },
       error: (err) => this.notifications.showError(err?.error?.error || 'Could not update GeoTag.'),
     });
@@ -1674,11 +1675,12 @@ export class ToolsComponent implements OnInit, OnDestroy {
   deleteGeoTag(): void {
     const feature = this.geoTagContextMenu.feature;
     const tagId = feature?.get('tagId');
+    // Close the context menu right away so it doesn't linger during the request.
+    this.geoTagContextMenu.visible = false;
     if (!feature || !tagId) return;
     this.apiService.deleteGeoTag(tagId).subscribe({
       next: () => {
         this.geoTagLayer?.getSource()?.removeFeature(feature);
-        this.geoTagContextMenu.visible = false;
       },
       error: (err) => this.notifications.showError(err?.error?.error || 'Could not delete GeoTag.'),
     });

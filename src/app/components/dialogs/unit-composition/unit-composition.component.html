@@ -1,0 +1,114 @@
+<div class="uc">
+  <header class="uc__bar">
+    <h2 class="uc__title">
+      Unit Composition
+      @if (data.buildingName) {
+        <span class="uc__sub">— {{ data.buildingName }}</span>
+      }
+    </h2>
+    <span class="uc__status">{{ statusMsg }}</span>
+    <button class="uc__close" type="button" (click)="cancel()" aria-label="Close">✕</button>
+  </header>
+
+  <div class="uc__body">
+    <!-- Left: unassigned rooms (the pool), grouped by floor -->
+    <aside class="uc__side">
+      <div class="uc__section-label">Unassigned rooms ({{ pool.length }})</div>
+
+      @for (group of floorGroups; track group.label) {
+        <div class="uc__floor">
+          <div class="uc__floor-head">
+            <span class="uc__floor-name">{{ group.label }}</span>
+            <button type="button" class="uc__floor-all" (click)="toggleFloor(group)">
+              select all
+            </button>
+          </div>
+          <ul class="uc__list">
+            @for (u of group.units; track u.su_id) {
+              <li
+                [class.sel]="u.selected"
+                (click)="toggleUnit(u)"
+                (mouseenter)="hoverUnit(u)"
+                (mouseleave)="hoverUnit(null)"
+              >
+                <input
+                  type="checkbox"
+                  [checked]="u.selected"
+                  (click)="$event.stopPropagation(); toggleUnit(u)"
+                />
+                <span class="uc__name">{{ u.apt_name || ('Room ' + u.su_id) }}</span>
+                @if (u.floor_area) {
+                  <span class="uc__muted">{{ u.floor_area }} m²</span>
+                }
+              </li>
+            }
+          </ul>
+        </div>
+      }
+      @if (pool.length === 0 && !loading) {
+        <p class="uc__empty">No unassigned rooms — all grouped.</p>
+      }
+    </aside>
+
+    <!-- Centre: 3D picker -->
+    <div class="uc__scene-wrap">
+      <div #sceneContainer class="uc__scene"></div>
+      @if (loading) {
+        <div class="uc__overlay">
+          <mat-spinner diameter="34"></mat-spinner>
+          <span>{{ statusMsg }}</span>
+        </div>
+      }
+      <div class="uc__hint">Click a room in the model or the list — they highlight together.</div>
+    </div>
+
+    <!-- Right: composition form -->
+    <aside class="uc__form">
+      <div class="uc__section-label">New legal space</div>
+
+      <label class="uc__field">
+        Legal Space Type
+        <select [(ngModel)]="lsbuType">
+          <optgroup label="Private (exclusive)">
+            @for (t of privateTypes; track t) {
+              <option [value]="t">{{ t }}</option>
+            }
+          </optgroup>
+          <optgroup label="Common property">
+            @for (t of commonTypes; track t) {
+              <option [value]="t">{{ t }}</option>
+            }
+          </optgroup>
+        </select>
+      </label>
+
+      @if (isPrivate) {
+        <label class="uc__field">
+          Cadastral ID <span class="uc__req">*</span>
+          <input type="text" [(ngModel)]="cadastralId" placeholder="e.g. APT-3B" />
+        </label>
+      } @else {
+        <p class="uc__note">Common property — no cadastral ID required.</p>
+      }
+
+      <label class="uc__field">
+        Label (optional)
+        <input type="text" [(ngModel)]="aptName" placeholder="e.g. Apartment 3B / Lobby" />
+      </label>
+
+      <div class="uc__count">Selected rooms: <strong>{{ selectedCount }}</strong></div>
+
+      <div class="uc__actions">
+        <button type="button" class="btn-ghost" (click)="cancel()" [disabled]="saving">Cancel</button>
+        <button
+          type="button"
+          class="primary-bg-btn"
+          (click)="compose()"
+          [disabled]="saving || selectedCount === 0"
+        >
+          {{ saving ? 'Saving…' : 'Create Legal Space' }}
+        </button>
+      </div>
+    </aside>
+  </div>
+</div>

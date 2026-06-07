@@ -52,6 +52,21 @@ export const BuildingsTabPermissions = {
   B_METADATA: [164],
 };
 
+// 3D Cadastre permission IDs (seeded by backend migration 0016,
+// category "3D Cadastre"). Gate the 3D import / view / composition actions.
+export const Cadastre3DPermissions = {
+  IMPORT_3D: 254, // add    — Import IFC/CityJSON building
+  DELETE_3D: 255, // delete — Delete a 3D building
+  VIEW_3D: 256, // view   — View a building in 3D
+  CITY_3D: 257, // view   — City 3D view (admin area)
+  SEARCH_3D: 258, // view   — Search 3D objects
+  COMPOSE_OPEN: 259, // view   — Open the Unit Composition window
+  COMPOSE: 260, // add/edit — Compose a Legal Space Building Unit
+  EDIT_LEGAL_SPACE_TYPE: 261, // edit
+  EDIT_CADASTRAL_ID: 262, // edit
+  REASSIGN_UNITS: 263, // edit
+};
+
 export const Token = {
   TOKEN: typeof window !== 'undefined' ? localStorage.getItem('Token') : null,
 };

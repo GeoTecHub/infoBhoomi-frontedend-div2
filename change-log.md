@@ -1,3 +1,6 @@
+06/06/26
+### fix: imported .shp features were not selectable until a page refresh. updateAllFeatureIdsAfterSave now also assigns the integer su_id as the OL feature id (setId) and matches staged features by feature_Id as a fallback to uuid, so imported-then-saved features behave like server-reloaded ones without a refresh.
+
 08/06/25
 ### added platform Id check into some components that must render in client side.
 ### make layer-panel component into a standalone component because it was imported in standalon main component. therefore both components must be standalone.

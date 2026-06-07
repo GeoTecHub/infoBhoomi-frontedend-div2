@@ -374,3 +374,199 @@
     padding-left: 38px;
   }
 }
+
+/* ── Deleted-parcel search ───────────────────────────────────────────── */
+.deleted-badge {
+  margin-left: 8px;
+  background: #fceaea;
+  color: #791f1f;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.deleted-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.deleted-search mat-icon {
+  color: rgba(0, 0, 0, 0.4);
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.deleted-search input {
+  flex: 1;
+  height: 34px;
+  border: 1px solid rgba(0, 0, 0, 0.18);
+  border-radius: 6px;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.deleted-results {
+  position: absolute;
+  top: 100%;
+  left: 12px;
+  right: 12px;
+  z-index: 20;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  max-height: 220px;
+  overflow: auto;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.deleted-results li {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+.deleted-results li:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.deleted-results small {
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 11px;
+}
+
+/* ── Report tab ──────────────────────────────────────────────────────── */
+.report-tab {
+  padding: 16px 4px;
+}
+
+.report-meta {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.55);
+  margin-bottom: 14px;
+}
+
+.report-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.report-card {
+  background: rgba(0, 0, 0, 0.03);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.report-card span {
+  display: block;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.report-card strong {
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.report-card.danger strong {
+  color: #791f1f;
+}
+
+.report-h {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 18px 0 10px;
+}
+
+.report-timeline {
+  border-left: 2px solid rgba(0, 0, 0, 0.15);
+  margin: 0 0 8px 6px;
+  padding-left: 14px;
+  list-style: none;
+}
+
+.report-timeline li {
+  margin-bottom: 12px;
+}
+
+.rt-title {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.rt-meta {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.report-table th {
+  text-align: left;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+.report-table td {
+  padding: 6px 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.report-rights {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 13px;
+}
+
+.report-rights small {
+  color: rgba(0, 0, 0, 0.5);
+  margin-left: 6px;
+}
+
+.lineage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.lineage-thumb {
+  margin: 0;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+}
+
+.lineage-thumb svg {
+  width: 100%;
+  height: 70px;
+}
+
+.lineage-thumb figcaption strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.lineage-thumb figcaption small {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.55);
+}

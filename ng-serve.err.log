@@ -1,0 +1,806 @@
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/admin/common/admin-header/admin-header.component.html:151:22:
+[37m      151 │             @if (sex?.[32mtoLowerCase[37m() === 'male') {
+          ╵                       [32m~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component AdminHeaderComponent.
+
+    src/app/admin/common/admin-header/admin-header.component.ts:54:15:
+[37m      54 │   templateUrl: [32m'./admin-header.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/admin/common/admin-header/admin-header.component.html:154:22:
+[37m      154 │             @if (sex?.[32mtoLowerCase[37m() === 'female') {
+          ╵                       [32m~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component AdminHeaderComponent.
+
+    src/app/admin/common/admin-header/admin-header.component.ts:54:15:
+[37m      54 │   templateUrl: [32m'./admin-header.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:68:54:
+[37m      68 │ ...an class="brr-stat-value">{{ building.units?.[32mlength[37m || 0 }}</span>
+         ╵                                                 [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:82:55:
+[37m      82 │ ...ss="brr-tab-badge">{{ building.rrr?.[32mentries[37m?.length ?? 0 }}</span>
+         ╵                                        [32m~~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:85:57:
+[37m      85 │ ...pan class="brr-tab-badge">{{ building.units?.[32mlength[37m ?? 0 }}</span>
+         ╵                                                 [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:151:42:
+[37m      151 │           building.relationshipsTopology?.[32mparcelRelation[37m ||
+          ╵                                           [32m~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:152:42:
+[37m      152 │           building.relationshipsTopology?.[32madjacentBuildings[37m
+          ╵                                           [32m~~~~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:285:30:
+[37m      285 │         @if (!building.units?.[32mlength[37m) {
+          ╵                               [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8102: NG8102: The left side of this nullish coalescing operation does not include 'null' or 'undefined' in its type, therefore the '??' operator can be safely removed. Find more at https://v21.angular.dev/extended-diagnostics/NG8102[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:296:54:
+[37m      296 │ ...ass="brr-unit-floor">Floor {{ [32munit.floorNumber ?? '�[37m�' }}</span>
+          ╵                                  [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:311:73:
+[37m      311 │ ...s="brr-field-value brr-mono">{{ unit.rooms?.[32mlength[37m ?? 0 }}</span>
+          ╵                                                [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:376:28:
+[37m      376 │         @if (!building.rrr?.[32mentries[37m?.length) {
+          ╵                             [32m~~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:412:39:
+[37m      412 │               @if (entry.restrictions?.[32mlength[37m) {
+          ╵                                        [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.html:201:44:
+[37m      201 │           parcel.relationships.buildingIds?.[32mlength[37m ||
+          ╵                                             [32m~~~~~~[0m
+
+  Warning occurs in the template of component LandParcelReportComponent.
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.ts:77:15:
+[37m      77 │   templateUrl: [32m'./land-parcel-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.html:214:53:
+[37m      214 │               @if (parcel.relationships.buildingIds?.[32mlength[37m) {
+          ╵                                                      [32m~~~~~~[0m
+
+  Warning occurs in the template of component LandParcelReportComponent.
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.ts:77:15:
+[37m      77 │   templateUrl: [32m'./land-parcel-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.html:869:39:
+[37m      869 │               @if (entry.restrictions?.[32mlength[37m) {
+          ╵                                        [32m~~~~~~[0m
+
+  Warning occurs in the template of component LandParcelReportComponent.
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.ts:77:15:
+[37m      77 │   templateUrl: [32m'./land-parcel-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/header/header.component.html:366:22:
+[37m      366 │             @if (sex?.[32mtoLowerCase[37m() === 'male') {
+          ╵                       [32m~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component HeaderComponent.
+
+    src/app/components/header/header.component.ts:66:15:
+[37m      66 │   templateUrl: [32m'./header.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/header/header.component.html:369:22:
+[37m      369 │             @if (sex?.[32mtoLowerCase[37m() === 'female') {
+          ╵                       [32m~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component HeaderComponent.
+
+    src/app/components/header/header.component.ts:66:15:
+[37m      66 │   templateUrl: [32m'./header.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/side-panel/building-info-panel/building-info-panel.component.html:546:54:
+[37m      546 │                                 @if (entry.documents?.[32mlength[37m) {
+          ╵                                                       [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingInfoPanelComponent.
+
+    src/app/components/side-panel/building-info-panel/building-info-panel.component.ts:90:15:
+[37m      90 │   templateUrl: [32m'./building-info-panel.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/side-panel/building-info-panel/building-info-panel.component.html:1536:68:
+[37m      1536 │ ...                                 @if (entry.documents?.[32mlength[37m) {
+           ╵                                                           [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingInfoPanelComponent.
+
+    src/app/components/side-panel/building-info-panel/building-info-panel.component.ts:90:15:
+[37m      90 │   templateUrl: [32m'./building-info-panel.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/side-panel/land-info-panel/land-info-panel.component.html:874:54:
+[37m      874 │                                 @if (entry.documents?.[32mlength[37m) {
+          ╵                                                       [32m~~~~~~[0m
+
+  Warning occurs in the template of component LandInfoPanelComponent.
+
+    src/app/components/side-panel/land-info-panel/land-info-panel.component.ts:68:15:
+[37m      68 │   templateUrl: [32m'./land-info-panel.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[2m5:19:23 PM[22m[1m [33m[1m[vite][22m[1m[33m [33m[2m(ssr)[22m[1m[33m [33mwarning: 
+[36mC:/Users/nmmil/OneDrive/Programs/InfoBhoomi/infoBhoomi-frontedend-div2/.angular/cache/21.2.0/InfoBhoomi_V2/vite/deps_ssr/chunk-INVUO72R.js[33m
+[0m156 |    const isDataUrl = /^data:/.test(mod);
+157 |    if (type === "module") {
+158 |      (isDataUrl ? import(mod) : import(pathToFileURL(mod))).catch((err) => {
+    |                          ^^^
+159 |        if (isDataUrl && err.message === "Not supported") {
+160 |          console.warn("Worker(): Importing data: URLs requires Node 12.10+. Falling back to classic worker.");[0m[33m
+The above dynamic import cannot be analyzed by Vite.
+See [34mhttps://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+[33m[33m
+  Plugin: [35mvite:import-analysis[33m
+  File: [36mC:/Users/nmmil/OneDrive/Programs/InfoBhoomi/infoBhoomi-frontedend-div2/.angular/cache/21.2.0/InfoBhoomi_V2/vite/deps_ssr/chunk-INVUO72R.js?v=df33130b[33m[39m[22m
+[1m[33m[2m5:19:24 PM[22m[1m [33m[1m[vite][22m[1m[33m [33m[2m(ssr)[22m[1m[33m [33mwarning: 
+[36mC:/Users/nmmil/OneDrive/Programs/InfoBhoomi/infoBhoomi-frontedend-div2/.angular/cache/21.2.0/InfoBhoomi_V2/vite/deps_ssr/chunk-INVUO72R.js[33m
+[0m156 |    const isDataUrl = /^data:/.test(mod);
+157 |    if (type === "module") {
+158 |      (isDataUrl ? import(mod) : import(pathToFileURL(mod))).catch((err) => {
+    |                                        ^^^^^^^^^^^^^^^^^^
+159 |        if (isDataUrl && err.message === "Not supported") {
+160 |          console.warn("Worker(): Importing data: URLs requires Node 12.10+. Falling back to classic worker.");[0m[33m
+The above dynamic import cannot be analyzed by Vite.
+See [34mhttps://github.com/rollup/plugins/tree/master/packages/dynamic-import-vars#limitations[33m for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+[33m[33m
+  Plugin: [35mvite:import-analysis[33m
+  File: [36mC:/Users/nmmil/OneDrive/Programs/InfoBhoomi/infoBhoomi-frontedend-div2/.angular/cache/21.2.0/InfoBhoomi_V2/vite/deps_ssr/chunk-INVUO72R.js?v=df33130b[33m[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/admin/common/admin-header/admin-header.component.html:151:22:
+[37m      151 │             @if (sex?.[32mtoLowerCase[37m() === 'male') {
+          ╵                       [32m~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component AdminHeaderComponent.
+
+    src/app/admin/common/admin-header/admin-header.component.ts:54:15:
+[37m      54 │   templateUrl: [32m'./admin-header.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/admin/common/admin-header/admin-header.component.html:154:22:
+[37m      154 │             @if (sex?.[32mtoLowerCase[37m() === 'female') {
+          ╵                       [32m~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component AdminHeaderComponent.
+
+    src/app/admin/common/admin-header/admin-header.component.ts:54:15:
+[37m      54 │   templateUrl: [32m'./admin-header.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:68:54:
+[37m      68 │ ...an class="brr-stat-value">{{ building.units?.[32mlength[37m || 0 }}</span>
+         ╵                                                 [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:82:55:
+[37m      82 │ ...ss="brr-tab-badge">{{ building.rrr?.[32mentries[37m?.length ?? 0 }}</span>
+         ╵                                        [32m~~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:85:57:
+[37m      85 │ ...pan class="brr-tab-badge">{{ building.units?.[32mlength[37m ?? 0 }}</span>
+         ╵                                                 [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:151:42:
+[37m      151 │           building.relationshipsTopology?.[32mparcelRelation[37m ||
+          ╵                                           [32m~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:152:42:
+[37m      152 │           building.relationshipsTopology?.[32madjacentBuildings[37m
+          ╵                                           [32m~~~~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:285:30:
+[37m      285 │         @if (!building.units?.[32mlength[37m) {
+          ╵                               [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8102: NG8102: The left side of this nullish coalescing operation does not include 'null' or 'undefined' in its type, therefore the '??' operator can be safely removed. Find more at https://v21.angular.dev/extended-diagnostics/NG8102[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:296:54:
+[37m      296 │ ...ass="brr-unit-floor">Floor {{ [32munit.floorNumber ?? '�[37m�' }}</span>
+          ╵                                  [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:311:73:
+[37m      311 │ ...s="brr-field-value brr-mono">{{ unit.rooms?.[32mlength[37m ?? 0 }}</span>
+          ╵                                                [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:376:28:
+[37m      376 │         @if (!building.rrr?.[32mentries[37m?.length) {
+          ╵                             [32m~~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:412:39:
+[37m      412 │               @if (entry.restrictions?.[32mlength[37m) {
+          ╵                                        [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.html:201:44:
+[37m      201 │           parcel.relationships.buildingIds?.[32mlength[37m ||
+          ╵                                             [32m~~~~~~[0m
+
+  Warning occurs in the template of component LandParcelReportComponent.
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.ts:77:15:
+[37m      77 │   templateUrl: [32m'./land-parcel-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.html:214:53:
+[37m      214 │               @if (parcel.relationships.buildingIds?.[32mlength[37m) {
+          ╵                                                      [32m~~~~~~[0m
+
+  Warning occurs in the template of component LandParcelReportComponent.
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.ts:77:15:
+[37m      77 │   templateUrl: [32m'./land-parcel-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.html:869:39:
+[37m      869 │               @if (entry.restrictions?.[32mlength[37m) {
+          ╵                                        [32m~~~~~~[0m
+
+  Warning occurs in the template of component LandParcelReportComponent.
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.ts:77:15:
+[37m      77 │   templateUrl: [32m'./land-parcel-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/header/header.component.html:366:22:
+[37m      366 │             @if (sex?.[32mtoLowerCase[37m() === 'male') {
+          ╵                       [32m~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component HeaderComponent.
+
+    src/app/components/header/header.component.ts:66:15:
+[37m      66 │   templateUrl: [32m'./header.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/header/header.component.html:369:22:
+[37m      369 │             @if (sex?.[32mtoLowerCase[37m() === 'female') {
+          ╵                       [32m~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component HeaderComponent.
+
+    src/app/components/header/header.component.ts:66:15:
+[37m      66 │   templateUrl: [32m'./header.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/side-panel/building-info-panel/building-info-panel.component.html:546:54:
+[37m      546 │                                 @if (entry.documents?.[32mlength[37m) {
+          ╵                                                       [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingInfoPanelComponent.
+
+    src/app/components/side-panel/building-info-panel/building-info-panel.component.ts:90:15:
+[37m      90 │   templateUrl: [32m'./building-info-panel.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/side-panel/building-info-panel/building-info-panel.component.html:1536:68:
+[37m      1536 │ ...                                 @if (entry.documents?.[32mlength[37m) {
+           ╵                                                           [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingInfoPanelComponent.
+
+    src/app/components/side-panel/building-info-panel/building-info-panel.component.ts:90:15:
+[37m      90 │   templateUrl: [32m'./building-info-panel.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/side-panel/land-info-panel/land-info-panel.component.html:874:54:
+[37m      874 │                                 @if (entry.documents?.[32mlength[37m) {
+          ╵                                                       [32m~~~~~~[0m
+
+  Warning occurs in the template of component LandInfoPanelComponent.
+
+    src/app/components/side-panel/land-info-panel/land-info-panel.component.ts:68:15:
+[37m      68 │   templateUrl: [32m'./land-info-panel.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/admin/common/admin-header/admin-header.component.html:151:22:
+[37m      151 │             @if (sex?.[32mtoLowerCase[37m() === 'male') {
+          ╵                       [32m~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component AdminHeaderComponent.
+
+    src/app/admin/common/admin-header/admin-header.component.ts:54:15:
+[37m      54 │   templateUrl: [32m'./admin-header.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/admin/common/admin-header/admin-header.component.html:154:22:
+[37m      154 │             @if (sex?.[32mtoLowerCase[37m() === 'female') {
+          ╵                       [32m~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component AdminHeaderComponent.
+
+    src/app/admin/common/admin-header/admin-header.component.ts:54:15:
+[37m      54 │   templateUrl: [32m'./admin-header.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:68:54:
+[37m      68 │ ...an class="brr-stat-value">{{ building.units?.[32mlength[37m || 0 }}</span>
+         ╵                                                 [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:82:55:
+[37m      82 │ ...ss="brr-tab-badge">{{ building.rrr?.[32mentries[37m?.length ?? 0 }}</span>
+         ╵                                        [32m~~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:85:57:
+[37m      85 │ ...pan class="brr-tab-badge">{{ building.units?.[32mlength[37m ?? 0 }}</span>
+         ╵                                                 [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:151:42:
+[37m      151 │           building.relationshipsTopology?.[32mparcelRelation[37m ||
+          ╵                                           [32m~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:152:42:
+[37m      152 │           building.relationshipsTopology?.[32madjacentBuildings[37m
+          ╵                                           [32m~~~~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:285:30:
+[37m      285 │         @if (!building.units?.[32mlength[37m) {
+          ╵                               [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8102: NG8102: The left side of this nullish coalescing operation does not include 'null' or 'undefined' in its type, therefore the '??' operator can be safely removed. Find more at https://v21.angular.dev/extended-diagnostics/NG8102[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:296:54:
+[37m      296 │ ...ass="brr-unit-floor">Floor {{ [32munit.floorNumber ?? '�[37m�' }}</span>
+          ╵                                  [32m~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:311:73:
+[37m      311 │ ...s="brr-field-value brr-mono">{{ unit.rooms?.[32mlength[37m ?? 0 }}</span>
+          ╵                                                [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:376:28:
+[37m      376 │         @if (!building.rrr?.[32mentries[37m?.length) {
+          ╵                             [32m~~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/building-report/building-report.component.html:412:39:
+[37m      412 │               @if (entry.restrictions?.[32mlength[37m) {
+          ╵                                        [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingReportComponent.
+
+    src/app/components/dialogs/building-report/building-report.component.ts:36:15:
+[37m      36 │   templateUrl: [32m'./building-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.html:201:44:
+[37m      201 │           parcel.relationships.buildingIds?.[32mlength[37m ||
+          ╵                                             [32m~~~~~~[0m
+
+  Warning occurs in the template of component LandParcelReportComponent.
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.ts:77:15:
+[37m      77 │   templateUrl: [32m'./land-parcel-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.html:214:53:
+[37m      214 │               @if (parcel.relationships.buildingIds?.[32mlength[37m) {
+          ╵                                                      [32m~~~~~~[0m
+
+  Warning occurs in the template of component LandParcelReportComponent.
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.ts:77:15:
+[37m      77 │   templateUrl: [32m'./land-parcel-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.html:869:39:
+[37m      869 │               @if (entry.restrictions?.[32mlength[37m) {
+          ╵                                        [32m~~~~~~[0m
+
+  Warning occurs in the template of component LandParcelReportComponent.
+
+    src/app/components/dialogs/land-parcel-report/land-parcel-report.component.ts:77:15:
+[37m      77 │   templateUrl: [32m'./land-parcel-report.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/header/header.component.html:366:22:
+[37m      366 │             @if (sex?.[32mtoLowerCase[37m() === 'male') {
+          ╵                       [32m~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component HeaderComponent.
+
+    src/app/components/header/header.component.ts:66:15:
+[37m      66 │   templateUrl: [32m'./header.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/header/header.component.html:369:22:
+[37m      369 │             @if (sex?.[32mtoLowerCase[37m() === 'female') {
+          ╵                       [32m~~~~~~~~~~~[0m
+
+  Warning occurs in the template of component HeaderComponent.
+
+    src/app/components/header/header.component.ts:66:15:
+[37m      66 │   templateUrl: [32m'./header.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/side-panel/building-info-panel/building-info-panel.component.html:546:54:
+[37m      546 │                                 @if (entry.documents?.[32mlength[37m) {
+          ╵                                                       [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingInfoPanelComponent.
+
+    src/app/components/side-panel/building-info-panel/building-info-panel.component.ts:90:15:
+[37m      90 │   templateUrl: [32m'./building-info-panel.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/side-panel/building-info-panel/building-info-panel.component.html:1532:68:
+[37m      1532 │ ...                                 @if (entry.documents?.[32mlength[37m) {
+           ╵                                                           [32m~~~~~~[0m
+
+  Warning occurs in the template of component BuildingInfoPanelComponent.
+
+    src/app/components/side-panel/building-info-panel/building-info-panel.component.ts:90:15:
+[37m      90 │   templateUrl: [32m'./building-info-panel.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8107: NG8107: The left side of this optional chain operation does not include 'null' or 'undefined' in its type, therefore the '?.' operator can be replaced with the '.' operator. Find more at https://v21.angular.dev/extended-diagnostics/NG8107[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/components/side-panel/land-info-panel/land-info-panel.component.html:874:54:
+[37m      874 │                                 @if (entry.documents?.[32mlength[37m) {
+          ╵                                                       [32m~~~~~~[0m
+
+  Warning occurs in the template of component LandInfoPanelComponent.
+
+    src/app/components/side-panel/land-info-panel/land-info-panel.component.ts:68:15:
+[37m      68 │   templateUrl: [32m'./land-info-panel.component.html'[37m,
+         ╵                [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

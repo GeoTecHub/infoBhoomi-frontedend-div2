@@ -62,6 +62,15 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
         ],
         sql: (p) =>
           `SELECT * FROM land_parcels\nWHERE elevation < ${p['elevation']}\n  AND zone = '${p['zone']}';`,
+        backend: {
+          // Runs against la_ls_physical_env.elevation. The "zone" (ward) filter has no
+          // backend column yet, so it is preview-only and ignored server-side.
+          layerIds: [1, 6],
+          toConditions: (p) => [
+            { field: 'elevation', operator: '<', value: String(p['elevation']) },
+          ],
+          logic: 'AND',
+        },
       },
       {
         id: 'river_buffer',
@@ -100,6 +109,20 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
         ],
         sql: (p) =>
           `SELECT p.* FROM land_parcels p\nJOIN slope_data s ON ST_Intersects(p.geom, s.geom)\nJOIN soil_map sm ON ST_Intersects(p.geom, sm.geom)\nWHERE s.gradient > ${p['slope']}\n  AND sm.soil_type = '${p['soil']}';`,
+        backend: {
+          // Runs against la_ls_physical_env.slope / soil_type (per-parcel stored attributes).
+          layerIds: [1, 6],
+          toConditions: (p) => {
+            const conds: { field: string; operator: string; value: string }[] = [
+              { field: 'slope', operator: '>', value: String(p['slope']) },
+            ];
+            if (p['soil'] && p['soil'] !== 'All Types') {
+              conds.push({ field: 'soil_type', operator: '%', value: String(p['soil']) });
+            }
+            return conds;
+          },
+          logic: 'AND',
+        },
       },
       {
         id: 'coastal_zone',
@@ -235,6 +258,16 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
         ],
         sql: (p) =>
           `SELECT * FROM land_parcels\nWHERE zoning = '${p['zone_type']}'\n  AND land_use != zoning;`,
+        backend: {
+          // Runs against la_ls_zoning.zoning_category. The cross-field non-conformance
+          // check (land_use != zoning) needs a column-vs-column comparison the current
+          // engine does not support, so the backend returns parcels with the selected zone.
+          layerIds: [1, 6],
+          toConditions: (p) => [
+            { field: 'zoning', operator: '=', value: String(p['zone_type']) },
+          ],
+          logic: 'AND',
+        },
       },
       {
         id: 'road_widening',
@@ -257,6 +290,16 @@ export const QUERY_CATEGORIES: Record<string, QueryCategory> = {
         ],
         sql: (p) =>
           `SELECT b.*, p.assessment_no FROM buildings b\nJOIN land_parcels p ON\n  ST_Within(b.geom, p.geom)\nWHERE b.floor_area_ratio > ${p['max_far']}\n  OR b.plot_coverage > ${p['max_coverage']};`,
+        backend: {
+          // Runs against la_ls_build_unit.floor_area_ratio / plot_coverage (added in
+          // migration 0019). OR logic: a building violates if EITHER threshold is exceeded.
+          layerIds: [3, 12],
+          toConditions: (p) => [
+            { field: 'floor_area_ratio', operator: '>', value: String(p['max_far']) },
+            { field: 'plot_coverage', operator: '>', value: String(p['max_coverage']) },
+          ],
+          logic: 'OR',
+        },
       },
     ],
   },

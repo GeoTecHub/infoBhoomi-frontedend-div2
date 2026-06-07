@@ -1,0 +1,237 @@
+.uc {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 70vh;
+}
+
+.uc__bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--color-border-d1);
+  background: var(--color-background-l1);
+}
+
+.uc__title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.uc__sub {
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--color-text-secondary);
+}
+
+.uc__status {
+  flex: 1;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+.uc__close {
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+}
+
+.uc__body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+.uc__side,
+.uc__form {
+  width: 250px;
+  flex-shrink: 0;
+  padding: 12px;
+  overflow-y: auto;
+  background: var(--color-background-l1);
+}
+
+.uc__side {
+  border-right: 1px solid var(--color-border-d1);
+}
+
+.uc__form {
+  border-left: 1px solid var(--color-border-d1);
+}
+
+.uc__section-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-text-secondary);
+  margin: 0 0 8px;
+}
+
+.uc__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.uc__list li {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.84rem;
+  color: var(--color-text-primary);
+}
+
+.uc__list li:hover {
+  background: var(--color-primary-l2);
+}
+
+.uc__list li.sel {
+  background: #fff6d6;
+  outline: 1px solid #ffc107;
+}
+
+.uc__name {
+  flex: 1;
+}
+
+.uc__muted {
+  font-size: 0.72rem;
+  color: var(--color-text-secondary);
+}
+
+.uc__empty {
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+  cursor: default;
+}
+
+.uc__scene-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.uc__scene {
+  position: absolute;
+  inset: 0;
+}
+
+.uc__hint {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  pointer-events: none;
+}
+
+.uc__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+}
+
+.uc__field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 12px;
+}
+
+.uc__field select,
+.uc__field input {
+  padding: 6px 8px;
+  border: 1px solid var(--color-border-d1);
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.uc__req {
+  color: var(--color-error);
+}
+
+.uc__note {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin: 0 0 12px;
+}
+
+.uc__count {
+  font-size: 0.85rem;
+  margin: 8px 0 14px;
+  color: var(--color-text-primary);
+}
+
+.uc__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--color-border-d1);
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--color-text-primary);
+}
+
+.btn-ghost:disabled,
+.primary-bg-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Floor grouping in the pool (issue #6) */
+.uc__floor {
+  margin-bottom: 10px;
+}
+.uc__floor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 6px;
+  background: var(--color-background-d1, #eef1f5);
+  border-radius: 5px;
+  margin-bottom: 4px;
+}
+.uc__floor-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+.uc__floor-all {
+  border: none;
+  background: transparent;
+  color: var(--color-primary);
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+.uc__floor-all:hover {
+  text-decoration: underline;
+}

@@ -375,6 +375,7 @@ export interface BuildingUnit {
   parentBuilding: string;
   floorNumber: number;
   unitType: UnitType;
+  legalSpaceType?: string;
   postalAddressRef?: string;
   boundary: string;
   accessType: AccessType;

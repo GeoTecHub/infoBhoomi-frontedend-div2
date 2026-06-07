@@ -64,6 +64,7 @@ import {
   SURVEY_METHOD_DISPLAY,
   PARTY_TYPE_DISPLAY,
 } from '../../../models/building-info.model';
+import { UnitCompositionComponent } from '../../dialogs/unit-composition/unit-composition.component';
 import {
   AddRightHolderComponent,
   AddRightHolderResult,
@@ -139,6 +140,7 @@ export class BuildingInfoPanelComponent {
   saveModelRequested = output<void>();
   saveBuildingRequested = output<BuildingInfo>();
   deleteBuildingRequested = output<void>();
+  compositionChanged = output<void>();
   startRoomSelection = output<{ unitIndex: number; existingRooms: string[] }>();
   finishRoomSelection = output<{ unitIndex: number; rooms: string[] }>();
   cancelRoomSelection = output<void>();
@@ -178,6 +180,24 @@ export class BuildingInfoPanelComponent {
   readonly taxStatusOptions: TaxValuation['taxStatus'][] = ['pending', 'paid', 'overdue'];
   readonly utilityStatusOptions = ['Available', 'Not Available', 'Shared', 'Individual', 'Unknown'];
   readonly wallTypeOptions = ['Brick', 'Concrete', 'Block', 'Timber', 'Steel', 'Glass', 'Mixed', 'Other'];
+  readonly legalSpaceTypeOptions = [
+    'UNASSIGNED',
+    'RESIDENTIAL',
+    'COMMERCIAL',
+    'CIRCULATION',
+    'SERVICE',
+    'PARKING',
+    'AMENITY',
+  ];
+  readonly legalSpaceTypeDisplayMap: Record<string, string> = {
+    UNASSIGNED: 'Unassigned',
+    RESIDENTIAL: 'Private apartment',
+    COMMERCIAL: 'Private commercial',
+    CIRCULATION: 'Common circulation',
+    SERVICE: 'Common service',
+    PARKING: 'Common parking',
+    AMENITY: 'Common amenity',
+  };
 
   readonly legalStatusDisplayMap = LEGAL_STATUS_DISPLAY;
   readonly primaryUseDisplayMap = PRIMARY_USE_DISPLAY;
@@ -215,6 +235,31 @@ export class BuildingInfoPanelComponent {
   selectingRoomsForUnit = signal<number | null>(null);
 
   hasBuilding = computed(() => this.buildingInfo() !== null);
+
+  /**
+   * Units / Strata panel shows ONLY composed apartments / common-property LSBUs
+   * (those with a real legalSpaceType), not the raw imported rooms. Raw rooms
+   * (legalSpaceType UNASSIGNED / empty) are managed in the Unit Composition
+   * window, not listed here.
+   */
+  displayUnits = computed(() => {
+    const info = this.buildingInfo();
+    if (!info?.units) return [];
+    return info.units.filter((u) => {
+      const t = (u.legalSpaceType || '').toUpperCase();
+      return t && t !== 'UNASSIGNED' && t !== 'ABSORBED';
+    });
+  });
+
+  /** Count of raw unassigned rooms still to be composed (for a hint label). */
+  unassignedRoomCount = computed(() => {
+    const info = this.buildingInfo();
+    if (!info?.units) return 0;
+    return info.units.filter((u) => {
+      const t = (u.legalSpaceType || '').toUpperCase();
+      return !t || t === 'UNASSIGNED';
+    }).length;
+  });
 
   panelState = computed<'empty' | 'save-prompt' | 'details'>(() => {
     if (this.editMode() || this.buildingInfo() !== null) return 'details';
@@ -726,6 +771,7 @@ export class BuildingInfoPanelComponent {
       parentBuilding: parentId,
       floorNumber: 0,
       unitType: UnitType.APT,
+      legalSpaceType: 'UNASSIGNED',
       postalAddressRef: '',
       boundary: 'Solid',
       accessType: AccessType.COR,
@@ -1129,6 +1175,27 @@ export class BuildingInfoPanelComponent {
   }
 
   // ─── Share Validation ──────────────────────────────────────
+
+  openUnitComposition(): void {
+    const info = this.buildingInfo();
+    const buildingSuId = Number(info?.summary?.buildingId);
+    if (!Number.isFinite(buildingSuId)) return;
+
+    const dialogRef = this.dialog.open(UnitCompositionComponent, {
+      width: '96vw',
+      maxWidth: '1400px',
+      height: '86vh',
+      data: {
+        buildingSuId,
+        buildingName: info?.summary?.address || info?.summary?.buildingId,
+      },
+      autoFocus: false,
+    });
+
+    dialogRef.afterClosed().subscribe((changed) => {
+      if (changed) this.compositionChanged.emit();
+    });
+  }
 
   getTotalShare(): number {
     const info = this.buildingInfo();

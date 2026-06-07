@@ -780,8 +780,8 @@
                 <rect x="3" y="14" width="7" height="7" />
               </svg>
             </span>
-            <span class="section-title">Building Units / Strata</span>
-            <span class="unit-count">{{ info.units.length }}</span>
+            <span class="section-title">Apartments / Legal Spaces</span>
+            <span class="unit-count">{{ displayUnits().length }}</span>
             <span class="chevron">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -812,10 +812,34 @@
                 </svg>
                 Explode View
               </button>
+              <button class="explode-btn" (click)="openUnitComposition()">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
+                </svg>
+                Unit Composition
+              </button>
+
+              @if (unassignedRoomCount() > 0) {
+                <p class="units-hint">
+                  {{ unassignedRoomCount() }} unassigned room(s) — use
+                  <strong>Unit Composition</strong> to group them into apartments.
+                </p>
+              }
 
               <div class="units-list">
-                @if (info.units.length) {
-                  @for (unit of info.units; track unit.unitId; let ui = $index) {
+                @if (displayUnits().length) {
+                  @for (unit of displayUnits(); track unit.unitId; let ui = $index) {
                     <div class="unit-card" [class.expanded]="expandedUnitId() === unit.unitId">
                       <!-- Unit Header -->
                       <button
@@ -823,9 +847,11 @@
                         (click)="toggleUnitExpand(unit.unitId); onUnitCardClick(unit)"
                       >
                         <div class="unit-main">
-                          <span class="unit-id">{{ unit.unitId }}</span>
+                          <span class="unit-id">{{
+                            unit.cadastralRef || unit.unitId
+                          }}</span>
                           <span class="rrr-type-badge">{{
-                            unitTypeDisplayMap[unit.unitType]
+                            unit.legalSpaceType || unitTypeDisplayMap[unit.unitType]
                           }}</span>
                         </div>
                         <div class="unit-meta">
@@ -942,6 +968,20 @@
                                   >
                                     @for (opt of unitTypeOptions; track opt) {
                                       <option [value]="opt">{{ unitTypeDisplayMap[opt] }}</option>
+                                    }
+                                  </select>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td class="label">Legal Space Type</td>
+                                <td class="value">
+                                  <select
+                                    class="field-select"
+                                    [ngModel]="unit.legalSpaceType || 'UNASSIGNED'"
+                                    (ngModelChange)="onUnitFieldChange(ui, 'legalSpaceType', $event)"
+                                  >
+                                    @for (opt of legalSpaceTypeOptions; track opt) {
+                                      <option [value]="opt">{{ legalSpaceTypeDisplayMap[opt] }}</option>
                                     }
                                   </select>
                                 </td>
@@ -1065,10 +1105,6 @@
                                     "
                                   />
                                 </td>
-                              </tr>
-                              <tr>
-                                <td class="label">Boundary</td>
-                                <td class="value read-only">{{ unit.boundary }}</td>
                               </tr>
                             </table>
                           </div>
@@ -1708,14 +1744,12 @@
                     </div>
                   }
                 } @else {
-                  <p class="empty-message">No units defined</p>
+                  <p class="empty-message">
+                    No apartments created yet. Use <strong>Unit Composition</strong> to group
+                    rooms into apartments / legal spaces.
+                  </p>
                 }
               </div>
-              <button
-                class="rrr-add-entry-btn section-add-btn"
-                (click)="addUnit()"
-                [disabled]="!canAdd(BLDG_PERMS.UNITS)"
-              >+ Add Unit</button>
             </div>
           }
         </div>

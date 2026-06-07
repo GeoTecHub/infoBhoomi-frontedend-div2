@@ -1,0 +1,92 @@
+[33m>[39m Building...
+[32m√[39m Building...
+[35mBrowser bundles[39m     
+[1mInitial chunk files[22m [2m | [22m[1mNames[22m                                [2m | [22m [1mRaw size[22m
+[32mmain.js[39m             [2m | [22m[2mmain[22m                                 [2m | [22m  [36m2.17 MB[39m[2m | [22m
+[32mchunk-JDATMRES.js[39m   [2m | [22m[2m-[22m                                    [2m | [22m[36m751.49 kB[39m[2m | [22m
+[32mstyles.css[39m          [2m | [22m[2mstyles[22m                               [2m | [22m [36m38.47 kB[39m[2m | [22m
+[32mchunk-D7PBEO2Q.js[39m   [2m | [22m[2m-[22m                                    [2m | [22m  [36m8.92 kB[39m[2m | [22m
+[32mchunk-D275YNT2.js[39m   [2m | [22m[2m-[22m                                    [2m | [22m  [36m3.19 kB[39m[2m | [22m
+[32mpolyfills.js[39m        [2m | [22m[2mpolyfills[22m                            [2m | [22m [36m95 bytes[39m[2m | [22m
+
+[1m [22m                   [2m | [22m[1mInitial total[22m                        [2m | [22m  [1m2.97 MB[22m
+
+[1mLazy chunk files[22m    [2m | [22m[1mNames[22m                                [2m | [22m [1mRaw size[22m
+[32mchunk-IOFZEOZY.js[39m   [2m | [22m[2mroles-list-component[22m                 [2m | [22m[36m124.26 kB[39m[2m | [22m
+[32mchunk-R4EER3OD.js[39m   [2m | [22m[2musers-list-component[22m                 [2m | [22m[36m104.66 kB[39m[2m | [22m
+[32mchunk-Q7JXLGNO.js[39m   [2m | [22m[2mlayers-list-component[22m                [2m | [22m [36m97.28 kB[39m[2m | [22m
+[32mchunk-AMB7IR6Z.js[39m   [2m | [22m[2m-[22m                                    [2m | [22m [36m63.01 kB[39m[2m | [22m
+[32mchunk-BNKWDR7O.js[39m   [2m | [22m[2mhome-page-component[22m                  [2m | [22m [36m57.18 kB[39m[2m | [22m
+[32mchunk-2FV25ZKV.js[39m   [2m | [22m[2muser-edit-component[22m                  [2m | [22m [36m51.03 kB[39m[2m | [22m
+[32mchunk-BFG7K5OX.js[39m   [2m | [22m[2morganization-area-edit-component[22m     [2m | [22m [36m49.87 kB[39m[2m | [22m
+[32mchunk-KQRYE7GK.js[39m   [2m | [22m[2musers-create-component[22m               [2m | [22m [36m40.96 kB[39m[2m | [22m
+[32mchunk-4J4YBXOO.js[39m   [2m | [22m[2morganization-edit-component[22m          [2m | [22m [36m35.85 kB[39m[2m | [22m
+[32mchunk-PN4OWB2D.js[39m   [2m | [22m[2morganizations-list-component[22m         [2m | [22m [36m23.23 kB[39m[2m | [22m
+[32mchunk-T2PWOHTP.js[39m   [2m | [22m[2morganizations-location-edit-component[22m[2m | [22m [36m21.99 kB[39m[2m | [22m
+[32mchunk-AA5YAYIZ.js[39m   [2m | [22m[2morganizations-create-component[22m       [2m | [22m [36m20.90 kB[39m[2m | [22m
+
+
+[35mServer bundles[39m      
+[1mInitial chunk files[22m [2m | [22m[1mNames[22m                                [2m | [22m [1mRaw size[22m
+[32mchunk-DHQT4NCH.mjs[39m  [2m | [22m[2m-[22m                                    [2m | [22m  [36m2.17 MB[39m[2m | [22m
+[32mchunk-U2TD365K.mjs[39m  [2m | [22m[2m-[22m                                    [2m | [22m[36m751.52 kB[39m[2m | [22m
+[32mchunk-HFRPMIC5.mjs[39m  [2m | [22m[2m-[22m                                    [2m | [22m  [36m8.95 kB[39m[2m | [22m
+[32mchunk-ADTAWIUN.mjs[39m  [2m | [22m[2m-[22m                                    [2m | [22m  [36m3.23 kB[39m[2m | [22m
+[32mserver.mjs[39m          [2m | [22m[2mserver[22m                               [2m | [22m  [36m1.60 kB[39m[2m | [22m
+[32mmain.server.mjs[39m     [2m | [22m[2mmain.server[22m                          [2m | [22m[36m893 bytes[39m[2m | [22m
+[32mpolyfills.server.mjs[39m[2m | [22m[2mpolyfills.server[22m                     [2m | [22m[36m266 bytes[39m[2m | [22m
+
+[1mLazy chunk files[22m    [2m | [22m[1mNames[22m                                [2m | [22m [1mRaw size[22m
+[32mchunk-EYHN6362.mjs[39m  [2m | [22m[2mroles-list-component[22m                 [2m | [22m[36m124.30 kB[39m[2m | [22m
+[32mchunk-HWBUGFFU.mjs[39m  [2m | [22m[2musers-list-component[22m                 [2m | [22m[36m104.69 kB[39m[2m | [22m
+[32mchunk-VWMEK3JR.mjs[39m  [2m | [22m[2mlayers-list-component[22m                [2m | [22m [36m97.31 kB[39m[2m | [22m
+[32mchunk-JRYOADOX.mjs[39m  [2m | [22m[2m-[22m                                    [2m | [22m [36m63.04 kB[39m[2m | [22m
+[32mchunk-6NDJB6WE.mjs[39m  [2m | [22m[2mhome-page-component[22m                  [2m | [22m [36m57.21 kB[39m[2m | [22m
+[32mchunk-SBFRPDHE.mjs[39m  [2m | [22m[2muser-edit-component[22m                  [2m | [22m [36m51.07 kB[39m[2m | [22m
+[32mchunk-SHGWVUNL.mjs[39m  [2m | [22m[2morganization-area-edit-component[22m     [2m | [22m [36m49.91 kB[39m[2m | [22m
+[32mchunk-RTEBRNL2.mjs[39m  [2m | [22m[2musers-create-component[22m               [2m | [22m [36m41.00 kB[39m[2m | [22m
+[32mchunk-B6R6MWH4.mjs[39m  [2m | [22m[2morganization-edit-component[22m          [2m | [22m [36m35.89 kB[39m[2m | [22m
+[32mchunk-L3OGAVLS.mjs[39m  [2m | [22m[2morganizations-list-component[22m         [2m | [22m [36m23.27 kB[39m[2m | [22m
+[32mchunk-BHEFYAOB.mjs[39m  [2m | [22m[2morganizations-location-edit-component[22m[2m | [22m [36m22.03 kB[39m[2m | [22m
+[32mchunk-BKEEJXYZ.mjs[39m  [2m | [22m[2morganizations-create-component[22m       [2m | [22m [36m20.94 kB[39m[2m | [22m
+
+Application bundle generation complete. [34.702 seconds] - 2026-06-03T11:42:15.792Z
+
+Watch mode enabled. Watching for file changes...
+NOTE: Raw file sizes do not reflect development server per-request transformations.
+[2m5:12:17 PM[22m [36m[1m[vite][22m[39m [90m[2m(client)[22m[39m Re-optimizing dependencies because vite config has changed
+[2m5:12:17 PM[22m [36m[1m[vite][22m[39m [34m[2m(ssr)[22m[39m Re-optimizing dependencies because vite config has changed
+  [32m➜[39m  [1mLocal[22m:   [36mhttp://127.0.0.1:[1m4200[22m/[39m
+[2m[32m  ➜[39m[22m[2m  press [22m[1mh + enter[22m[2m to show help[22m
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[35mBrowser bundles[39m    
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m      [2m | [22m [1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m       [2m | [22m  [36m2.17 MB[39m[2m | [22m
+
+
+[35mServer bundles[39m     
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m      [2m | [22m [1mRaw size[22m
+[32mchunk-YL4BD445.mjs[39m [2m | [22m[2m-[22m          [2m | [22m  [36m2.17 MB[39m[2m | [22m
+[32mserver.mjs[39m         [2m | [22m[2mserver[22m     [2m | [22m  [36m1.60 kB[39m[2m | [22m
+[32mmain.server.mjs[39m    [2m | [22m[2mmain.server[22m[2m | [22m[36m893 bytes[39m[2m | [22m
+
+Application bundle generation complete. [22.705 seconds] - 2026-06-03T15:24:26.167Z
+
+Page reload sent to client(s).
+[33m>[39m Changes detected. Rebuilding...
+[32m√[39m Changes detected. Rebuilding...
+[35mBrowser bundles[39m    
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m      [2m | [22m [1mRaw size[22m
+[32mmain.js[39m            [2m | [22m[2mmain[22m       [2m | [22m  [36m2.16 MB[39m[2m | [22m
+
+
+[35mServer bundles[39m     
+[1mInitial chunk files[22m[2m | [22m[1mNames[22m      [2m | [22m [1mRaw size[22m
+[32mchunk-QQ7F6G2O.mjs[39m [2m | [22m[2m-[22m          [2m | [22m  [36m2.17 MB[39m[2m | [22m
+[32mserver.mjs[39m         [2m | [22m[2mserver[22m     [2m | [22m  [36m1.60 kB[39m[2m | [22m
+[32mmain.server.mjs[39m    [2m | [22m[2mmain.server[22m[2m | [22m[36m893 bytes[39m[2m | [22m
+
+Application bundle generation complete. [40.371 seconds] - 2026-06-03T15:53:50.747Z
+
+Page reload sent to client(s).

@@ -714,6 +714,14 @@ export class APIsService {
     return this.http.get(`${this.baseUrl}parcel-history/su_id=${suId}/`, { headers: this.h() });
   }
 
+  /** Search soft-deleted parcels (no longer on the map) by su_id or label. */
+  searchDeletedParcels(query: string): Observable<any> {
+    return this.http.get(
+      `${this.baseUrl}deleted-parcels/?q=${encodeURIComponent(query)}`,
+      { headers: this.h() },
+    );
+  }
+
   restoreParcelHistory(historyId: string | number, payload: { reason: string }): Observable<any> {
     return this.http.post(
       `${this.baseUrl}parcel-history/restore/id=${historyId}/`,
@@ -1226,7 +1234,152 @@ export class APIsService {
   // 3D / CITYJSON
   // =============================================================================
 
-  load3DData(featureId: string) {
-    return this.http.get(`${this.baseUrl}cityjson/`, { headers: this.h() });
+  /**
+   * Fetch the CityJSON document(s) for a given building/parcel su_id.
+   * The backend `city_json` table is keyed by `su_id`; passing the filter
+   * returns only that building's model (previously this ignored the id and
+   * returned the whole list).
+   */
+  load3DData(featureId: string | number) {
+    return this.http.get(`${this.baseUrl}cityjson/?su_id=${featureId}`, {
+      headers: this.h(),
+    });
+  }
+
+  /** Retrieve a single stored CityJSON document by its primary key. */
+  getCityJsonById(cityjsonId: string | number) {
+    return this.http.get(`${this.baseUrl}cityjson/${cityjsonId}/`, {
+      headers: this.h(),
+    });
+  }
+
+  /**
+   * Import an IFC / CityJSON building onto a parcel.
+   * Runs the server-side cadastral converter (footprint + per-unit 3D solids)
+   * and creates the LADM building + child-unit records.
+   *
+   * @param payload.file          the .ifc | .json file
+   * @param payload.parentSuId    survey_rep.id of the target parcel
+   * @param payload.anchorLon/Lat optional manual anchor (defaults: parcel centroid)
+   * @param payload.rotationDeg   optional CCW rotation about vertical (default 0)
+   * @param payload.scale         optional uniform scale (default 1)
+   * @param payload.baseZ         optional ground elevation (default 0)
+   */
+  import3DObject(payload: {
+    file: File;
+    parentSuId: string | number;
+    /** >=2 control-point pairs { local:[x,y,z], lon, lat }; if given, the
+     *  server solves rotation+scale and ignores rotationDeg/scale/anchor. */
+    anchorPairs?: Array<{ local: (number | null)[]; lon: number | null; lat: number | null }>;
+    anchorLon?: number;
+    anchorLat?: number;
+    rotationDeg?: number;
+    scale?: number;
+    baseZ?: number;
+  }) {
+    const form = new FormData();
+    form.append('file', payload.file);
+    form.append('parent_su_id', String(payload.parentSuId));
+    if (payload.anchorPairs && payload.anchorPairs.length >= 2) {
+      form.append('anchor_pairs', JSON.stringify(payload.anchorPairs));
+    }
+    if (payload.anchorLon != null) form.append('anchor_lon', String(payload.anchorLon));
+    if (payload.anchorLat != null) form.append('anchor_lat', String(payload.anchorLat));
+    if (payload.rotationDeg != null) form.append('rotation_deg', String(payload.rotationDeg));
+    if (payload.scale != null) form.append('scale', String(payload.scale));
+    if (payload.baseZ != null) form.append('base_z', String(payload.baseZ));
+
+    // h(false) = Authorization only; the browser sets the multipart boundary.
+    return this.http.post(`${this.baseUrl}cityjson/import/`, form, {
+      headers: this.h(false),
+      reportProgress: true,
+      observe: 'events',
+    });
+  }
+
+  /**
+   * City-3D feed: imported 3D buildings within the login user's organisation
+   * area (server-filtered by GND). Lightweight rows
+   * (`{su_id, parent_su_id, gnd_id, name, cityjson_id, centroid}`) — no geometry.
+   *
+   * @param parcelSuId optional — restrict to buildings on one parcel (parcel-
+   *   focused "View as 3D" mode). The response then also includes `parcel`
+   *   ({ su_id, geojson, centroid }) so the viewer can lay the reused parcel
+   *   fabric as the ground plane.
+   */
+  listAdminArea3DBuildings(parcelSuId?: number | string) {
+    const qs = parcelSuId != null ? `?parcel_su_id=${parcelSuId}` : '';
+    return this.http.get<{
+      count: number;
+      buildings: any[];
+      parcel: any;
+      parcels?: Array<{ su_id: number; geojson: any }>;
+      parcels_capped?: boolean;
+    }>(`${this.baseUrl}cityjson/admin-area/${qs}`, { headers: this.h() });
+  }
+
+  /**
+   * Search imported 3D buildings + units by label / apartment name /
+   * cadastral id, scoped to the user's area. Returns matches with a
+   * `building_su_id` + `centroid` for camera fly-to.
+   */
+  search3DObjects(q: string) {
+    const term = encodeURIComponent(q ?? '');
+    return this.http.get<{ count: number; results: any[] }>(
+      `${this.baseUrl}cityjson/search/?q=${term}`,
+      { headers: this.h() },
+    );
+  }
+
+  // =============================================================================
+  // P4b — LSBU (apartment / common-space) composition
+  // =============================================================================
+
+  /**
+   * List a building's room-units for the Unit Composition picker:
+   * `{ pool: [...unassigned units], lsbus: [...existing LSBUs] }`.
+   */
+  listBuildingUnits(buildingSuId: number | string) {
+    return this.http.get<{
+      building_su_id: number;
+      pool: any[];
+      lsbus: any[];
+      pool_count: number;
+      lsbu_count: number;
+    }>(`${this.baseUrl}bld-3d/units/?building_su_id=${buildingSuId}`, {
+      headers: this.h(),
+    });
+  }
+
+  /**
+   * Group selected room-units into ONE Legal Space Building Unit.
+   * Private types (RESIDENTIAL/COMMERCIAL) require a user-entered `cadastralId`;
+   * common types (CIRCULATION/SERVICE/PARKING/AMENITY) do not.
+   */
+  composeLsbu(payload: {
+    buildingSuId: number;
+    unitSuIds: number[];
+    buildingUnitType: string;
+    cadastralId?: string;
+    aptName?: string;
+  }) {
+    return this.http.post<{
+      detail: string;
+      lsbu_su_id: number;
+      building_unit_type: string;
+      cadastral_id: string | null;
+      member_room_count: number;
+      absorbed_unit_su_ids: number[];
+    }>(
+      `${this.baseUrl}bld-3d/lsbu/compose/`,
+      {
+        building_su_id: payload.buildingSuId,
+        unit_su_ids: payload.unitSuIds,
+        building_unit_type: payload.buildingUnitType,
+        cadastral_id: payload.cadastralId,
+        apt_name: payload.aptName,
+      },
+      { headers: this.h() },
+    );
   }
 }

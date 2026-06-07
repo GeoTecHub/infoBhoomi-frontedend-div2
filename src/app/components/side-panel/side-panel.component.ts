@@ -1148,15 +1148,16 @@ export class SidePanelComponent {
             unitId:           String(u.su_id),
             parentBuilding:   String(su_id),
             floorNumber:      u.floor_no ?? 0,
-            unitType:         (u.bld_property_type as UnitType) ?? UnitType.APT,
+            unitType:         this.mapLegalSpaceTypeToUnitType(u.building_unit_type, u.bld_property_type),
+            legalSpaceType:   u.building_unit_type ?? 'UNASSIGNED',
             postalAddressRef: u.postal_ad_build ?? '',
             boundary:         u.geom_3d_wkt ?? '',
             accessType:       AccessType.COR,
-            cadastralRef:     u.apt_name ?? '',
+            cadastralRef:     u.cadastral_id ?? u.apt_name ?? '',
             floorArea:        u.floor_area ?? 0,
             registrationDate: u.registration_date ?? '',
             primaryUse:       (u.ext_builduse_type as PrimaryUse) ?? PrimaryUse.RES,
-            rooms:            [],
+            rooms:            Array.isArray(u.component_units) ? u.component_units : [],
             cadastralCertificates: [],
             physicalAttributes: {
               constructionYear: u.construction_year ?? 0,
@@ -1364,6 +1365,9 @@ export class SidePanelComponent {
         apt_name: unit.cadastralRef || unit.unitId,
         floor_no: unit.floorNumber,
         floor_area: unit.floorArea,
+        building_unit_type: unit.legalSpaceType || 'UNASSIGNED',
+        cadastral_id: unit.cadastralRef || null,
+        component_units: unit.rooms || [],
         postal_ad_build: unit.postalAddressRef || null,
         bld_property_type: unit.unitType,
         registration_date: unit.registrationDate || null,
@@ -1428,6 +1432,26 @@ export class SidePanelComponent {
           takeUntilDestroyed(this.destroyRef),
         )
         .subscribe();
+    }
+  }
+
+  private mapLegalSpaceTypeToUnitType(
+    legalSpaceType: string | null | undefined,
+    fallback: string | null | undefined,
+  ): UnitType {
+    switch (legalSpaceType) {
+      case 'COMMERCIAL':
+        return UnitType.OFF;
+      case 'CIRCULATION':
+      case 'AMENITY':
+        return UnitType.COM;
+      case 'SERVICE':
+      case 'PARKING':
+        return UnitType.UTL;
+      case 'RESIDENTIAL':
+        return UnitType.APT;
+      default:
+        return (fallback as UnitType) || UnitType.APT;
     }
   }
 
@@ -2125,6 +2149,11 @@ export class SidePanelComponent {
     const current = this.currentBuildingInfo();
     if (!current) return;
     this.currentBuildingInfo.set({ ...current, units });
+  }
+
+  onBuildingCompositionChanged(): void {
+    if (!this.selected_feature_ID) return;
+    this.fetchAndMergeBuildingData(this.selected_feature_ID);
   }
 
   onBuildingSpatialChanged(spatial: SpatialInfo): void {

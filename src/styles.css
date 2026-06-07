@@ -706,3 +706,22 @@ td {
   border-radius: 10px !important;
   overflow: hidden;
 }
+
+/* 3D Cadastre dialogs (City/Parcel 3D viewer + Unit Composition).
+   Zero the MDC surface padding and force full height so the internal
+   flex layout (left list / 3D scene / right form) fills the panel and
+   nothing gets clipped. */
+.city-3d-dialog .mat-mdc-dialog-surface,
+.unit-composition-dialog .mat-mdc-dialog-surface {
+  padding: 0 !important;
+  overflow: hidden !important;
+  height: 100% !important;
+  border-radius: 10px !important;
+}
+.city-3d-dialog .mat-mdc-dialog-content,
+.unit-composition-dialog .mat-mdc-dialog-content {
+  padding: 0 !important;
+  margin: 0 !important;
+  max-height: none !important;
+  height: 100% !important;
+}

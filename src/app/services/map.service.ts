@@ -771,9 +771,14 @@ export class MapService {
       if (!source) continue;
 
       for (const feature of source.getFeatures()) {
+        // Match on the feature's uuid. Fall back to feature_Id because freshly
+        // imported features carry the temporary uuid under BOTH 'uuid' and
+        // 'feature_Id' — if either holds the staged uuid we can reconcile it.
         const uuid = (feature as any).get('uuid');
-        if (!uuid) continue;
-        const record = recordByUuid.get(uuid);
+        const stagedFeatureId = (feature as any).get('feature_Id');
+        const record =
+          (uuid && recordByUuid.get(uuid)) ||
+          (typeof stagedFeatureId === 'string' && recordByUuid.get(stagedFeatureId));
         if (!record) continue;
 
         const { su_id, gnd_id, calculated_area, layer_id, ref_id } = record.properties;
@@ -783,11 +788,18 @@ export class MapService {
         feature.set('area', calculated_area);
         feature.set('ref_id', ref_id ?? null);
         feature.set('ref_ids', ref_id ?? null);
+        // Give the feature the same integer OL id it would have after a server
+        // reload, so selection / lookups that read getId() resolve immediately
+        // (this is what previously required a manual page refresh).
+        if (su_id != null) {
+          feature.setId(su_id);
+        }
         const layerColor = layerService.getLayerColor(layer_id) ?? '#2c7be5';
         feature.set('baseHex', this.normalizeToHex(layerColor));
         feature.setStyle(styleFn);
+        feature.changed();
         updatedCount++;
-        console.log('[updateAllFeatureIdsAfterSave] Updated feature:', uuid, '→ su_id:', su_id);
+        console.log('[updateAllFeatureIdsAfterSave] Updated feature:', uuid || stagedFeatureId, '→ su_id:', su_id);
       }
     }
     console.log('[updateAllFeatureIdsAfterSave] Total features updated:', updatedCount);

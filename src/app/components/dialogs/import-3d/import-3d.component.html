@@ -1,0 +1,132 @@
+<div class="import3d">
+  <h2 class="import3d__title">
+    Import 3D Object
+    @if (data.parcelLabel) {
+      <span class="import3d__parcel">onto {{ data.parcelLabel }}</span>
+    }
+  </h2>
+
+  <p class="import3d__hint">
+    Upload an IFC building or a CityJSON model. The building footprint is placed on the
+    parcel and its rooms become 3D units.
+  </p>
+
+  <!-- File picker / drop zone -->
+  <div
+    class="import3d__drop"
+    [class.has-file]="file"
+    [class.has-error]="fileError"
+    (drop)="onDrop($event)"
+    (dragover)="onDragOver($event)"
+  >
+    @if (!file) {
+      <i class="bi bi-cloud-arrow-up import3d__drop-icon"></i>
+      <span>Drag &amp; drop or</span>
+    } @else {
+      <i class="bi bi-file-earmark-check import3d__drop-icon"></i>
+      <span class="import3d__filename">{{ file.name }}</span>
+    }
+    <label class="import3d__browse">
+      Browse…
+      <input type="file" accept=".ifc,.json" hidden (change)="onFileSelected($event)" />
+    </label>
+  </div>
+  @if (fileError) {
+    <div class="import3d__error">{{ fileError }}</div>
+  }
+
+  <!-- Manual placement (hidden for direct CityJSON, which carries its own coords) -->
+  @if (file && !isCityJson) {
+    <div class="import3d__placement">
+      <h3 class="import3d__section">Placement (georeferencing)</h3>
+
+      <div class="import3d__modes">
+        <label>
+          <input type="radio" name="pmode" value="pairs" [(ngModel)]="placementMode" />
+          Control points (recommended)
+        </label>
+        <label>
+          <input type="radio" name="pmode" value="single" [(ngModel)]="placementMode" />
+          Single anchor + rotation
+        </label>
+      </div>
+
+      @if (placementMode === 'pairs') {
+        <p class="import3d__sub">
+          Enter 2–3 control points: the building's local IFC coordinate (X, Y, Z) and the matching
+          real-world position (longitude, latitude). The system computes rotation and scale.
+        </p>
+        <table class="import3d__anchors">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>IFC X</th>
+              <th>IFC Y</th>
+              <th>IFC Z</th>
+              <th>Longitude</th>
+              <th>Latitude</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of anchorRows; track $index) {
+              <tr>
+                <td>{{ $index + 1 }}</td>
+                <td><input type="number" step="any" [(ngModel)]="row.x" /></td>
+                <td><input type="number" step="any" [(ngModel)]="row.y" /></td>
+                <td><input type="number" step="any" [(ngModel)]="row.z" /></td>
+                <td><input type="number" step="0.000001" [(ngModel)]="row.lon" /></td>
+                <td><input type="number" step="0.000001" [(ngModel)]="row.lat" /></td>
+                <td>
+                  @if (anchorRows.length > 2) {
+                    <button type="button" class="import3d__rm" (click)="removeAnchorRow($index)">✕</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        <div class="import3d__anchor-actions">
+          <button type="button" class="import3d__add" (click)="addAnchorRow()" [disabled]="anchorRows.length >= 5">
+            + Add point
+          </button>
+          <span class="import3d__sub">{{ validPairCount }} complete pair(s)</span>
+        </div>
+        <label class="import3d__basez">
+          Base elevation (m)
+          <input type="number" step="0.1" [(ngModel)]="baseZ" />
+        </label>
+      } @else {
+        <p class="import3d__sub">Anchor defaults to the parcel centre.</p>
+        <div class="import3d__grid">
+          <label>Anchor longitude<input type="number" step="0.000001" [(ngModel)]="anchorLon" /></label>
+          <label>Anchor latitude<input type="number" step="0.000001" [(ngModel)]="anchorLat" /></label>
+          <label>Rotation (°, CCW)<input type="number" step="1" [(ngModel)]="rotationDeg" /></label>
+          <label>Scale<input type="number" step="0.01" min="0.01" [(ngModel)]="scale" /></label>
+          <label>Base elevation (m)<input type="number" step="0.1" [(ngModel)]="baseZ" /></label>
+        </div>
+      }
+    </div>
+  }
+
+  @if (uploading) {
+    <div class="import3d__progress">
+      <mat-spinner diameter="22"></mat-spinner>
+      <span>Importing… {{ progress }}%</span>
+    </div>
+  }
+
+  <div class="import3d__actions">
+    <button type="button" class="btn-ghost" (click)="cancel()" [disabled]="uploading">
+      Cancel
+    </button>
+    <button
+      type="button"
+      class="primary-bg-btn"
+      (click)="submit()"
+      [disabled]="!file || uploading"
+    >
+      Import
+    </button>
+  </div>
+</div>

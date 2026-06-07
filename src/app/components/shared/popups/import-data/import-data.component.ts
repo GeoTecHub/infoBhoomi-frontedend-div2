@@ -6,6 +6,8 @@ import {
   DestroyRef,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
+  Inject,
+  Optional,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
@@ -29,7 +31,7 @@ import { FeatureService } from '../../../../services/feature.service';
 import { LayerService } from '../../../../services/layer.service';
 import { MapService } from '../../../../services/map.service';
 
-import { MatDialogRef } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import WebGLTileLayer from 'ol/layer/WebGLTile.js';
 import GeoTIFF, { default as GeoTIFFSource } from 'ol/source/GeoTIFF';
 import { v4 as uuidv4 } from 'uuid';
@@ -41,6 +43,15 @@ import * as Papa from 'papaparse'; // If using papaparse
 type ShpJSOutput =
   | FeatureCollection<Geometry, GeoJsonProperties>
   | FeatureCollection<Geometry, GeoJsonProperties>[];
+
+export interface ImportDataDialogData {
+  defaultLayerId?: number | string;
+  lockedLayerId?: number | string;
+  parentSuId?: number | string;
+  mode?: 'building-footprint' | 'general';
+  title?: string;
+  helpText?: string;
+}
 
 // For *ngIf etc.
 import { Circle as CircleStyle, Fill, Stroke, Style, Text } from 'ol/style'; // For labeling
@@ -133,6 +144,10 @@ export class ImportDataComponent implements OnDestroy {
 
   dataSetName: string = '';
   enableAdditionalInputs: boolean = false;
+  dialogTitle: string = 'Import Data Layer';
+  fileHelpText: string = 'Select KML, SHP (in .zip), GeoJSON, TXT, or GeoTIFF.';
+  forcedTargetLayerId: number | string | null = null;
+  parentSuId: number | string | null = null;
 
   // Helper to map extensions to our FileType enum
   private extensionToFileType: { [key: string]: FileType } = {
@@ -164,7 +179,10 @@ export class ImportDataComponent implements OnDestroy {
     private mapService: MapService, // For adding OL layers to the map
     public dialogRef: MatDialogRef<ImportDataComponent>,
     private userService: UserService,
+    @Optional() @Inject(MAT_DIALOG_DATA) private dialogData: ImportDataDialogData | null,
   ) {
+    this.applyDialogDefaults();
+
     this.userService.user$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((user: any) => {
       if (user) {
         this.userId = user.user_id || '';
@@ -172,6 +190,21 @@ export class ImportDataComponent implements OnDestroy {
 
       this.cdr.markForCheck();
     });
+  }
+
+  private applyDialogDefaults(): void {
+    if (!this.dialogData) return;
+
+    this.dialogTitle = this.dialogData.title || this.dialogTitle;
+    this.fileHelpText = this.dialogData.helpText || this.fileHelpText;
+    this.forcedTargetLayerId = this.dialogData.lockedLayerId ?? null;
+    this.parentSuId = this.dialogData.parentSuId ?? null;
+
+    const defaultLayerId = this.dialogData.lockedLayerId ?? this.dialogData.defaultLayerId;
+    if (defaultLayerId !== undefined && defaultLayerId !== null) {
+      this.layerService.setSelectedCurrentLayerIdForDrawing(defaultLayerId);
+      this.layerService.setLayerVisibility(defaultLayerId, true);
+    }
   }
 
   async onFileSelected(event: Event): Promise<void> {
@@ -953,7 +986,9 @@ export class ImportDataComponent implements OnDestroy {
       const cdExtraLen = view.getUint16(offset + 30, true);
       const cdCommentLen = view.getUint16(offset + 32, true);
       const localHeaderOffset = view.getUint32(offset + 42, true);
-      const fileName = new TextDecoder().decode(bytes.slice(offset + 46, offset + 46 + cdFileNameLen));
+      const fileName = new TextDecoder().decode(
+        bytes.slice(offset + 46, offset + 46 + cdFileNameLen),
+      );
 
       if (fileName.toLowerCase().endsWith('.prj')) {
         // Step 4: Jump to the local file header to find the exact data start.
@@ -1110,11 +1145,12 @@ export class ImportDataComponent implements OnDestroy {
       if (this.currentFileType === FileType.GeoTIFF) {
         await this.handleGeoTiffImport(olMap, finalSourceCrs);
       } else if (this.processedGeoJsonData) {
-        const activeDrawingLayerId = this.layerService.getSelectedCurrentLayerIdForDrawing();
-        if (activeDrawingLayerId === null) {
+        const targetLayerId =
+          this.forcedTargetLayerId ?? this.layerService.getSelectedCurrentLayerIdForDrawing();
+        if (targetLayerId === null) {
           throw new Error('Please select an active layer in the main panel to import data into.');
         }
-        await this.handleVectorDataImport(olMap, finalSourceCrs, activeDrawingLayerId);
+        await this.handleVectorDataImport(olMap, finalSourceCrs, targetLayerId);
       } else {
         throw new Error('No data has been processed for import.');
       }
@@ -1203,18 +1239,26 @@ export class ImportDataComponent implements OnDestroy {
       const chunk = olFeatures.slice(i, i + CHUNK_SIZE);
       for (const olFeature of chunk) {
         olFeature.set('layer_id', targetLayerId);
+        if (this.parentSuId !== null && this.parentSuId !== undefined) {
+          olFeature.set('ref_id', this.parentSuId);
+          olFeature.set('parent_su_id', this.parentSuId);
+        }
+        if (this.dialogData?.mode === 'building-footprint') {
+          olFeature.set('import_context', 'building_footprint');
+        }
         const id = uuidv4();
         olFeature.set('uuid', id);
         olFeature.set('feature_Id', id);
 
-        allFeatureData.push(
-          this.featureService.convertFeatureToFeatureData(olFeature, null, null),
-        );
+        allFeatureData.push(this.featureService.convertFeatureToFeatureData(olFeature, null, null));
       }
       // const elapsed = (performance.now() - t4).toFixed(0);
       // console.log(`[PERF]     chunk ${Math.floor(i / CHUNK_SIZE) + 1}/${Math.ceil(olFeatures.length / CHUNK_SIZE)} done — ${elapsed} ms elapsed`);
       // Update import progress and yield to the browser for OnPush CD
-      this.importProgress = { done: Math.min(i + CHUNK_SIZE, olFeatures.length), total: olFeatures.length };
+      this.importProgress = {
+        done: Math.min(i + CHUNK_SIZE, olFeatures.length),
+        total: olFeatures.length,
+      };
       this.cdr.markForCheck();
       await new Promise<void>((resolve) => setTimeout(resolve, 0));
     }

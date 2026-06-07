@@ -58,8 +58,8 @@ export class ThreeDBuildingViewerComponent implements OnInit, AfterViewInit {
 
     this.apiService.load3DData(featureId).subscribe({
       next: (res) => {
-        this.buildingData = res;
-        this.has3DData = this.validate3DData(res);
+        this.buildingData = this.extractCityJson(res);
+        this.has3DData = this.validate3DData(this.buildingData);
         this.isLoading = false;
 
         this.cdr.markForCheck();
@@ -67,17 +67,38 @@ export class ThreeDBuildingViewerComponent implements OnInit, AfterViewInit {
       error: () => {
         this.isLoading = false;
         this.has3DData = false;
+        this.cdr.markForCheck();
       },
     });
   }
 
-  /** Check whether CityJSON has features */
+  /**
+   * Normalise the /cityjson/?su_id= response into a single CityJSON document.
+   * The endpoint is a ListAPIView, so it returns an array of CityJSON_Model
+   * rows (`{ id, cityjson_data, su_id, ... }`) — optionally paginated as
+   * `{ results: [...] }`. We take the most recent row's `cityjson_data`.
+   * Also tolerates a bare CityJSON document for forward-compatibility.
+   */
+  private extractCityJson(res: any): any {
+    if (!res) return null;
+    // already a CityJSON document
+    if (res.CityObjects) return res;
+    // paginated -> unwrap to the results array
+    const rows = Array.isArray(res) ? res : Array.isArray(res.results) ? res.results : null;
+    if (rows && rows.length > 0) {
+      const row = rows[0];
+      return row?.cityjson_data ?? row ?? null;
+    }
+    // single model row
+    if (res.cityjson_data) return res.cityjson_data;
+    return null;
+  }
+
+  /** A usable CityJSON document has a non-empty CityObjects map. */
   validate3DData(data: any): boolean {
-    if (!data) return false;
-    if (typeof data !== 'object') return false;
-    if (!data.features || !Array.isArray(data.features)) return false;
-    if (data.features.length === 0) return false;
-    return true;
+    if (!data || typeof data !== 'object') return false;
+    if (!data.CityObjects || typeof data.CityObjects !== 'object') return false;
+    return Object.keys(data.CityObjects).length > 0;
   }
 
   // Called when a surface is selected in 3D viewer

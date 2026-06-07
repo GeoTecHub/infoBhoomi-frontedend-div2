@@ -1,0 +1,68 @@
+<div class="city3d">
+  <header class="city3d__bar">
+    <h2 class="city3d__title">{{ title }}</h2>
+    <span class="city3d__status">{{ statusMsg }}</span>
+    @if (selectedBuildingSuId != null) {
+      <button class="city3d__units-btn" type="button" (click)="openUnitComposition()">
+        <i class="bi bi-grid-3x3-gap"></i>
+        Units / Compose
+      </button>
+    }
+    <button class="city3d__close" type="button" (click)="close()" aria-label="Close">✕</button>
+  </header>
+
+  <div class="city3d__body">
+    <!-- Left: search + building list -->
+    <aside class="city3d__side">
+      <div class="city3d__search">
+        <input
+          type="text"
+          placeholder="Search parcel / apartment / cadastral id…"
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="runSearch()"
+        />
+        <button type="button" class="primary-bg-btn" (click)="runSearch()">Search</button>
+      </div>
+
+      @if (searchResults.length > 0) {
+        <div class="city3d__section-label">Results ({{ searchResults.length }})</div>
+        <ul class="city3d__list">
+          @for (hit of searchResults; track hit.su_id) {
+            <li (click)="goToHit(hit)">
+              <span class="city3d__chip">{{ hit.kind }}</span>
+              {{ hit.label || ('SU ' + hit.su_id) }}
+            </li>
+          }
+        </ul>
+      }
+
+      <div class="city3d__section-label">Buildings ({{ buildings.length }})</div>
+      <ul class="city3d__list">
+        @for (b of buildings; track b.su_id) {
+          <li [class.dimmed]="!b.loaded" (click)="selectBuilding(b.su_id)">
+            {{ b.name || ('Building ' + b.su_id) }}
+            @if (!b.loaded) {
+              <span class="city3d__muted">(no model)</span>
+            }
+          </li>
+        }
+      </ul>
+    </aside>
+
+    <!-- Right: three.js scene -->
+    <div class="city3d__scene-wrap">
+      <div #sceneContainer class="city3d__scene"></div>
+      @if (loading) {
+        <div class="city3d__overlay">
+          <mat-spinner diameter="36"></mat-spinner>
+          <span>{{ statusMsg }}</span>
+        </div>
+      }
+      @if (emptyArea && !loading) {
+        <div class="city3d__overlay">
+          <span>No 3D buildings have been imported in your administrative area yet.</span>
+        </div>
+      }
+    </div>
+  </div>
+</div>

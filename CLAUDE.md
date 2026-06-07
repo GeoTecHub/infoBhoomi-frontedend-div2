@@ -516,6 +516,32 @@ Work on these in order using Claude Code CLI (`/optimize-change-detection`, `/op
 4. **Virtual scrolling** — Use Angular CDK `VirtualScrollViewport` for parcel/user/layer lists.
 5. **Web Workers** — Move ShpJS parsing, KML conversion, PapaParse CSV to a Web Worker.
 
+## 3D Cadastre P4/P4b Handoff
+
+Latest status:
+
+- P4 City 3D viewer/import foundation exists in this frontend.
+- `APIsService` includes `load3DData`, `import3DObject`, `listAdminArea3DBuildings`, and `search3DObjects`.
+- `components/dialogs/import-3d/` handles IFC/CityJSON import from the 2D map workflow.
+- `components/dialogs/city-3d-viewer/` renders admin-area imported buildings and supports search/fly-to.
+- P4 browser/manual QA is still needed for City 3D rendering and placement.
+
+Latest completed P4b slice:
+
+- `src/app/models/building-info.model.ts`: `BuildingUnit` now has optional `legalSpaceType`.
+- `src/app/components/side-panel/building-info-panel/`: Building Units / Strata shows a Legal Space Type selector.
+- `src/app/components/side-panel/side-panel.component.ts`: maps backend `building_unit_type`, `cadastral_id`, and `component_units` into frontend unit state and saves them back through `createBuildingUnit()` / `updateBuildingUnit()`.
+- Current UI values: `UNASSIGNED`, `RESIDENTIAL`, `COMMERCIAL`, `CIRCULATION`, `SERVICE`, `PARKING`, `AMENITY`.
+- `src/app/components/dialogs/unit-composition/`: first Unit Composition dialog exists. It loads unassigned room units, renders the building CityJSON rooms in Three.js, supports two-way list/model selection, and calls `composeLsbu`.
+- `BuildingInfoPanelComponent` now has a Unit Composition button in Building Units / Strata and emits `compositionChanged`; `SidePanelComponent` reloads building data after successful composition.
+
+Remaining P4b frontend work:
+
+- Browser-test the Unit Composition workflow with a real imported IFC building.
+- Add reassign/unassign support; current backend only composes unassigned room units.
+- Improve existing-LSBU display/editing in the Unit Composition dialog.
+- Update CityJSON membership metadata after composition save.
+
 ## Recent Development History
 
 Key changes (most recent first):
