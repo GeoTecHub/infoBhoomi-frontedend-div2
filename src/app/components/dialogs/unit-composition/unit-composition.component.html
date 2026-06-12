@@ -15,6 +15,10 @@
     <aside class="uc__side">
       <div class="uc__section-label">Unassigned rooms ({{ pool.length }})</div>
 
+      @if (!selectedApartment && pool.length > 0) {
+        <p class="uc__note">Select an apartment on the right, then pick rooms to assign.</p>
+      }
+
       @for (group of floorGroups; track group.label) {
         <div class="uc__floor">
           <div class="uc__floor-head">
@@ -59,56 +63,130 @@
           <span>{{ statusMsg }}</span>
         </div>
       }
+      <div class="uc__legend">
+        <span><i class="dot dot--member"></i> in apartment</span>
+        <span><i class="dot dot--sel"></i> selected to assign</span>
+        <span><i class="dot dot--def"></i> unassigned</span>
+      </div>
       <div class="uc__hint">Click a room in the model or the list — they highlight together.</div>
     </div>
 
-    <!-- Right: composition form -->
+    <!-- Right: apartments + create / edit / assign -->
     <aside class="uc__form">
-      <div class="uc__section-label">New legal space</div>
+      <div class="uc__section-head">
+        <span class="uc__section-label">Apartments ({{ apartments.length }})</span>
+        @if (!showCreate) {
+          <button type="button" class="uc__add" (click)="startCreate()">＋ New</button>
+        }
+      </div>
 
-      <label class="uc__field">
-        Legal Space Type
-        <select [(ngModel)]="lsbuType">
-          <optgroup label="Private (exclusive)">
-            @for (t of privateTypes; track t) {
-              <option [value]="t">{{ t }}</option>
-            }
-          </optgroup>
-          <optgroup label="Common property">
-            @for (t of commonTypes; track t) {
-              <option [value]="t">{{ t }}</option>
-            }
-          </optgroup>
-        </select>
-      </label>
+      <!-- create form -->
+      @if (showCreate) {
+        <div class="uc__card">
+          <div class="uc__card-title">New apartment</div>
 
-      @if (isPrivate) {
-        <label class="uc__field">
-          Cadastral ID <span class="uc__req">*</span>
-          <input type="text" [(ngModel)]="cadastralId" placeholder="e.g. APT-3B" />
-        </label>
-      } @else {
-        <p class="uc__note">Common property — no cadastral ID required.</p>
+          <label class="uc__field">
+            Legal Space Type
+            <select [(ngModel)]="newType">
+              <optgroup label="Private (exclusive)">
+                @for (t of privateTypes; track t) { <option [value]="t">{{ t }}</option> }
+              </optgroup>
+              <optgroup label="Common property">
+                @for (t of commonTypes; track t) { <option [value]="t">{{ t }}</option> }
+              </optgroup>
+            </select>
+          </label>
+
+          @if (isNewPrivate) {
+            <label class="uc__field">
+              Cadastral ID <span class="uc__req">*</span>
+              <input type="text" [(ngModel)]="newCadastral" placeholder="e.g. APT-3B" />
+            </label>
+          } @else {
+            <p class="uc__note">Common property — no cadastral ID required.</p>
+          }
+
+          <label class="uc__field">
+            Label (optional)
+            <input type="text" [(ngModel)]="newName" placeholder="e.g. Apartment 3B / Lobby" />
+          </label>
+
+          <div class="uc__actions">
+            <button type="button" class="btn-ghost" (click)="cancelCreate()" [disabled]="saving">Cancel</button>
+            <button type="button" class="primary-bg-btn" (click)="createApartment()" [disabled]="saving">
+              {{ saving ? 'Saving…' : 'Create apartment' }}
+            </button>
+          </div>
+        </div>
       }
 
-      <label class="uc__field">
-        Label (optional)
-        <input type="text" [(ngModel)]="aptName" placeholder="e.g. Apartment 3B / Lobby" />
-      </label>
+      <!-- apartments list -->
+      <ul class="uc__apts">
+        @for (a of apartments; track a.su_id) {
+          <li
+            class="uc__apt"
+            [class.active]="selectedApartment?.su_id === a.su_id"
+            (click)="selectApartment(a)"
+          >
+            <span class="uc__apt-name">{{ apartmentLabel(a) }}</span>
+            <span class="uc__apt-meta">
+              {{ a.building_unit_type }} · {{ a.rooms.length }} room(s)
+            </span>
+          </li>
+        }
+        @if (apartments.length === 0 && !loading) {
+          <li class="uc__empty">No apartments yet — create one above.</li>
+        }
+      </ul>
 
-      <div class="uc__count">Selected rooms: <strong>{{ selectedCount }}</strong></div>
+      <!-- selected apartment: edit + assign -->
+      @if (selectedApartment) {
+        <div class="uc__card uc__card--sel">
+          <div class="uc__card-title">{{ apartmentLabel(selectedApartment) }}</div>
 
-      <div class="uc__actions">
-        <button type="button" class="btn-ghost" (click)="cancel()" [disabled]="saving">Cancel</button>
-        <button
-          type="button"
-          class="primary-bg-btn"
-          (click)="compose()"
-          [disabled]="saving || selectedCount === 0"
-        >
-          {{ saving ? 'Saving…' : 'Create Legal Space' }}
-        </button>
-      </div>
+          <label class="uc__field">
+            Legal Space Type
+            <select [(ngModel)]="editType">
+              <optgroup label="Private (exclusive)">
+                @for (t of privateTypes; track t) { <option [value]="t">{{ t }}</option> }
+              </optgroup>
+              <optgroup label="Common property">
+                @for (t of commonTypes; track t) { <option [value]="t">{{ t }}</option> }
+              </optgroup>
+            </select>
+          </label>
+
+          @if (isEditPrivate) {
+            <label class="uc__field">
+              Cadastral ID <span class="uc__req">*</span>
+              <input type="text" [(ngModel)]="editCadastral" placeholder="e.g. APT-3B" />
+            </label>
+          }
+
+          <label class="uc__field">
+            Label
+            <input type="text" [(ngModel)]="editName" placeholder="e.g. Apartment 3B" />
+          </label>
+
+          <div class="uc__actions">
+            <button type="button" class="btn-ghost" (click)="saveApartmentMeta()" [disabled]="saving">
+              {{ saving ? 'Saving…' : 'Save changes' }}
+            </button>
+          </div>
+
+          <hr class="uc__rule" />
+
+          <div class="uc__count">Rooms to assign: <strong>{{ selectedCount }}</strong></div>
+          <button
+            type="button"
+            class="primary-bg-btn uc__assign"
+            (click)="assignSelected()"
+            [disabled]="saving || selectedCount === 0"
+          >
+            {{ saving ? 'Saving…' : 'Assign selected rooms' }}
+          </button>
+        </div>
+      }
     </aside>
   </div>
 </div>

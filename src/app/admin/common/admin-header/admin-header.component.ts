@@ -392,6 +392,7 @@ export class AdminHeaderComponent implements OnInit {
       const token = localStorage.getItem('Token');
       this.authService.logout(token).subscribe(() => {
         this.apiService.clearPermissionsCache();
+        this.adminService.reset();
         localStorage.clear();
         this.router.navigateByUrl('/login');
       });

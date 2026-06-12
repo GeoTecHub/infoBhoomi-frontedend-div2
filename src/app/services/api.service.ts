@@ -1,7 +1,7 @@
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient, HttpEvent, HttpHeaders } from '@angular/common/http';
 import { Inject, inject, Injectable, PLATFORM_ID } from '@angular/core';
-import { Observable, shareReplay, throwError } from 'rxjs';
+import { catchError, Observable, shareReplay, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { AreaRow } from './org-area-define.service';
 import { UserService } from './user.service';
@@ -74,7 +74,15 @@ export class APIsService {
         key,
         this.http
           .post(this.GET_PERMISSIONS, { permission_id: ids }, { headers: this.h() })
-          .pipe(shareReplay(1)),
+          .pipe(
+            // Don't let a transient failure stay cached: evict the key so the
+            // next caller retries instead of replaying a cached error/empty.
+            catchError((err) => {
+              this._permCache.delete(key);
+              return throwError(() => err);
+            }),
+            shareReplay(1),
+          ),
       );
     }
     return this._permCache.get(key)!;
@@ -1379,6 +1387,79 @@ export class APIsService {
         cadastral_id: payload.cadastralId,
         apt_name: payload.aptName,
       },
+      { headers: this.h() },
+    );
+  }
+
+  /**
+   * Create an apartment / common-space LSBU up-front, with NO 3D units attached.
+   * The room-less apartment becomes a first-class record the surveyor can list,
+   * then assign unassigned pool units to (via {@link assignUnitsToLsbu}) and edit
+   * later. Private types (RESIDENTIAL/COMMERCIAL) should carry a cadastralId.
+   */
+  createApartment(payload: {
+    buildingSuId: number;
+    buildingUnitType: string;
+    aptName?: string;
+    cadastralId?: string;
+    floorNo?: number;
+  }) {
+    return this.http.post<{
+      detail?: string;
+      su_id?: number;
+      new_su_id?: number;
+    }>(
+      `${this.baseUrl}bld-unit/create/`,
+      {
+        parent_su_id: payload.buildingSuId,
+        building_unit_type: payload.buildingUnitType,
+        apt_name: payload.aptName,
+        cadastral_id: payload.cadastralId,
+        floor_no: payload.floorNo,
+        component_units: [],
+      },
+      { headers: this.h() },
+    );
+  }
+
+  /**
+   * Fold one or more unassigned pool room-units into an EXISTING apartment.
+   * Unions their rooms + 3D solids into the apartment and marks them ABSORBED.
+   */
+  assignUnitsToLsbu(payload: {
+    buildingSuId: number;
+    lsbuSuId: number;
+    unitSuIds: number[];
+  }) {
+    return this.http.post<{
+      detail: string;
+      lsbu_su_id: number;
+      building_unit_type: string;
+      member_room_count: number;
+      absorbed_unit_su_ids: number[];
+    }>(
+      `${this.baseUrl}bld-3d/lsbu/assign/`,
+      {
+        building_su_id: payload.buildingSuId,
+        lsbu_su_id: payload.lsbuSuId,
+        unit_su_ids: payload.unitSuIds,
+      },
+      { headers: this.h() },
+    );
+  }
+
+  /** Edit an existing apartment's metadata (label / type / cadastral ID). */
+  updateApartment(
+    suId: number,
+    changes: { aptName?: string; buildingUnitType?: string; cadastralId?: string },
+  ) {
+    const body: Record<string, any> = {};
+    if (changes.aptName !== undefined) body['apt_name'] = changes.aptName;
+    if (changes.buildingUnitType !== undefined) body['building_unit_type'] = changes.buildingUnitType;
+    if (changes.cadastralId !== undefined) body['cadastral_id'] = changes.cadastralId;
+    return this.http.patch<{ detail: string }>(
+      `${this.baseUrl}bld-unit/update/su_id=${suId}/`,
+      body,
       { headers: this.h() },
     );
   }

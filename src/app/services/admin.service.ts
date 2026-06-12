@@ -47,6 +47,13 @@ export class AdminService {
     this.permissionsReady$.next(true);
   }
 
+  /** Clear all permission state — call on logout so the next user who logs in
+   * (without a full page reload) doesn't inherit the previous user's grants. */
+  reset(): void {
+    this.permissions = {};
+    this.permissionsReady$.next(false);
+  }
+
   private getPerm(id: PermId) {
     return this.permissions[id] ?? { view: false, add: false, edit: false, delete: false };
   }

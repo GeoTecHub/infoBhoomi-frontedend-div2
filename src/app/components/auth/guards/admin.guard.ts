@@ -4,6 +4,7 @@ import { CanActivateFn, Router } from '@angular/router';
 import { APIsService } from '../../../services/api.service';
 import { NotificationService } from '../../../services/notifications.service';
 import { UserService } from '../../../services/user.service';
+import { AdminService } from '../../../services/admin.service';
 
 export const adminGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
@@ -11,6 +12,7 @@ export const adminGuard: CanActivateFn = (route, state) => {
   const apiService = inject(APIsService);
   const notificationsService = inject(NotificationService);
   const userService = inject(UserService);
+  const adminService = inject(AdminService);
 
   apiService.loadFromStorage();
 
@@ -48,7 +50,24 @@ export const adminGuard: CanActivateFn = (route, state) => {
           next: (user: any) => {
             if (user?.user_type === 'admin' || user?.user_type === 'super_admin') {
               userService.setUser(user);
-              resolve(true);
+              // Preload the admin-panel permissions BEFORE the page renders so the
+              // side tabs (Users/Roles/Layers) are visible on first paint. Without
+              // this the sidebar paints with an empty permission map and the tabs
+              // only appear after a later async fetch — the "tabs missing on first
+              // login, present after re-entry" race.
+              if (adminService.hasAnyPermissions()) {
+                resolve(true);
+                return;
+              }
+              apiService.getAdminPermissions().subscribe({
+                next: (perms: any) => {
+                  adminService.setPermissions(Array.isArray(perms) ? perms : []);
+                  resolve(true);
+                },
+                // Never block admin access on a permissions hiccup — the header
+                // re-fetches too; tabs will appear once that resolves.
+                error: () => resolve(true),
+              });
             } else {
               notificationsService.showError('You are not authorized to access this page.');
               router.navigate(['/main']);

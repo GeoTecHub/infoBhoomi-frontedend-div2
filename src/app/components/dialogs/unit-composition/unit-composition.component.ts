@@ -44,14 +44,28 @@ interface PoolUnit {
   roomId: string;
 }
 
+/** An existing Legal Space Building Unit (apartment / common space). */
+interface ApartmentItem {
+  su_id: number;
+  apt_name: string | null;
+  building_unit_type: string | null;
+  cadastral_id: string | null;
+  /** member room object ids already folded into this apartment. */
+  rooms: string[];
+}
+
 const PRIVATE_TYPES = ['RESIDENTIAL', 'COMMERCIAL'];
 const COMMON_TYPES = ['CIRCULATION', 'SERVICE', 'PARKING', 'AMENITY'];
 
 /**
- * Unit Composition window — manual grouping of building rooms (units) into a
- * Legal Space Building Unit (apartment or common space). Renders the building's
- * rooms in 3D; rows and meshes are linked for two-way highlight so the surveyor
- * can confirm each unit before saving.
+ * Unit Composition window — manage Legal Space Building Units for a 3D building.
+ *
+ * Supports the "create the apartment first, assign 3D units later" workflow:
+ *   1. create an apartment manually (label / type / cadastral ID) with NO rooms;
+ *   2. it appears in the apartments list (and the side panel after refresh);
+ *   3. select it, then pick one or more unassigned rooms (3D or list) and assign
+ *      them — rooms highlight in the model so the surveyor can confirm;
+ *   4. edit the apartment's metadata anytime.
  */
 @Component({
   selector: 'app-unit-composition',
@@ -70,48 +84,27 @@ export class UnitCompositionComponent implements AfterViewInit, OnDestroy {
   sceneContainer!: ElementRef<HTMLDivElement>;
 
   pool: PoolUnit[] = [];
+  apartments: ApartmentItem[] = [];
+  selectedApartment: ApartmentItem | null = null;
+
   loading = true;
   statusMsg = 'Loading building…';
   saving = false;
+  /** true once any change is persisted, so the caller refreshes on close. */
+  private dirty = false;
 
-  /** Pool grouped by floor (issue #6) — easier to compose per-floor apartments. */
-  get floorGroups(): Array<{ floor: number | null; label: string; units: PoolUnit[] }> {
-    const map = new Map<number | null, PoolUnit[]>();
-    for (const u of this.pool) {
-      const f = u.floor_no ?? null;
-      if (!map.has(f)) map.set(f, []);
-      map.get(f)!.push(u);
-    }
-    const groups = Array.from(map.entries()).map(([floor, units]) => ({
-      floor,
-      label: floor === null ? 'Unknown floor' : `Floor ${floor}`,
-      units,
-    }));
-    // sort: known floors ascending, unknown last
-    groups.sort((a, b) => {
-      if (a.floor === null) return 1;
-      if (b.floor === null) return -1;
-      return a.floor - b.floor;
-    });
-    return groups;
-  }
-
-  /** Select / deselect every room on a floor at once. */
-  toggleFloor(group: { units: PoolUnit[] }): void {
-    const allSel = group.units.every((u) => u.selected);
-    for (const u of group.units) {
-      u.selected = !allSel;
-      this.applyHighlight(u);
-    }
-    qa('UnitComp', 'toggle floor', { count: group.units.length, selected: !allSel });
-  }
-
-  // composition form
+  // create-apartment form
   readonly privateTypes = PRIVATE_TYPES;
   readonly commonTypes = COMMON_TYPES;
-  lsbuType = 'RESIDENTIAL';
-  cadastralId = '';
-  aptName = '';
+  showCreate = false;
+  newType = 'RESIDENTIAL';
+  newCadastral = '';
+  newName = '';
+
+  // edit-apartment form (bound when an apartment is selected)
+  editType = 'RESIDENTIAL';
+  editCadastral = '';
+  editName = '';
 
   // three.js
   private scene!: THREE.Scene;
@@ -128,7 +121,9 @@ export class UnitCompositionComponent implements AfterViewInit, OnDestroy {
   private buildingGroup!: THREE.Group;
 
   private readonly COLOR_DEFAULT = 0xb8c6d8;
-  private readonly COLOR_SELECTED = 0xffc107;
+  private readonly COLOR_SELECTED = 0xffc107; // pool room picked for assignment
+  private readonly COLOR_MEMBER = 0x4caf50; // already belongs to selected apartment
+  private readonly COLOR_HOVER = 0x2196f3;
 
   constructor(
     public dialogRef: MatDialogRef<UnitCompositionComponent, boolean>,
@@ -146,16 +141,46 @@ export class UnitCompositionComponent implements AfterViewInit, OnDestroy {
     this.renderer?.domElement.removeEventListener('click', this.onCanvasClick);
   }
 
-  get isPrivate(): boolean {
-    return PRIVATE_TYPES.includes(this.lsbuType);
+  // ---------------------------------------------------------------- derived
+  get isNewPrivate(): boolean {
+    return PRIVATE_TYPES.includes(this.newType);
+  }
+
+  get isEditPrivate(): boolean {
+    return PRIVATE_TYPES.includes(this.editType);
   }
 
   get selectedCount(): number {
     return this.pool.filter((u) => u.selected).length;
   }
 
+  /** Pool grouped by floor — easier to compose per-floor apartments. */
+  get floorGroups(): Array<{ floor: number | null; label: string; units: PoolUnit[] }> {
+    const map = new Map<number | null, PoolUnit[]>();
+    for (const u of this.pool) {
+      const f = u.floor_no ?? null;
+      if (!map.has(f)) map.set(f, []);
+      map.get(f)!.push(u);
+    }
+    const groups = Array.from(map.entries()).map(([floor, units]) => ({
+      floor,
+      label: floor === null ? 'Unknown floor' : `Floor ${floor}`,
+      units,
+    }));
+    groups.sort((a, b) => {
+      if (a.floor === null) return 1;
+      if (b.floor === null) return -1;
+      return a.floor - b.floor;
+    });
+    return groups;
+  }
+
+  apartmentLabel(a: ApartmentItem): string {
+    return a.apt_name || a.cadastral_id || `Unit ${a.su_id}`;
+  }
+
   // ---------------------------------------------------------------- data
-  private loadData(): void {
+  private loadData(reselectSuId?: number): void {
     qa('UnitComp', 'load', { buildingSuId: this.data.buildingSuId });
     forkJoin({
       units: this.api.listBuildingUnits(this.data.buildingSuId).pipe(catchError((e) => {
@@ -182,25 +207,35 @@ export class UnitCompositionComponent implements AfterViewInit, OnDestroy {
         selected: false,
         roomId: (u.component_units && u.component_units[0]) ?? String(u.su_id),
       }));
-      if (cj) this.drawRooms(cj);
-      const cjObjs = cj?.CityObjects ? Object.keys(cj.CityObjects).length : 0;
+      this.apartments = (units.lsbus ?? []).map((a: any) => ({
+        su_id: a.su_id,
+        apt_name: a.apt_name,
+        building_unit_type: a.building_unit_type,
+        cadastral_id: a.cadastral_id,
+        rooms: Array.isArray(a.component_units) ? a.component_units : [],
+      }));
+
+      // (re)draw rooms only once — the geometry doesn't change between reloads
+      if (cj && this.roomMeshes.size === 0) this.drawRooms(cj);
+
+      // restore / clear selection
+      if (reselectSuId != null) {
+        const found = this.apartments.find((a) => a.su_id === reselectSuId) ?? null;
+        this.selectApartment(found, false);
+      } else if (this.selectedApartment) {
+        const still = this.apartments.find((a) => a.su_id === this.selectedApartment!.su_id) ?? null;
+        this.selectApartment(still, false);
+      } else {
+        this.repaintAll();
+      }
+
       qa('UnitComp', 'loaded', {
         poolUnits: this.pool.length,
-        existingLsbus: units.lsbus?.length ?? 0,
-        cityObjects: cjObjs,
+        apartments: this.apartments.length,
         roomMeshKeys: this.roomMeshes.size,
-        sampleRoomIds: this.pool.slice(0, 3).map((u) => u.roomId),
       });
-      if (this.pool.length > 0 && this.roomMeshes.size === 0) {
-        qaErr('UnitComp', 'HIGHLIGHT RISK: pool units exist but NO room meshes — ' +
-          'roomId↔mesh map empty (two-way highlight will not work). Check that ' +
-          'pool roomId (component_units[0]) matches a CityJSON CityObject id.', {
-          poolRoomIds: this.pool.map((u) => u.roomId),
-          cityObjectIds: cj?.CityObjects ? Object.keys(cj.CityObjects).slice(0, 10) : [],
-        });
-      }
       this.loading = false;
-      this.statusMsg = `${this.pool.length} unassigned room(s).`;
+      this.statusMsg = `${this.apartments.length} apartment(s) · ${this.pool.length} unassigned room(s).`;
       this.cdr.markForCheck();
     });
   }
@@ -212,6 +247,138 @@ export class UnitCompositionComponent implements AfterViewInit, OnDestroy {
     if (rows && rows.length > 0) return rows[0]?.cityjson_data ?? rows[0] ?? null;
     if (res.cityjson_data) return res.cityjson_data;
     return null;
+  }
+
+  // ---------------------------------------------------------------- apartments
+  startCreate(): void {
+    this.showCreate = true;
+    this.newType = 'RESIDENTIAL';
+    this.newCadastral = '';
+    this.newName = '';
+    this.cdr.markForCheck();
+  }
+
+  cancelCreate(): void {
+    this.showCreate = false;
+    this.cdr.markForCheck();
+  }
+
+  createApartment(): void {
+    if (this.isNewPrivate && !this.newCadastral.trim()) {
+      this.notify.showWarning('A cadastral ID is required for a private apartment.');
+      return;
+    }
+    this.saving = true;
+    this.cdr.markForCheck();
+
+    const payload = {
+      buildingSuId: this.data.buildingSuId,
+      buildingUnitType: this.newType,
+      aptName: this.newName.trim() || undefined,
+      cadastralId: this.isNewPrivate ? this.newCadastral.trim() : undefined,
+    };
+    qa('UnitComp', 'create apartment', payload);
+
+    this.api.createApartment(payload).subscribe({
+      next: (res) => {
+        this.saving = false;
+        this.dirty = true;
+        this.showCreate = false;
+        this.notify.showSuccess(`${this.newType} apartment created.`);
+        const newId = res?.su_id;
+        qa('UnitComp', 'create OK', res);
+        this.loadData(newId); // reload and select the new apartment
+      },
+      error: (err) => {
+        this.saving = false;
+        qaErr('UnitComp', `create FAILED (HTTP ${err?.status})`, err?.error ?? err);
+        this.notify.showError(err?.error?.error || err?.error?.detail || 'Could not create apartment.');
+        this.cdr.markForCheck();
+      },
+    });
+  }
+
+  selectApartment(apt: ApartmentItem | null, clearPool = true): void {
+    this.selectedApartment = apt;
+    if (apt) {
+      this.editType = apt.building_unit_type || 'RESIDENTIAL';
+      this.editCadastral = apt.cadastral_id || '';
+      this.editName = apt.apt_name || '';
+    }
+    if (clearPool) this.pool.forEach((u) => (u.selected = false));
+    this.repaintAll();
+    this.cdr.markForCheck();
+    qa('UnitComp', 'select apartment', { su_id: apt?.su_id ?? null, rooms: apt?.rooms?.length ?? 0 });
+  }
+
+  saveApartmentMeta(): void {
+    const apt = this.selectedApartment;
+    if (!apt) return;
+    if (this.isEditPrivate && !this.editCadastral.trim()) {
+      this.notify.showWarning('A cadastral ID is required for a private apartment.');
+      return;
+    }
+    this.saving = true;
+    this.cdr.markForCheck();
+
+    this.api
+      .updateApartment(apt.su_id, {
+        aptName: this.editName.trim(),
+        buildingUnitType: this.editType,
+        cadastralId: this.isEditPrivate ? this.editCadastral.trim() : '',
+      })
+      .subscribe({
+        next: () => {
+          this.saving = false;
+          this.dirty = true;
+          this.notify.showSuccess('Apartment updated.');
+          this.loadData(apt.su_id);
+        },
+        error: (err) => {
+          this.saving = false;
+          qaErr('UnitComp', `update FAILED (HTTP ${err?.status})`, err?.error ?? err);
+          this.notify.showError(err?.error?.error || err?.error?.detail || 'Update failed.');
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  assignSelected(): void {
+    const apt = this.selectedApartment;
+    if (!apt) {
+      this.notify.showWarning('Select an apartment first.');
+      return;
+    }
+    const picked = this.pool.filter((u) => u.selected);
+    if (picked.length === 0) {
+      this.notify.showWarning('Select at least one unassigned room.');
+      return;
+    }
+    this.saving = true;
+    this.cdr.markForCheck();
+
+    const payload = {
+      buildingSuId: this.data.buildingSuId,
+      lsbuSuId: apt.su_id,
+      unitSuIds: picked.map((u) => u.su_id),
+    };
+    qa('UnitComp', 'assign request', payload);
+
+    this.api.assignUnitsToLsbu(payload).subscribe({
+      next: (res) => {
+        this.saving = false;
+        this.dirty = true;
+        qa('UnitComp', 'assign OK', res);
+        this.notify.showSuccess(`Assigned ${picked.length} room(s) to ${this.apartmentLabel(apt)}.`);
+        this.loadData(apt.su_id);
+      },
+      error: (err) => {
+        this.saving = false;
+        qaErr('UnitComp', `assign FAILED (HTTP ${err?.status})`, err?.error ?? err);
+        this.notify.showError(err?.error?.error || err?.error?.detail || 'Assignment failed.');
+        this.cdr.markForCheck();
+      },
+    });
   }
 
   // ---------------------------------------------------------------- three.js
@@ -365,93 +532,77 @@ export class UnitCompositionComponent implements AfterViewInit, OnDestroy {
     if (!hits.length) return;
     const roomId = this.meshRoom.get(hits[0].object as THREE.Mesh);
     if (!roomId) return;
+
+    // 1) a pool room → toggle it for assignment
     const unit = this.pool.find((u) => u.roomId === roomId);
     if (unit) {
       unit.selected = !unit.selected;
-      this.applyHighlight(unit);
+      this.repaintAll();
       qa('UnitComp', '3D→list highlight', { roomId, selected: unit.selected, su_id: unit.su_id });
       this.cdr.markForCheck();
-    } else {
-      qaErr('UnitComp', '3D pick: room not in pool (already grouped or id mismatch)', { roomId });
+      return;
     }
+
+    // 2) a room already in an apartment → select that apartment
+    const owner = this.apartments.find((a) => a.rooms.includes(roomId));
+    if (owner) {
+      this.selectApartment(owner);
+      return;
+    }
+    qaErr('UnitComp', '3D pick: room neither in pool nor an apartment', { roomId });
   };
 
-  /** Row click → toggle + highlight the matching 3D mesh (two-way). */
+  /** Row click → toggle a pool unit + highlight (two-way). */
   toggleUnit(unit: PoolUnit): void {
     unit.selected = !unit.selected;
+    this.repaintAll();
     const meshes = this.roomMeshes.get(unit.roomId)?.length ?? 0;
-    this.applyHighlight(unit);
-    qa('UnitComp', 'list→3D highlight', {
-      roomId: unit.roomId, selected: unit.selected, meshesForRoom: meshes,
-    });
+    qa('UnitComp', 'list→3D highlight', { roomId: unit.roomId, selected: unit.selected, meshesForRoom: meshes });
     if (meshes === 0) {
-      qaErr('UnitComp', 'list→3D highlight: 0 meshes for this roomId (mesh not found)', {
-        roomId: unit.roomId,
-      });
+      qaErr('UnitComp', 'list→3D highlight: 0 meshes for this roomId (mesh not found)', { roomId: unit.roomId });
     }
+  }
+
+  /** Select / deselect every room on a floor at once. */
+  toggleFloor(group: { units: PoolUnit[] }): void {
+    const allSel = group.units.every((u) => u.selected);
+    for (const u of group.units) u.selected = !allSel;
+    this.repaintAll();
+    qa('UnitComp', 'toggle floor', { count: group.units.length, selected: !allSel });
   }
 
   /** Row hover → emphasise the mesh momentarily for confirmation. */
   hoverUnit(unit: PoolUnit | null): void {
-    // re-apply base colours, then emphasise the hovered one if any
-    this.pool.forEach((u) => this.applyHighlight(u));
+    this.repaintAll();
     if (unit) {
       const meshes = this.roomMeshes.get(unit.roomId) || [];
-      meshes.forEach((m) => ((m.material as THREE.MeshStandardMaterial).color.set(0x2196f3)));
+      meshes.forEach((m) => (m.material as THREE.MeshStandardMaterial).color.set(this.COLOR_HOVER));
     }
   }
 
-  private applyHighlight(unit: PoolUnit): void {
-    const meshes = this.roomMeshes.get(unit.roomId) || [];
-    const color = unit.selected ? this.COLOR_SELECTED : this.COLOR_DEFAULT;
-    meshes.forEach((m) => ((m.material as THREE.MeshStandardMaterial).color.set(color)));
-  }
-
-  // ---------------------------------------------------------------- save
-  compose(): void {
-    const picked = this.pool.filter((u) => u.selected);
-    if (picked.length === 0) {
-      this.notify.showWarning('Select at least one room.');
-      return;
-    }
-    if (this.isPrivate && !this.cadastralId.trim()) {
-      this.notify.showWarning('A cadastral ID is required for a private apartment.');
-      return;
-    }
-
-    this.saving = true;
-    this.cdr.markForCheck();
-
-    const payload = {
-      buildingSuId: this.data.buildingSuId,
-      unitSuIds: picked.map((u) => u.su_id),
-      buildingUnitType: this.lsbuType,
-      cadastralId: this.isPrivate ? this.cadastralId.trim() : undefined,
-      aptName: this.aptName.trim() || undefined,
-    };
-    qa('UnitComp', 'compose request', payload);
-
-    this.api.composeLsbu(payload).subscribe({
-      next: (res) => {
-        this.saving = false;
-        qa('UnitComp', 'compose OK', res);
-        this.notify.showSuccess(
-          `${this.lsbuType} created from ${res.member_room_count} room(s).`,
-        );
-        this.dialogRef.close(true);
-      },
-      error: (err) => {
-        this.saving = false;
-        qaErr('UnitComp', `compose FAILED (HTTP ${err?.status})`, err?.error ?? err);
-        this.notify.showError(
-          err?.error?.error || err?.error?.detail || 'Composition failed.',
-        );
-        this.cdr.markForCheck();
-      },
+  /** Repaint every mesh: members green, selected-pool amber, the rest default. */
+  private repaintAll(): void {
+    this.meshRoom.forEach((_roomId, mesh) => {
+      (mesh.material as THREE.MeshStandardMaterial).color.set(this.COLOR_DEFAULT);
     });
+    if (this.selectedApartment) {
+      for (const roomId of this.selectedApartment.rooms) {
+        (this.roomMeshes.get(roomId) || []).forEach((m) =>
+          (m.material as THREE.MeshStandardMaterial).color.set(this.COLOR_MEMBER),
+        );
+      }
+    }
+    for (const u of this.pool) {
+      if (u.selected) {
+        (this.roomMeshes.get(u.roomId) || []).forEach((m) =>
+          (m.material as THREE.MeshStandardMaterial).color.set(this.COLOR_SELECTED),
+        );
+      }
+    }
   }
 
+  // ---------------------------------------------------------------- close
   cancel(): void {
-    this.dialogRef.close(false);
+    this.dialogRef.close(this.dirty);
   }
 }

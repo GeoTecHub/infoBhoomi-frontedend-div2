@@ -21,6 +21,7 @@ import { MatTooltip } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { combineLatest } from 'rxjs';
 import { APIsService } from '../../services/api.service';
+import { AdminService } from '../../services/admin.service';
 import { AppStateService } from '../../services/app-state.service';
 import { DrawService } from '../../services/draw.service';
 import { FeatureService } from '../../services/feature.service';
@@ -79,6 +80,7 @@ type SearchFieldType = 'su_id' | 'nic' | 'valuation';
 })
 export class HeaderComponent implements OnDestroy, OnInit {
   private destroyRef = inject(DestroyRef);
+  private adminService = inject(AdminService);
   public activeBaseMap: BaseMapType = 'OSM';
 
   isSaving: boolean = false;
@@ -457,6 +459,7 @@ export class HeaderComponent implements OnDestroy, OnInit {
       const token = localStorage.getItem('Token');
       this.authService.logout(token).subscribe((res) => {
         this.apiService.clearPermissionsCache();
+        this.adminService.reset();
         localStorage.clear();
         this.router.navigateByUrl('/login');
       });
